@@ -48,7 +48,7 @@ Configure these under **Settings → Secrets and variables → Actions → Secre
 | --- | --- |
 | `GMI_API_KEY` | GMI Cloud inference key (**recommended**). *Or* set `OPENAI_API_KEY` instead. |
 | `DISCORD_BOT_TOKEN` | Discord **bot** token (from the Discord Developer Portal). |
-| `DISCORD_TARGET` | Where to send. `user:912900101087854603` for a DM, or `channel:<channel_id>`. |
+| `DISCORD_TARGET` | Where to send. `user:YOUR_DISCORD_USER_ID` for a DM, or `channel:<channel_id>`. |
 
 Optional **Variables** (Settings → Variables), to override defaults without touching code:
 
@@ -66,7 +66,7 @@ Optional **Variables** (Settings → Variables), to override defaults without to
 ### Discord bot setup (once)
 
 1. https://discord.com/developers/applications → **New Application** → **Bot** → copy the **token** → set it as `DISCORD_BOT_TOKEN`.
-2. To DM yourself: the bot must **share a server** with you. Invite it to any server you're both in (OAuth2 URL, scope `bot`). Then set `DISCORD_TARGET=user:912900101087854603` (your user ID). Make sure your server privacy settings allow DMs from server members.
+2. To DM yourself: the bot must **share a server** with you. Invite it to any server you're both in (OAuth2 URL, scope `bot`). Then set `DISCORD_TARGET=user:YOUR_DISCORD_USER_ID` (your user ID). Make sure your server privacy settings allow DMs from server members.
 3. To post to a channel instead: enable Developer Mode in Discord, right-click the channel → **Copy Channel ID**, set `DISCORD_TARGET=channel:<id>`, and give the bot access + "Send Messages" + "Attach Files" in that channel.
 
 ---
@@ -84,7 +84,7 @@ pip install -r requirements.txt
 
 export GMI_API_KEY=...                # or OPENAI_API_KEY=...
 export DISCORD_BOT_TOKEN=...
-export DISCORD_TARGET=user:912900101087854603
+export DISCORD_TARGET=user:YOUR_DISCORD_USER_ID
 # optional: export LLM_MODEL=deepseek-ai/DeepSeek-V4-Flash
 
 python scripts/generate_brief.py
