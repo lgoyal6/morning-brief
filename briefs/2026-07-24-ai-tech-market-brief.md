@@ -1,319 +1,195 @@
-# Laksh's Daily Brief — 2026-07-24
+# Laksh's Daily Brief — July 24, 2026
 
 ## 1. Top World, AI, Tech, and Market News
 
-### 1.1 Big Tech Earnings Week Delivers a Wrecking Ball
-**What happened:** A brutal week for mega-cap tech stocks. Tesla (TSLA) plunged ~18% after missing earnings and turning cash flow negative. Alphabet (GOOGL) fell ~7%, Meta (META) ~3.4%, Amazon (AMZN) ~4.6%, Microsoft (MSFT) ~2.2%. The Dow recovered 236 points to close at 51,947, but tech-heavy indices got hammered. [23][29]
+### 1.1 Tesla Plunges ~18% on Weak Earnings, Cash Flow Turns Negative
+**What happened:** Tesla reported disappointing quarterly results, missing earnings expectations and turning cash flow negative for the first time in recent memory. The stock fell roughly 18% this week, its worst slump since 2022 ([CNBC](https://www.cnbc.com/2026/07/24/tesla-tsla-spacex-spcx-stock-starship-test-flight-musk-bad-week.html)). A trader who successfully shorted Tesla into earnings is now targeting another high-flying stock ([CNBC](https://www.cnbc.com/2026/07/24/trader-who-successfully-shorted-tesla-into-earnings-now-sets-sights-on-this-high-flyer-.html)).
+**Why it matters:** Tesla's cash flow negative quarter raises questions about demand for EVs and the company's ability to fund its ambitious projects (like robotaxis and Optimus robot) without external capital. The stock's decline also drags on the broader market, given Tesla's weighting in major indices.
+**Background:** Tesla had been a high-multiple growth stock, meaning investors were paying a premium for future earnings. When earnings disappoint, those premiums collapse quickly.
 
-**Why it matters:** This is the market repricing the "AI capex supercycle" thesis. Moody's warned that "unprecedented" AI spending threatens the credit quality of even the most cash-rich companies (Amazon, Meta, Alphabet), forcing them to rely on debt and stock sales. Bond markets are showing anxiety — credit spreads (the extra yield investors demand to hold corporate bonds vs. safe government bonds) are widening for these companies. [15][42][43]
+### 1.2 Nvidia Locks Down SK Hynix Memory Supply as Part of $500 Billion AI Deal
+**What happened:** Nvidia secured high-bandwidth memory (HBM) supply from SK Hynix as part of a massive $500 billion AI infrastructure deal ([CNBC](https://www.cnbc.com/2026/07/25/nvidia-locks-down-memory-from-sk-hynix-as-part-of-500-billion-ai-deal.html)).
+**Why it matters:** HBM is the critical memory component that sits next to Nvidia's GPUs, enabling them to process massive AI models. Without guaranteed HBM supply, Nvidia can't ship its GPUs. This deal signals that Nvidia expects demand to remain extremely strong for years. It also locks in SK Hynix's dominant position in HBM manufacturing.
+**Who benefits:** SK Hynix (and to a lesser extent, Micron and Samsung, who also make HBM). Nvidia's customers (hyperscalers) benefit from more reliable GPU supply.
+**Who is hurt:** Competitors like AMD who also need HBM but may face tighter supply.
 
-**Who benefits/hurt:** Hurt: anyone long mega-cap tech. Potentially benefits: value/defensive sectors, bond investors getting better yields. Second-order: if AI capex gets cut, the entire AI supply chain (Nvidia, Broadcom, etc.) faces headwinds.
+### 1.3 Moody's Warns AI Spending Threatens Credit Quality of Amazon, Meta, Alphabet
+**What happened:** Moody's said "unprecedented" AI capital expenditure (capex) is forcing even the world's most cash-rich corporations to lean heavily on debt, stock sales, and off-balance-sheet financing ([CNBC](https://www.cnbc.com/2026/07/24/moodys-ai-spending-credit-quality-amazon-meta-alphabet.html)).
+**Why it matters:** Credit rating agencies assess how likely a company is to default on its debt. If Moody's downgrades these companies, their borrowing costs rise, and some institutional investors (like pension funds) may be forced to sell. This is a second-order effect of the AI boom: even the strongest companies are stretching their balance sheets.
+**Background:** Credit spreads (the extra yield investors demand to hold corporate bonds vs. risk-free government bonds) are already widening for Google, Amazon, and Meta ([CNBC](https://www.cnbc.com/2026/07/24/bond-market-anxiety-ai-capex-spending.html)).
 
-**Uncertainty:** Next week's earnings from Microsoft, Meta, Amazon, and Apple will be decisive. If they also show weak guidance or capex pullbacks, the selloff could deepen.
+### 1.4 Alphabet Raises AI Spending Stakes Ahead of Big Tech Earnings
+**What happened:** Alphabet (Google) reported earnings that showed increased AI capex, setting the stage for next week's reports from Microsoft, Amazon, and Meta ([CNBC](https://www.cnbc.com/2026/07/24/1-hyperscaler-megacap-down-3-to-go-alphabet-raises-the-stakes-on-ai-spending.html)).
+**Why it matters:** "Capex trends are going to be the number one focus," according to CNBC's Club portfolio director. Investors are watching whether the massive spending on AI infrastructure is translating into revenue growth. If it isn't, stocks could fall further.
+**The tension:** The market is simultaneously rewarding AI spending (driving up Nvidia, etc.) and punishing the spenders (Google, Meta, Amazon) for the cost.
 
-### 1.2 Nvidia Locks Down SK Hynix Memory in $500B AI Deal
-**What happened:** Nvidia secured high-bandwidth memory (HBM) supply from SK Hynix as part of a massive $500 billion AI deal. HBM is the ultra-fast memory stacked directly next to GPUs — essential for AI training. [3]
+### 1.5 Anthropic Launches Opus 5 — Focus on Efficiency, Not Capability
+**What happened:** Anthropic released Opus 5, which is currently ranked #1 on the Artificial Analysis Intelligence Leaderboard ([Ars Technica](https://arstechnica.com/ai/2026/07/anthropics-opus-5-is-about-token-efficiency-not-a-capability-leap/), [TechCrunch](https://techcrunch.com/2026/07/24/anthropic-launches-opus-5/), [Anthropic](https://www.anthropic.com/news/claude-opus-5)).
+**Why it matters:** Opus 5 is cheaper and less restrictive than Anthropic's previous model (Fable). The key insight: AI labs are now competing on cost efficiency, not just raw capability. "The cheaper options are often good enough" — this is a major shift from the "bigger is better" era.
+**Background:** Token efficiency means getting more useful output per dollar spent. This is critical for enterprise adoption, where cost matters.
 
-**Why it matters:** This is Nvidia aggressively verticalizing its supply chain. HBM has been the bottleneck in GPU production (SK Hynix and Micron are the only major producers). By locking supply, Nvidia ensures it can meet hyperscaler demand while competitors (AMD, Intel) struggle to get enough HBM.
+### 1.6 Trump Imposes New Tariffs, Immediately Sued
+**What happened:** President Trump renewed tariffs, including 25% duties on Brazilian imports and vowing 50% tariffs on Canadian goods. He was sued hours later, with experts saying the tariffs may not hold up in court ([CNBC](https://www.cnbc.com/2026/07/24/trump-tariffs-lawsuit-301-ieepa.html)). He also threatened the EU with "substantial tariffs" for fining US tech giants ([CNBC](https://www.cnbc.com/2026/07/24/trump-tariffs-eu-trade-google-apple-tech.html)).
+**Why it matters:** Tariffs increase costs for companies that import goods, which can lead to higher consumer prices and reduced corporate profits. They also create uncertainty for supply chains. The legal challenge means the tariffs may be temporary, but the uncertainty itself is damaging.
 
-**Who benefits:** SK Hynix (guaranteed revenue), Nvidia (supply certainty). **Who hurt:** AMD and Intel (HBM access constrained), other AI chip startups.
+### 1.7 SpaceX Launches Starship in First Test Flight Since IPO
+**What happened:** SpaceX conducted the first test flight of its massive Starship rocket since the company's IPO last month ([CNBC](https://www.cnbc.com/2026/07/24/spacex-launches-massive-starship-rocket-in-first-test-flight-since-ipo.html)). Separately, a Starlink launch suffered another booster failure ([TechCrunch](https://techcrunch.com/2026/07/24/spacex-launches-new-v3-starlink-satellites-but-suffers-another-booster-failure/)).
+**Why it matters:** Starship is critical for SpaceX's long-term plans (Moon, Mars, and heavy satellite deployment). The IPO means public investors now have exposure to these risks. The booster failure on the Starlink launch shows that rocket reusability is still not fully reliable.
 
-**Second-order:** This signals that AI demand is real and sustained — you don't sign $500B deals if you expect a bubble to pop. But it also means Nvidia's dominance in AI chips becomes even harder to challenge.
+### 1.8 Intel Commits to 14A Mass Production in 2028, Sales Rise 25%
+**What happened:** Intel reported 25% higher year-over-year sales and above-guidance earnings, and confirmed its 14A technology (a next-generation chip manufacturing process) is on track for high-volume production in 2028 ([Tom's Hardware](https://www.tomshardware.com/pc-components/cpus/intel-commits-to-14a-mass-production-in-2028-as-its-sales-rise-25-percent-year-over-year)).
+**Why it matters:** Intel has been struggling to catch up with TSMC in advanced chip manufacturing. The 14A commitment shows Intel is still in the race, but 2028 is far away. The 25% sales growth is a positive sign that Intel's core business is stabilizing.
+**Background:** "14A" refers to a process node — roughly analogous to 1.4 nanometers, though the naming is now more marketing than technical.
 
-### 1.3 Alphabet Sets the AI Capex Bar — and It's High
-**What happened:** Alphabet reported Q2 earnings and set a new high bar for AI capital expenditure, leading the "hyperscaler capex race." The company's spending plans are now the benchmark for Microsoft, Amazon, and Meta to match or exceed. [2][37][47]
+### 1.9 US-China AI Feud Threatens Safety Efforts
+**What happened:** As AI grows more powerful, the US-China geopolitical feud is threatening international AI safety efforts ([Reuters](https://news.google.com/rss/articles/CBMitAFBVV95cUxOSTVEV25mbEljZGR4REN5cm5RdFZockt4TlBqYUFPS3FseExuOGJ4NFdBR3NsY1l3dnhSNlJ5RXNrdktZaDlDRWN3OTZHRkJnbk1LVk5FS0F4LUZwOHVEQ3FXUFp2aWhYbnlabkZUS3p4M09DbVRvR2NpR3dITjhTWXpzajE3eVNVeEJyeVZadlFsMGFzMnZ0SVMwRS1oZUt0NFhZUExCR3NSYl9teXE5NTNWVUQ?oc=5)).
+**Why it matters:** AI safety (ensuring AI systems don't cause harm) requires global cooperation. If the US and China can't agree on safety standards, the risk of accidents or misuse increases. Meanwhile, Nvidia and 24 other companies signed an open-weights letter as Washington considers banning Chinese AI models ([Tom's Hardware](https://www.tomshardware.com/tech-industry/artificial-intelligence/nvidia-and-24-other-companies-sign-open-weights-letter-as-washington-weighs-chinese-ai-model-ban)).
 
-**Why it matters:** Capex (capital expenditure) = money spent on long-term assets like data centers, GPUs, networking gear. When Alphabet says it's spending more, it signals that AI infrastructure demand is accelerating, not slowing. This is positive for the entire supply chain (Nvidia, Broadcom, Marvell, optical networking, power companies).
+### 1.10 AI Data Centers Reshape US Power Transmission Planning
+**What happened:** AI data centers are fundamentally reshaping how US power grids are planned and built ([Indiatimes](https://news.google.com/rss/articles/CBMi4gFBVV95cUxNZ0pwNkw4ckJMSy1MTlNqdXNOeXk3Qi15Z2U2bVJfV0VvdXp1aTlLaTFwaFlsNjFZd0JRUVptQTVCMnRpYnNYYmQwOUZfOGxQOVRaT25yTHNBRXN0dGhIOWlITGxDME42TkJmdlUzUXBQclh5b1V5Y1ZuU0pjWmlIMjdGTU9tM1BRTmVKMEEtSWw4LVRQZmJpbERacndNQUZ5ek1BTlB2RFdwQmVVdGUzTVhIeDVKcms4N3Zwb1hwd1B4bXNSblo1NHNXcEhMbWRBQzh1WFBnaEJrVFlxRGtFamJn?oc=5)). Oklahoma is moving to protect residential ratepayers from the costs of data center expansion ([fox23.com](https://news.google.com/rss/articles/CBMipgFBVV95cUxQYVZiV2FWakl0ZjUxdVhRQTB3TXlWRDYwSHo0UUd5NC1oRmNrY1ZtaHV6UFN5dnEwYmpmV3Q2czdZUVc1X1JXbnFadnpjSFFBZlpId1JUNHNBMzR6R0Q4MnFhYjM3Q2ROMmRCcXU3SWYteUgwblZjd1k1c1lINlo5YWtmeVlWV3RZVkQwZkpaVmxvRHk5OF9QR0JCUUZVcGdzampGVTJn?oc=5)).
+**Why it matters:** Data centers consume enormous amounts of electricity. This creates a tension: the grid needs to expand to serve AI demand, but who pays for it? If residential customers bear the cost, it's politically unpopular. This is a key regulatory risk for data center operators and power companies.
 
-**Who benefits:** Nvidia, Broadcom, data center REITs (DLR, EQIX), power utilities (CEG, VST). **Who hurt:** Companies with weaker balance sheets that can't match this spending.
+### 1.11 Finland's Sand Battery: A Solution to Renewable Energy's Intermittency Problem
+**What happened:** A small Finnish town deployed the world's largest commercial sand battery to store renewable energy ([CNBC](https://www.cnbc.com/2026/07/25/finland-sand-battery-renewable-energy-storage.html)).
+**Why it matters:** Renewable energy (solar, wind) is intermittent — the sun doesn't always shine, the wind doesn't always blow. Energy storage is the key to making renewables reliable. Sand batteries are a low-cost, long-duration storage option that could complement lithium-ion batteries.
+**Background:** Sand batteries work by heating sand to high temperatures using excess electricity, then releasing that heat later. They're not suitable for everything (they store heat, not electricity directly), but they're cheap and durable.
 
-**Uncertainty:** The bond market is nervous. If credit spreads keep widening, borrowing costs rise, which could eventually force capex cuts. This is the tension: AI demand is real, but financing it is getting more expensive.
-
-### 1.4 Trump Tariffs Return: 25% on Brazil, 50% on Canada, EU Threatened
-**What happened:** President Trump imposed 25% tariffs on Brazilian imports, vowed 50% tariffs on Canadian goods, and threatened the EU with "substantial tariffs" over fines on US tech giants (Google, Apple, Meta). A lawsuit was filed hours after the tariffs took effect, with experts questioning their legality. [11][49]
-
-**Why it matters:** Tariffs are taxes on imported goods, paid by importers (often US companies), who pass costs to consumers. This reignites trade war fears, disrupts supply chains, and raises inflation risk. The EU threat specifically targets the Digital Services Act fines on US tech — a direct escalation of the US-EU tech regulation conflict.
-
-**Who benefits:** Domestic US manufacturers (if they can ramp up). **Who hurt:** Import-dependent companies (retail, auto, electronics), consumers (higher prices), tech companies facing EU retaliation.
-
-**Second-order:** If tariffs push inflation higher, the Fed may keep rates higher for longer, which hurts growth stocks (most of the watchlist).
-
-### 1.5 SpaceX Launches Starship in First Test Since IPO
-**What happened:** SpaceX launched its massive Starship rocket in the first test flight since its IPO last month. The company also launched new V3 Starlink satellites but suffered another booster failure. [8][13]
-
-**Why it matters:** Starship is the largest rocket ever built, designed to carry massive payloads to orbit and eventually to Mars. For the space economy, successful Starship flights mean lower cost per kg to orbit, enabling more satellites, space stations, and interplanetary missions. The booster failure shows the technology is still experimental.
-
-**Who benefits:** SpaceX (SPCX), Starlink (more satellite capacity), space-dependent industries (satellite internet, Earth observation). **Who hurt:** Competitors (Blue Origin, ULA) if Starship succeeds.
-
-### 1.6 Anthropic's Opus 5: Smarter but Not a Leap — Efficiency Is the New Frontier
-**What happened:** Anthropic released Opus 5, which is #1 on the AI leaderboard but is described as "about token efficiency, not a capability leap." Cheaper AI models are often "good enough" for most tasks. [36][46]
-
-**Why it matters:** This is a shift in the AI model race. Instead of just raw intelligence, companies are competing on cost per token (the unit of text AI processes). If cheaper models are good enough, enterprises may not need the most expensive GPUs — which could slow demand for Nvidia's highest-end chips.
-
-**Who benefits:** Companies making efficient inference chips (AMD, Intel), cloud providers offering cheaper AI services. **Who hurt:** Nvidia, if the market shifts to lower-cost inference.
-
-**Uncertainty:** The "good enough" threshold is subjective. For cutting-edge research, top models still matter. But for 90% of enterprise use cases, cheaper models may suffice.
-
-### 1.7 US-China AI Feud Threatens Global Safety Efforts
-**What happened:** As AI models grow more powerful, the US-China geopolitical feud is undermining international efforts to create AI safety standards. Washington is considering banning Chinese AI models, while 25 companies (including Nvidia) signed an open-weights letter opposing such a ban. OpenAI, Anthropic, and Google did not sign. [20][58]
-
-**Why it matters:** Open-weight AI models (where the model's parameters are publicly available) are a flashpoint. The US fears China could use open models for military applications. China sees restrictions as tech suppression. Without cooperation, there's no global framework for AI safety — increasing the risk of accidents or misuse.
-
-**Who benefits:** Companies that can navigate both markets (rare). **Who hurt:** Everyone — unregulated AI development increases systemic risk.
-
-### 1.8 Waymo and Uber End Exclusivity in Atlanta and Austin
-**What happened:** Waymo and Uber will end their exclusivity arrangement in Atlanta and Austin starting in 2028. Waymo driverless rides will be available on other platforms, and Waymo is reportedly considering a full breakup with Uber. [25][39]
-
-**Why it matters:** This is the autonomous vehicle (AV) market maturing. Exclusivity deals were temporary; now platforms compete for riders. For Uber, losing exclusive access to Waymo's robotaxis weakens its AV strategy. For Waymo, opening up means more riders and data, but also more competition.
-
-**Who benefits:** Riders (more options), other AV platforms (Lyft, Amazon's Zoox). **Who hurt:** Uber (loses competitive advantage), Tesla (if Waymo expands faster).
-
-### 1.9 Finland Builds World's Largest Sand Battery for Renewable Energy Storage
-**What happened:** A small Finnish town deployed the world's largest commercial sand battery to solve renewable energy's intermittency problem (solar/wind don't produce power 24/7). Sand batteries store heat by heating sand to high temperatures, then releasing it to generate electricity or heat buildings. [1]
-
-**Why it matters:** Energy storage is the missing piece for renewable grids. Sand batteries are cheaper than lithium-ion for long-duration storage (hours to days). This could reduce dependence on natural gas peaker plants and make AI data centers more sustainable.
-
-**Who benefits:** Renewable energy companies, data center operators seeking green power, sand battery technology companies. **Who hurt:** Natural gas suppliers, lithium-ion battery companies (for grid storage).
-
-### 1.10 Paramount/WBD Merger Delayed Until 2027
-**What happened:** The Paramount-Warner Bros. Discovery merger was delayed until as late as June 2027 after a lawsuit by multiple states. Paramount agreed to the delay, calling it a "significant win." [24][33]
-
-**Why it matters:** Media consolidation is being blocked by antitrust concerns. The delay means uncertainty for both companies' strategies, including streaming investments (Max, Paramount+). For the broader market, it signals that regulators are serious about blocking big tech/media mergers.
-
-**Who benefits:** Competitors (Netflix, Disney, Amazon). **Who hurt:** Paramount and WBD shareholders (deal uncertainty depresses stock prices).
-
-### 1.11 Intel Commits to 14A Mass Production in 2028, Sales Up 25%
-**What happened:** Intel reported 25% higher year-over-year sales and above-guidance earnings. It confirmed its 14A (1.4nm-class) manufacturing technology is on track for high-volume production in 2028. [64]
-
-**Why it matters:** Intel's foundry business (making chips for other companies) is the key to competing with TSMC. 14A is Intel's most advanced node. If successful, it could win back customers like Nvidia, AMD, and Apple. The 25% sales growth shows Intel's core business is stabilizing.
-
-**Who benefits:** Intel (if foundry succeeds), US chip manufacturing (onshoring). **Who hurt:** TSMC (if Intel wins customers), AMD (if Intel's chips become more competitive).
-
-**Uncertainty:** Intel has missed deadlines before. 2028 is far away — TSMC will have 2nm and 1.4nm by then.
-
-### 1.12 Verizon Signs $1B Google Deal for Dark Fiber Data Centers
-**What happened:** Verizon signed a $1 billion deal with Google for dark fiber (unused fiber optic cables that companies can "light up" themselves) to connect data centers. [68]
-
-**Why it matters:** Dark fiber is critical for AI data center networking — it provides dedicated, high-bandwidth connections between data centers without sharing with other traffic. This deal shows that telecom infrastructure is being repurposed for AI workloads.
-
-**Who benefits:** Verizon (new revenue stream), Google (faster inter-data-center connectivity), optical networking companies (Ciena, Infinera, Lumentum). **Who hurt:** Traditional telecom carriers losing business to dark fiber.
-
----
+### 1.12 Markets: Dow Recovers, Bond Yields Rise, Tech Stocks Fall
+**What happened:** The Dow Jones gained 236 points to close at 51,947, recovering some losses ([eciks.org](https://news.google.com/rss/articles/CBMiX0FVX3lxTE1udXNJbjNJd2p6Tm82QU1Xb3dqT2ZUSDZtSWluVU93a0g0a3dlTnh1cTJBbGtfZ2FTeFVQQ0Y4OHlPSU82NDJGN3RVZFpMMnZNMWpMc0xxWjduTnJTazRv?oc=5)). However, the 30-year Treasury yield is approaching 5.2%, and a surge to 6% could crush stocks ([MarketWatch](https://www.marketwatch.com/story/the-30-year-treasury-yield-is-closing-in-on-5-2-a-surge-to-6-could-slam-stocks-fa9631fb?mod=mw_rss_topstories)). Tech stocks fell broadly, with GOOGL down 7.13%, AMZN down 4.57%, META down 3.36%, and MSFT down 2.24%.
+**Why it matters:** Rising bond yields make stocks less attractive (bonds offer a "risk-free" alternative). Tech stocks are particularly sensitive because their valuations depend on future earnings, which are worth less when discounted at higher interest rates.
 
 ## 2. Infrastructure and Supply-Chain Logic
 
-### 2.1 The AI Capex → Bond Market Tension
+### 2.1 The AI Memory Supply Chain: Nvidia → SK Hynix → HBM → GPU Production
 
-**The chain:** AI demand → Hyperscaler capex → Debt issuance → Bond market anxiety → Higher borrowing costs → Potential capex cuts.
+The Nvidia-SK Hynix deal is a perfect example of how the AI supply chain works:
 
-**Deep explanation:** When Alphabet, Amazon, Meta, and Microsoft spend hundreds of billions on AI infrastructure, they need to finance it. They can use cash (if they have it), issue stock (diluting shareholders), or issue bonds (borrowing). Moody's warning is about the bond path: as these companies borrow more, their credit ratings could be downgraded, meaning they have to pay higher interest rates on future debt. This is already happening — credit spreads are widening.
+1. **AI demand** (from hyperscalers like Google, Microsoft, Amazon) drives orders for Nvidia's GPUs.
+2. **Nvidia's GPUs** require high-bandwidth memory (HBM) to function. HBM is a specialized type of DRAM that sits physically close to the GPU, enabling fast data transfer.
+3. **SK Hynix** is the dominant HBM manufacturer. Without HBM, Nvidia can't ship GPUs. This makes HBM the "bottleneck" in the AI supply chain.
+4. **The $500 billion deal** locks in supply for years, signaling that Nvidia expects demand to remain extremely strong.
 
-**Why it matters now:** The market is pricing in a "peak capex" scenario where spending eventually slows because financing becomes too expensive. If bond yields keep rising (the 30-year Treasury is approaching 5.2%, and some analysts warn 6% could crash stocks), the entire AI infrastructure buildout could face a funding crunch. [28][42]
+**Second-order effects:**
+- **Other memory makers** (Micron, Samsung) will try to capture HBM market share. Micron (MU) was up 3.20% in the snapshot.
+- **Equipment makers** (like KLA, which makes chip inspection tools) benefit from increased memory production capacity.
+- **Power and cooling companies** benefit because HBM and GPUs consume enormous amounts of electricity and generate heat.
 
-**Who to watch:** Bond yields (especially 10-year and 30-year Treasury), credit spreads on investment-grade corporate bonds, and the Fed's next rate decision (coming next week).
+### 2.2 The AI Capex → Credit Risk Chain
 
-### 2.2 Nvidia's HBM Lockdown and the Memory Supply Chain
+Moody's warning and the widening credit spreads for Google, Amazon, and Meta illustrate a less obvious supply-chain dynamic:
 
-**The chain:** AI training demand → Nvidia GPUs → HBM memory → SK Hynix/Micron production → Equipment (ASML, KLA) → Power.
+1. **Hyperscalers** are spending hundreds of billions on AI infrastructure (data centers, GPUs, networking).
+2. **This spending** is so large that even cash-rich companies need to borrow money or sell stock to fund it.
+3. **Bond investors** (who lend money to these companies) are demanding higher interest rates (wider credit spreads) because they're worried about the debt load.
+4. **Higher borrowing costs** make future AI spending more expensive, potentially slowing the pace of investment.
 
-**Deep explanation:** High-bandwidth memory (HBM) is not like regular RAM. It's a stack of DRAM chips connected vertically through "through-silicon vias" (TSVs) — tiny holes drilled through the silicon. This allows massive bandwidth (data transfer speed) between memory and GPU. Nvidia's $500B deal with SK Hynix essentially guarantees HBM supply for years.
+**The tension:** The AI boom is creating demand for infrastructure companies (Nvidia, SK Hynix, power companies), but it's also straining the balance sheets of the very companies that are buying that infrastructure. If the hyperscalers cut back on spending, the entire supply chain suffers.
 
-**Why it matters:** HBM is the bottleneck. Without enough HBM, you can't make enough AI GPUs. SK Hynix has ~50% market share, Micron ~30%, Samsung ~20%. By locking SK Hynix, Nvidia ensures its own production while potentially starving competitors.
+### 2.3 Data Center Power: The Next Bottleneck
 
-**Second-order effects:** This puts pressure on Micron (MU) to ramp its own HBM production. It also benefits equipment makers like KLA (KLAC) that make the tools for HBM manufacturing (wafer inspection, metrology). Power companies (CEG, VST) benefit because HBM manufacturing is energy-intensive.
+Multiple stories point to power becoming the critical constraint for AI expansion:
 
-### 2.3 AI Data Centers Reshape US Power Grid
+- **Trump's pledge** on data center power supplies draws skepticism ([Reuters](https://news.google.com/rss/articles/CBMirgFBVV95cUxQVkNCak9zQU9VZUdpN2FXOGJKUlFDSnFucV9vUjBwNl90Z1M3UU1ucFRQNVhTZ3pwS250ZHpETUdrM3JOcks3T2lYelM0NWFxaXRkNGxKOEpmYUNfTko0NnR2ZHNyeDI4djFWS1VUb2pFc05qLVI3V3dKOExzSjE4d3FFQVFsaEdqbVhXdjRiaUlQcHVjZDZpYU1sYnRIc2JtcEQwUXNjWUgxUWtleHc?oc=5)).
+- **Oklahoma** is trying to protect residential ratepayers from data center costs ([fox23.com](https://news.google.com/rss/articles/CBMipgFBVV95cUxQYVZiV2FWakl0ZjUxdVhRQTB3TXlWRDYwSHo0UUd5NC1oRmNrY1ZtaHV6UFN5dnEwYmpmV3Q2czdZUVc1X1JXbnFadnpjSFFBZlpId1JUNHNBMzR6R0Q4MnFhYjM3Q2ROMmRCcXU3SWYteUgwblZjd1k1c1lINlo5YWtmeVlWV3RZVkQwZkpaVmxvRHk5OF9QR0JCUUZVcGdzampGVTJn?oc=5)).
+- **Crusoe and ON.energy** are deploying 5 GW of backup power systems for data centers ([the Electrical Distributor magazine](https://news.google.com/rss/articles/CBMilwFBVV95cUxNSnRjV3E2M2pGXzJ5WnpqeU00dG1CMEFjSmFDQzRmVFltMi1mWFA0YWRVOElvbnNON3lMbksyQUR0UThTZW1DVXRlMXVUV2kxUV9CZ3lZM1dwUC15cG1kYmM5VkdUR1BHVkR3alJhbm81Rm1VbzRPbUtFVEY0cnBEMHdZY2VmX2E2ZlgxNkNpTGZnSW1tQ1o0?oc=5)).
+- **Nuclear energy stocks** are being linked to AI data center power demand ([simplywall.st](https://news.google.com/rss/articles/CBMi0wFBVV95cUxPRUtIVm5hczZMT0hmNkxPdk5RWDNyQWRVLWZpUVJmcHE0OXRZLWVXWXRsbW5QalpNU0VOWEcya0Q5a0IyUnFLcGVobC1jNlUtM0IzdDNXcjZidWlKNWVwdG9hdWF2Y19hSDdOb0s5X21WWU5iS0ZCWFpMZ0VqV1k4NmVqdGZyTnB2Z1JHWFNwTm05bE9zZ0M1a0FMSFhlZXRiS0dicUhtWWxVWl9tMTZvRF9WWFVzUjBPX3RxZVg3eWI2eGZJZUJBaGw4Q0dpd2RibjUw0gHYAUFVX3lxTE43TDNrd2Ffc1Bic0lZejNNVkFIaUpSdUZEQjk0ZGU5QXpiX1NqSGgwQ3JOVHp2aHNvV1p5VVk3bi1IOEtnaVp3RjZzTkRROERXcWduOFdhWnNYYUoxWUhPa0dIT1FCRkljMUlIM3ZLVkZJZWpDVXNBM0xKdGdqb0h1YVBRZTYyVlpUNTBCVnNCS2FXM0tmVVpiM29seG9wWWV3eXU1aWxtWHRlVEF6UUpIV2x4WVUwOHVfY3JRSVJ4ZDQzdjAyT25ueDBkRnE4TXBYSGxjdVdaNQ?oc=5)).
 
-**The chain:** AI data center construction → Power demand surge → Grid upgrades → Nuclear/renewable investments → Ratepayer protection debates.
-
-**Deep explanation:** AI data centers consume enormous amounts of electricity — a single large facility can use as much power as a small city. This is driving a wave of new power plant construction, grid upgrades, and transmission line buildouts. Oklahoma is moving to protect residential ratepayers from bearing the cost of grid upgrades for data centers. [5][12]
-
-**Why it matters:** Power is becoming the new bottleneck for AI. If data centers can't get enough reliable, cheap electricity, AI expansion slows. This benefits nuclear (CEG), natural gas (VST), and renewable companies (NEE, FLNC). But it also raises political tensions — who pays for the grid upgrades?
-
-**Trump's pledge** to guarantee data center power supplies drew skepticism from experts, who note that grid permitting and construction take years. [57]
-
----
+**The chain:** AI demand → data center construction → power demand → grid strain → regulatory pushback → need for new power sources (nuclear, renewables + storage).
 
 ## 3. Watchlist: Earnings, Guidance, and Notable Movers
 
-### 3.1 Major Earnings/Events in Last 24 Hours
+### Major Movers (≥3% or significant news)
 
-| Company | Event | Key Numbers | Stock Reaction | Source |
-|---------|-------|-------------|----------------|--------|
-| **Tesla (TSLA)** | Q2 Earnings | Missed estimates, cash flow negative | -18% for the week | [23] |
-| **Alphabet (GOOGL)** | Q2 Earnings | Set high AI capex bar, revenue beat? | -7.13% (market reacting to capex concerns) | [2][37][47] |
-| **Intel (INTC)** | Q2 Earnings | Sales +25% YoY, above guidance, 14A on track | -2.33% (mixed reaction) | [64] |
-| **SpaceX (SPCX)** | Starship test flight | First test since IPO, booster failure | N/A (private) | [8][13] |
+| Ticker | Price | Change | Key Driver |
+|--------|-------|--------|------------|
+| TSLA | $319.69 | -14.52% | Weak earnings, cash flow negative ([CNBC](https://www.cnbc.com/2026/07/24/tesla-tsla-spacex-spcx-stock-starship-test-flight-musk-bad-week.html)) |
+| GOOGL | $317.69 | -7.13% | AI capex concerns, Moody's warning ([CNBC](https://www.cnbc.com/2026/07/24/moodys-ai-spending-credit-quality-amazon-meta-alphabet.html)) |
+| IMAX | $43.96 | +11.86% | No notable news in sources for this move |
+| CMCSA | $21.92 | -6.80% | No notable news in sources for this move |
+| AMZN | $233.66 | -4.57% | AI capex concerns, Moody's warning ([CNBC](https://www.cnbc.com/2026/07/24/moodys-ai-spending-credit-quality-amazon-meta-alphabet.html)) |
+| META | $606.10 | -3.36% | AI capex concerns, Moody's warning ([CNBC](https://www.cnbc.com/2026/07/24/moodys-ai-spending-credit-quality-amazon-meta-alphabet.html)) |
+| CRDO | $236.50 | +3.61% | No notable news in sources for this move |
+| MU | $990.21 | +3.20% | Memory demand from Nvidia-SK Hynix deal ([CNBC](https://www.cnbc.com/2026/07/25/nvidia-locks-down-memory-from-sk-hynix-as-part-of-500-billion-ai-deal.html)) |
+| RDW | $9.28 | +3.23% | No notable news in sources for this move |
 
-### 3.2 Notable Movers (>3% or Major News)
+### Earnings and Guidance
 
-| Company | Move | Reason |
-|---------|------|--------|
-| **IMAX** | +11.86% | No specific news in sources; possible earnings anticipation or sector rotation |
-| **CRDO** | +3.61% | No specific news in sources; likely AI networking demand optimism |
-| **MU** | +3.20% | Benefiting from Nvidia's HBM deal with SK Hynix (positive for memory sector) |
-| **RDW** | +3.23% | No specific news in sources |
-| **CMCSA** | -6.80% | No specific news in sources; possible media sector weakness |
-| **TSLA** | -14.52% | Earnings miss, cash flow negative, Musk's "bad week" |
-| **GOOGL** | -7.13% | Capex concerns, bond market anxiety |
-| **AMZN** | -4.57% | Broader tech selloff, Moody's warning |
-| **META** | -3.36% | Broader tech selloff, smart glasses controversy |
-| **COIN** | -2.99% | Crypto weakness, broader risk-off sentiment |
-| **HOOD** | -2.78% | Crypto/retail trading weakness |
-| **NKE** | -2.89% | No specific news in sources |
+**Intel (INTC):** Reported 25% higher year-over-year sales and above-guidance earnings. Committed to 14A mass production in 2028 ([Tom's Hardware](https://www.tomshardware.com/pc-components/cpus/intel-commits-to-14a-mass-production-in-2028-as-its-sales-rise-25-percent-year-over-year)). Stock was down 2.33% in the snapshot, suggesting the market was not impressed by the long timeline.
 
-### 3.3 Valuation Context
+**Alphabet (GOOGL):** Reported earnings with increased AI capex. Stock fell 7.13% as investors focused on the spending rather than the revenue ([CNBC](https://www.cnbc.com/2026/07/24/1-hyperscaler-megacap-down-3-to-go-alphabet-raises-the-stakes-on-ai-spending.html)).
 
-- **Nvidia (NVDA)** at $208.76: Trading at ~35x forward earnings (roughly $6 EPS expected). This is elevated but below the 50x+ it traded at in 2024. The market is pricing in continued AI growth but with more caution.
-- **Tesla (TSLA)** at $319.69: After the 18% drop, still trading at ~60x forward earnings. This is extremely high for a car company — the market is pricing in robotaxi and AI future, not current auto sales.
-- **Alphabet (GOOGL)** at $317.69: ~22x forward earnings. This is reasonable for a cash-generating monopoly, but the capex increase is raising questions about future margins.
+**Tesla (TSLA):** Missed earnings, cash flow negative. Stock fell 14.52% ([CNBC](https://www.cnbc.com/2026/07/24/tesla-tsla-spacex-spcx-stock-starship-test-flight-musk-bad-week.html)).
 
----
+### Valuation Context
+
+- **Tesla's P/E ratio** was already very high (above 50x) before earnings. A miss at that valuation is devastating because the stock price assumes perfection.
+- **Google's P/E** is lower (around 20-25x), but the market is worried that AI spending will eat into margins without generating proportional revenue.
+- **Nvidia's P/E** is around 40-50x, but the market is more forgiving because Nvidia is the "picks and shovels" seller in the AI gold rush.
 
 ## 4. Beginner Knowledge Lens
 
-1. **Capex vs. Opex:** Capital expenditure (capex) is money spent on assets that last years (data centers, GPUs). Operating expense (opex) is day-to-day costs (salaries, electricity). When companies increase capex, it boosts short-term GDP and benefits suppliers, but reduces free cash flow (cash available after expenses).
+1. **Capex vs. Opex:** Capital expenditure (capex) is spending on long-term assets (like data centers, GPUs). Operating expenditure (opex) is day-to-day costs (like salaries, electricity). When companies say "AI capex is increasing," they mean they're building infrastructure that will last years. The risk is that they spend too much and the demand doesn't materialize.
 
-2. **Credit spreads:** The difference in yield between a corporate bond and a "risk-free" government bond (like US Treasuries). Wider spreads = investors are more worried about default risk. This is a leading indicator for corporate health.
+2. **Credit spreads:** The difference in yield between a corporate bond and a risk-free government bond. If a company's credit spread widens, it means investors are more worried about default. For example, if Google's bonds yield 5% and US Treasuries yield 4%, the spread is 1%. If that spread widens to 1.5%, Google's borrowing costs just went up.
 
-3. **HBM (High-Bandwidth Memory):** A special type of memory that sits right next to the GPU, connected through tiny vertical wires (TSVs). It's like having a super-fast data highway between memory and processor. Regular RAM is like a two-lane road; HBM is a 100-lane highway.
+3. **Short selling:** Borrowing shares and selling them, hoping to buy them back cheaper later. The trader who shorted Tesla made money because Tesla's stock fell. Short selling is risky because losses are theoretically unlimited (the stock could go to infinity).
 
-4. **Tariffs are paid by importers, not exporters:** When the US puts a 25% tariff on Brazilian goods, the US company importing those goods pays 25% extra to the US government. This cost is usually passed to consumers as higher prices. It's not a tax on Brazil — it's a tax on US consumers and businesses.
+4. **Process node (14A, 3nm, etc.):** In chip manufacturing, the "node" refers to the size of the transistors. Smaller numbers generally mean more advanced, more efficient chips. However, the naming has become marketing-driven — Intel's "14A" is not directly comparable to TSMC's "2nm." The key is that Intel is promising to be competitive by 2028, which is a long time in the chip industry.
 
-5. **Open-weight vs. closed AI models:** Open-weight models (like Meta's Llama) have their internal parameters publicly available — anyone can download, modify, and run them. Closed models (like OpenAI's GPT-4) are only accessible through APIs. Open models enable faster innovation but raise security concerns (bad actors can use them without oversight).
+5. **Token efficiency:** In AI, a "token" is a unit of text (roughly a word or sub-word). Token efficiency means getting more useful output per dollar spent. Anthropic's Opus 5 is focused on this — it's cheaper to run than previous models, which makes it more practical for businesses.
 
-6. **Bond yields and stock prices are inversely correlated:** When bond yields rise (bond prices fall), stocks often fall too. Higher yields make bonds more attractive relative to stocks (the "risk-free" alternative pays more), and they increase borrowing costs for companies, reducing future profits.
-
----
+6. **Bond yields and stock prices:** When bond yields rise, stocks (especially growth stocks) tend to fall. This is because higher yields mean future cash flows are worth less today (the "discount rate" is higher). It's also because bonds become a more attractive alternative to stocks.
 
 ## 5. Terms Used Today
 
 | Term | Definition |
 |------|------------|
-| **Capex** | Capital expenditure — money spent on long-term assets |
-| **HBM** | High-bandwidth memory — ultra-fast memory for AI GPUs |
-| **Credit spread** | Extra yield on corporate bonds vs. government bonds |
-| **Dark fiber** | Unused fiber optic cables that companies can activate |
-| **Open-weight model** | AI model with publicly available parameters |
-| **Token** | Unit of text AI processes (roughly ¾ of a word) |
-| **TSV** | Through-silicon via — tiny vertical connection in HBM |
-| **Foundry** | Factory that manufactures chips for other companies |
-| **Hyperscaler** | Large cloud provider (AWS, Azure, GCP) |
-| **Ratepayer** | Customer who pays for electricity |
+| **HBM (High-Bandwidth Memory)** | A specialized type of DRAM that sits close to the GPU, enabling very fast data transfer. Critical for AI workloads. |
+| **Capex** | Capital expenditure — spending on long-term assets like data centers, GPUs, and equipment. |
+| **Credit spread** | The extra yield investors demand to hold a corporate bond vs. a risk-free government bond. |
+| **Token efficiency** | How much useful output an AI model produces per dollar spent on computation. |
+| **Process node** | The size of transistors in a chip; smaller numbers generally mean more advanced technology. |
+| **Short selling** | Betting that a stock will fall by borrowing shares, selling them, and hoping to buy them back cheaper. |
+| **Hyperscaler** | Large cloud computing companies (Amazon, Microsoft, Google) that operate massive data centers. |
+| **Intermittency** | The problem that renewable energy sources (solar, wind) don't produce power consistently. |
+| **Open-weights model** | An AI model whose trained parameters (weights) are publicly available, allowing anyone to use or modify it. |
+| **Rate limiting** | Restricting how much a user can do with a service (e.g., limiting API calls per minute). |
 
 ### Deep Dive: Credit Spreads
 
-**What they are:** The difference in yield between a corporate bond and a Treasury bond of the same maturity. Example: If a 10-year Treasury yields 4.5% and an Amazon 10-year bond yields 5.0%, the credit spread is 0.5% (50 basis points).
-
-**Why they matter:** Credit spreads are the market's way of pricing default risk. When spreads widen, it means investors are demanding more compensation for holding corporate debt — a sign of stress. For AI companies, wider spreads mean higher borrowing costs, which could force them to cut capex or issue more stock.
+**What they are:** When a company borrows money by issuing bonds, it pays a higher interest rate than the government. The difference is the credit spread.
 
 **Rough benchmarks:**
-- Investment-grade (Amazon, Microsoft): 0.5-1.5% spread is normal
-- High-yield (junk bonds): 3-8% spread
-- During crises (2008, 2020): spreads can hit 5-10%+ for investment grade
+- Investment-grade companies (Apple, Microsoft): 0.5-1.5% spread
+- High-yield (junk) companies: 3-10%+ spread
+- A widening spread of 0.25% is significant for a large company
 
-**Caution:** Credit spreads are a lagging indicator — they reflect existing concerns, not predict new ones. But rapid widening (like we're seeing for AI hyperscalers) is a yellow flag.
+**Example:** If Google's bonds were yielding 4.5% and Treasuries were at 4%, the spread was 0.5%. If that spread widens to 0.75%, Google's borrowing costs just increased by 50%.
 
----
+**Caution:** Credit spreads are a lagging indicator — they often widen after problems are already visible. But they can also be a leading indicator if investors anticipate future problems.
+
+### Deep Dive: Token Efficiency
+
+**What it is:** How much useful output you get per dollar spent on AI computation.
+
+**Rough benchmarks:**
+- GPT-4: ~$0.03 per 1,000 tokens of input
+- Claude Opus 5: cheaper than Fable (previous Anthropic model), exact pricing not specified
+- "Cheaper options are often good enough" ([Ars Technica](https://arstechnica.com/ai/2026/07/anthropics-opus-5-is-about-token-efficiency-not-a-capability-leap/))
+
+**Example:** If you're running a customer service chatbot, you might process millions of tokens per day. A 50% reduction in cost per token could save you millions of dollars per year.
+
+**Caution:** Token efficiency is not the same as capability. A cheaper model might be worse at complex reasoning. The trade-off between cost and quality is a key decision for AI adopters.
 
 ## 6. Sources Pulled
 
-### AI Industry & Infrastructure
-- [2] AI: Reset to Zero — Google Q2 capex, Anthropic/OpenAI vs China
-- [3] CNBC — Nvidia locks down SK Hynix memory
-- [9] Substack — AI Week in Review
-- [10] TechCrunch — OpenAI AI keypad
-- [19] TechCrunch — Prentis AI lab raising $100M
-- [36] Ars Technica — Anthropic Opus 5 token efficiency
-- [37] The Tech Buzz — Alphabet AI spending bar
-- [46] Hacker News — Opus 5 #1 on leaderboard
-- [47] CNBC — Hyperscaler capex race
-- [52] Forbes — Enterprise storage for AI
-- [55] The Verge — Midjourney buys Co-Star
-- [58] Tom's Hardware — Open-weights letter, Nvidia signs
-- [61] TechCrunch — Cognition buys Poke for AI personality
-- [70] Yahoo Finance — Nvidia winning AI capex wars
-
-### Semiconductor Supply Chain
-- [3] CNBC — Nvidia/SK Hynix HBM deal
-- [41] TradingKey — KLA Corp down 3.92%
-- [53] The Verge — Qualcomm raising prices
-- [64] Tom's Hardware — Intel 14A, 25% sales growth
-- [69] Network World — Cisco/AMD Ryzen AI Halo
-
-### Cloud & Data Center Infrastructure
-- [5] Indiatimes — AI data centers reshape power grid
-- [7] simplywall.st — Nuclear energy stocks for AI data centers
-- [12] fox23.com — Oklahoma ratepayer protection
-- [50] TradingView — AI infrastructure stocks (VRT, EME)
-- [57] Reuters — Trump data center power pledge skepticism
-- [68] eciks.org — Verizon $1B Google dark fiber deal
-
-### Markets & Investing
-- [4] Economic Times — Wall Street week ahead
-- [14] 24/7 Wall St. — AI ETFs beyond chips
-- [15] CNBC — Moody's AI spending credit warning
-- [23] CNBC — Musk's bad week, Tesla slump
-- [28] MarketWatch — 30-year Treasury yield warning
-- [29] eciks.org — Dow gains 236 points
-- [31] MarketWatch — AI investing biases
-- [34] MarketWatch — Pay raises shrinking
-- [42] CNBC — Bond market anxiety over AI capex
-- [43] CNBC — Bond market anxiety (duplicate)
-- [67] CNBC — Trader shorted Tesla, now targeting high flyer
-
-### Geopolitics & Trade
-- [11] CNBC — Trump tariffs lawsuit
-- [20] Reuters — US-China AI feud threatens safety
-- [40] CNBC — Trump DOJ subpoenas NYT, Google
-- [49] CNBC — Trump threatens EU tariffs
-- [65] Ars Technica — EU restricts Iran war satellite images
-
-### Space & Defense
-- [8] CNBC — SpaceX Starship test flight
-- [13] TechCrunch — SpaceX V3 Starlink, booster failure
-- [17] Ars Technica — Wildfire evacuates NASA Deep Space Network
-
-### Media & Entertainment
-- [24] Ars Technica — Paramount/WBD merger delayed
-- [33] CNBC — Paramount/WBD delay
-- [48] Ars Technica — Roku raises prices 60%
-- [62] The Verge — Roku price increase
-- [66] The Verge — Blade Runner 2099 on Amazon
-
-### Other Notable
-- [1] CNBC — Finland sand battery
-- [6] WSJ — Taylor Farms cyclospora recall
-- [16] MarketWatch — Inheritance advice
-- [18] The Verge — Meta pauses smart glasses subscription
-- [22] MarketWatch — Platonic marriage inheritance
-- [26] MarketWatch — $65K vs coin flip
-- [27] MarketWatch — Social Security early claiming
-- [30] MarketWatch — Physician retirement
-- [32] Ars Technica — Canadian legislator LLM speech
-- [35] TechCrunch — Vietnam social media restrictions for kids
-- [38] Mexico Business News — AI investment execution
-- [39] TechCrunch — Waymo mulling Uber breakup
-- [44] TechCrunch — Volkswagen engineers insider trading
-- [45] CNBC — Cyclospora outbreak nine states
-- [51] The Verge — Meta smart glasses moderation nightmare
-- [54] Ars Technica — RFK Jr. peptides committee
-- [56] Hacker News — Postgres LISTEN/NOTIFY scalability
-- [59] The Verge — DJI clone Xtra halting preorders
-- [60] The Verge — Nothing layoffs
-- [63] Ars Technica — Judge rebuffs Trump NYT subpoenas
+### AI and Tech
+- [CNBC — Nvidia locks down memory supply from SK Hynix as part of $500 billion AI deal](https://www.cnbc.com/2026/07/25/nvidia-locks-down-memory-from-sk-hynix-as-part-of-500-billion-ai-deal.html)
+- [CNBC — Moody's says 'unprecedented' AI spending threatens credit quality of Amazon, Meta, Alphabet and others](https://www.cnbc.com/2026/07/24/moodys-ai-spending-credit-quality-amazon-meta-alphabet.html)
+- [CNBC — Bond market anxiety is growing over AI capex budgets](https://www.cnbc.com/2026/07/24/bond-market-anxiety-ai-capex-spending.html)
+- [CNBC — 1 hyperscaler megacap down, 3 to go. Alphabet raises the stakes on AI spending](https://www.cnbc.com/2026/07/24/1-hyperscaler-megacap-down-3-to-go-alphabet-raises-the-stakes-on-ai-spending.html)
+- [Ars Technica — Anthropic's Opus 5 is about token efficiency, not a capability leap](https://arstechnica.com/ai/2026/07/anthropics-opus-5-is-about-token-efficiency-not-a-capability-leap/)
+- [TechCrunch — Anthrop
 
 ---
-
-## 7. Overall Conclusion
-
-**The big picture:** This was a week where the AI infrastructure thesis faced its first major stress test. The market is no longer blindly rewarding AI spending — it's asking "how will this be financed?" and "what's the return?" The Moody's warning and bond market anxiety are the first cracks in the "spend whatever it takes" narrative that has driven the AI bull market.
-
-**What changed:** The key shift is from "AI capex is good" to "AI capex is good, but only if it doesn't destroy balance sheets." Alphabet's capex bar was high, but the market punished it. Tesla's earnings miss showed that even the most hyped AI-adjacent companies can disappoint. The Nvidia/SK Hynix deal shows the supply chain is still tightening, but the financing question looms.
-
-**The tension:** AI demand is real and growing — the $500B Nvidia deal, the hyperscaler capex race, the data center power buildout all confirm this. But the cost of capital is rising (bond yields, credit spreads), and the market is starting to price in a "peak capex" scenario. The next few weeks of Big Tech earnings will determine whether this is a correction within a bull market or the beginning of a more serious repricing.
-
-**For Laksh:** Watch the 10-year Treasury yield, credit spreads on Amazon/Microsoft bonds, and next week's Microsoft, Meta, and Amazon earnings. If they show strong revenue growth justifying capex, the selloff is a buying opportunity. If they show weakening demand or margin compression, the AI infrastructure trade could get much worse before it gets better.
-
----
-_Generated 2026-07-24 23:05 PDT · 70 sources · model: deepseek-ai/DeepSeek-V4-Flash via https://api.gmi-serving.com/v1_
+_Generated 2026-07-24 23:10 PDT · 70 sources · model: deepseek-ai/DeepSeek-V4-Flash via https://api.gmi-serving.com/v1_
