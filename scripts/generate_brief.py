@@ -343,21 +343,30 @@ SYSTEM_ROLE = (
 )
 
 GUARDRAILS = """CRITICAL SOURCING RULES:
-- Use ONLY the sources provided in the "SOURCE BUNDLE" below. Do NOT invent facts, numbers, quotes, dates, or events. You are NOT browsing the web.
-- Every story in sections 1-3 must include at least one Markdown link [text](url) to a provided source URL. Prefer linking the most authoritative source for each claim.
+- Use ONLY the sources in the "SOURCE BUNDLE" below. Do NOT invent facts, numbers, quotes, dates, events, or URLs. You are NOT browsing the web.
+- LINKS ARE MANDATORY AND MUST BE INLINE. Whenever you use a source, hyperlink it inline as a Markdown link with that source's EXACT url. Example of the required style:
+      Tesla fell ~18% after a weak quarter ([CNBC](https://www.cnbc.com/example)).
+  Use a short descriptive label (publisher and/or topic). Every story in sections 1-3 must contain at least one such inline [label](url) link.
+- ABSOLUTELY NO bare numeric citations. Never write "[3]", "[15][42]", "(source 7)", superscripts, or any references-by-number scheme. The SOURCE numbers below are for your private lookup only — never print them. The only square-bracket syntax allowed in your output is a real Markdown link immediately followed by "(https://...)".
+- Section 6 "Sources Pulled": every bullet MUST itself be a clickable Markdown link formatted as `[Publisher — headline](https://...)`, grouped by topic. No naked numbers, and no titles without their URL.
 - If the sources do not cover a watchlist name or topic, say so plainly (e.g. "No notable news in the sources for X") instead of fabricating.
 - Treat the watchlist quote snapshot as approximate and possibly delayed; attribute price moves to it, not to invented figures.
 - Output valid GitHub-flavored Markdown ONLY. Begin directly with a single H1 title line. No preamble, no sign-off, and do NOT wrap the whole document in a code fence."""
 
 
 def build_source_bundle(sources: list[dict]) -> str:
+    # Each source is labelled "SOURCE n" for the model's private lookup only.
+    # The model must convert any source it uses into an inline [label](url) link
+    # (see GUARDRAILS) and must never print the bare number.
     lines = []
     for i, s in enumerate(sources, 1):
         date = s["published"][:10] if s["published"] else "n/a"
-        lines.append(f"[{i}] ({s['publisher']}) {date} — {s['title']}")
-        lines.append(f"    {s['link']}")
+        lines.append(f"SOURCE {i}: {s['title']}")
+        lines.append(f"    url: {s['link']}")
+        lines.append(f"    publisher: {s['publisher']} | date: {date}")
         if s["summary"]:
-            lines.append(f"    {s['summary']}")
+            lines.append(f"    summary: {s['summary']}")
+        lines.append("")
     return "\n".join(lines)
 
 
