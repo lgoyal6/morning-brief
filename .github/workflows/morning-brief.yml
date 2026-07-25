@@ -1,0 +1,76 @@
+name: Morning Brief
+
+on:
+  schedule:
+    # GitHub cron is UTC. Both fire daily so the brief lands ~morning Pacific
+    # year-round (DST-safe). The first run generates + sends; the second sees
+    # today's files already committed and skips, so there are no duplicates.
+    - cron: "0 15 * * *"   # 08:00 PDT / 07:00 PST
+    - cron: "0 16 * * *"   # 09:00 PDT / 08:00 PST
+  workflow_dispatch:        # manual "Run workflow" button (always regenerates)
+
+# Prevent overlapping runs from racing on the same git push.
+concurrency:
+  group: morning-brief
+  cancel-in-progress: false
+
+permissions:
+  contents: write           # needed to commit the generated brief
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    env:
+      # Provide either GMI_API_KEY (recommended, open-weight model, ~free) or
+      # OPENAI_API_KEY. The generator uses the first non-empty one.
+      GMI_API_KEY: ${{ secrets.GMI_API_KEY }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      # LLM endpoint + model. Override with repo Variables if desired.
+      LLM_BASE_URL: ${{ vars.LLM_BASE_URL || 'https://api.gmi-serving.com/v1' }}
+      LLM_MODEL: ${{ vars.LLM_MODEL || 'deepseek-ai/DeepSeek-V4-Flash' }}
+      # Discord delivery
+      DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+      DISCORD_TARGET: ${{ secrets.DISCORD_TARGET }}
+      # Misc
+      ENABLE_QUOTES: "1"
+      TZ: America/Los_Angeles
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Generate brief
+        run: python scripts/generate_brief.py
+
+      - name: Render PDF
+        run: python scripts/render_pdf.py
+
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: morning-brief-${{ github.run_id }}
+          if-no-files-found: warn
+          path: |
+            briefs/*.md
+            briefs/*.pdf
+            briefs/*-sources.json
+
+      - name: Commit generated brief
+        run: |
+          git config user.name "morning-brief-bot"
+          git config user.email "morning-brief-bot@users.noreply.github.com"
+          git add briefs/
+          git diff --cached --quiet || git commit -m "Add morning brief for $(TZ=America/Los_Angeles date +%Y-%m-%d)"
+          git pull --rebase --autostash || true
+          git push
+
+      - name: Send Discord PDF
+        run: python scripts/send_discord.py

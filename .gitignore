@@ -1,0 +1,18 @@
+# Secrets & local env
+.env
+.env.*
+
+# Logs / OS / Python cruft
+*.log
+__pycache__/
+*.pyc
+.DS_Store
+.venv/
+venv/
+.python-version
+
+# Per-run provenance: uploaded as workflow artifacts, but not committed to git.
+briefs/*-sources.json
+briefs/.brief_state.json
+
+# Generated briefs (the dated .md/.pdf and latest PDF) ARE committed on purpose.

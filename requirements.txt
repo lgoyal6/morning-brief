@@ -1,0 +1,14 @@
+# Core
+openai>=1.30          # OpenAI-compatible client (works with GMI Cloud, OpenAI, etc.)
+requests>=2.31
+feedparser>=6.0        # RSS/Atom parsing
+beautifulsoup4>=4.12   # strip HTML out of RSS summaries
+reportlab>=4.0         # Markdown -> PDF rendering
+python-dotenv>=1.0     # load .env for local runs
+pytz>=2024.1           # America/Los_Angeles date handling
+
+# Market data (best-effort; failures are non-fatal)
+yfinance>=0.2.40
+
+# Image support inside the PDF (only used if a brief embeds local images)
+Pillow>=10.0
