@@ -7,8 +7,9 @@ Pipeline (stage 1 of 3):
 2.  Duplicate prevention: on a *scheduled* run, if today's Markdown + PDF already
     exist, exit cleanly without regenerating or re-sending. Manual dispatch
     (``workflow_dispatch``) or ``FORCE_REGENERATE=1`` always regenerates.
-3.  Fetch current articles from credible RSS feeds + topic-targeted Google News
-    searches. Optionally pull a watchlist quote snapshot via yfinance.
+3.  Fetch current articles: optional live web search (Tavily/Brave, if a
+    SEARCH_API_KEY is set) merged with credible RSS feeds + topic-targeted
+    Google News searches. Optionally pull a watchlist quote snapshot via yfinance.
 4.  Ask an OpenAI-compatible LLM (GMI Cloud by default) to synthesize the brief
     from ONLY those sources -- no browsing, no hallucinated news.
 5.  Write ``briefs/YYYY-MM-DD-ai-tech-market-brief.md`` and a sources JSON.
@@ -32,6 +33,7 @@ from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 
 import common
+import web_search
 
 load_dotenv()
 
@@ -194,31 +196,48 @@ def fetch_sources() -> list[dict]:
     socket.setdefaulttimeout(int(os.environ.get("BRIEF_FEED_TIMEOUT", "20")))
     cutoff = datetime.now(timezone.utc) - timedelta(hours=LOOKBACK_HOURS)
 
-    feeds = list(DIRECT_FEEDS)
-    feeds += [(f"Google News: {label}", google_news_url(q)) for label, q in GOOGLE_NEWS_TOPICS]
-
-    print(f"Fetching {len(feeds)} feeds (lookback {LOOKBACK_HOURS}h)...")
     collected: list[dict] = []
     seen_links: set[str] = set()
     seen_titles: set[str] = set()
 
-    for label, url in feeds:
-        items = parse_feed(label, url, cutoff)
-        kept = 0
+    def add(items: list[dict]) -> int:
+        added = 0
         for it in items:
             link_key = it["link"].split("?")[0]
             title_key = it["title"].lower().strip()
-            if link_key in seen_links or title_key in seen_titles:
+            if not link_key or link_key in seen_links or title_key in seen_titles:
                 continue
             seen_links.add(link_key)
             seen_titles.add(title_key)
             collected.append(it)
-            kept += 1
-        print(f"  - {label}: {kept} new items")
+            added += 1
+        return added
 
-    # Newest first; undated items sort last.
-    collected.sort(key=lambda x: x["published"] or "", reverse=True)
-    return collected[:MAX_ITEMS]
+    # 1) Live web search (optional). Runs first so its fresh, on-topic results
+    #    win dedupe ties and are never dropped by the MAX_ITEMS cap below.
+    if web_search.search_enabled():
+        try:
+            web_kept = add(web_search.fetch_web_search(LOOKBACK_HOURS))
+            print(f"  web search: {web_kept} new items")
+        except Exception as exc:  # defensive: never let search break the brief
+            print(f"Web search failed (non-fatal): {exc}", file=sys.stderr)
+    else:
+        print("Web search off (no SEARCH_API_KEY / SEARCH_PROVIDER=none) -- RSS feeds only.")
+
+    # 2) Fixed RSS + Google News feeds (always on; the reliable baseline).
+    feeds = list(DIRECT_FEEDS)
+    feeds += [(f"Google News: {label}", google_news_url(q)) for label, q in GOOGLE_NEWS_TOPICS]
+    print(f"Fetching {len(feeds)} feeds (lookback {LOOKBACK_HOURS}h)...")
+    for label, url in feeds:
+        print(f"  - {label}: {add(parse_feed(label, url, cutoff))} new items")
+
+    # Newest first within each origin; keep web-search items ahead of RSS so the
+    # cap trims the long RSS tail rather than the targeted search results.
+    web_items = [c for c in collected if c["feed"].startswith("Web Search")]
+    rss_items = [c for c in collected if not c["feed"].startswith("Web Search")]
+    web_items.sort(key=lambda x: x["published"] or "", reverse=True)
+    rss_items.sort(key=lambda x: x["published"] or "", reverse=True)
+    return (web_items + rss_items)[:MAX_ITEMS]
 
 
 # ---------------------------------------------------------------------------
