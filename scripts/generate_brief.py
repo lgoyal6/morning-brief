@@ -149,10 +149,16 @@ GOOGLE_NEWS_TOPICS = [
 
 # Full watchlist shown to the model (verbatim from the brief spec).
 WATCHLIST_DISPLAY = (
-    "TSM, NEE, CRDO, RGTI, SOFI, SK Hynix ADR, FOTO, NVDA, PLTR, SPCX/SpaceX, MRVL, "
-    "COHR, AAOI, LITE, FLNC, RDW, IBM, INFQ/Infleqtion, MU, SNDK, CEG, AMC, TSLA, "
-    "GOOGL, META, MSFT, AMZN, AVGO, NET, ALAB, VST, HOOD, COIN, ARM, IMAX, "
-    "CNK/Cinemark, CMCSA/Comcast, NFLX, INTC, AMD, QCOM, KLAC, DLR, EQIX, SBUX, NKE, FXAIX"
+    "TSM (TSMC), NEE (NextEra Energy), CRDO (Credo), RGTI (Rigetti Computing), "
+    "SOFI (SoFi), SK Hynix (ADR), FOTO, NVDA (Nvidia), PLTR (Palantir), SpaceX (SPCX), "
+    "MRVL (Marvell), COHR (Coherent), AAOI (Applied Optoelectronics), LITE (Lumentum), "
+    "FLNC (Fluence Energy), RDW (Redwire), IBM, INFQ (Infleqtion), MU (Micron), "
+    "SNDK (SanDisk), CEG (Constellation Energy), AMC (AMC Entertainment), TSLA (Tesla), "
+    "GOOGL (Alphabet), META (Meta), MSFT (Microsoft), AMZN (Amazon), AVGO (Broadcom), "
+    "NET (Cloudflare), ALAB (Astera Labs), VST (Vistra), HOOD (Robinhood), COIN (Coinbase), "
+    "ARM (Arm Holdings), IMAX, CNK (Cinemark), CMCSA (Comcast), NFLX (Netflix), INTC (Intel), "
+    "AMD, QCOM (Qualcomm), KLAC (KLA Corp), DLR (Digital Realty), EQIX (Equinix), "
+    "SBUX (Starbucks), NKE (Nike), FXAIX (Fidelity 500 Index Fund)"
 )
 
 # Subset of the watchlist that maps to valid Yahoo Finance tickers (private
@@ -461,6 +467,8 @@ Laksh is a student building durable knowledge in world affairs, geopolitics, mar
 Voice & style:
 Write like a sharp, plain-spoken newspaper -- confident, causal, never sensational or hype-y. Short paragraphs and clean bullets. For every story go beyond the headline: what happened, the background a newcomer needs, why it matters, who wins/loses, second-order effects, and what's still uncertain. This should be a substantive read (roughly 10-15 minutes); be comprehensive, but every sentence must earn its place.
 
+Ticker clarity: the FIRST time you name a company by its stock ticker, give the company name too, unless it is a household name (Apple, Tesla, Nvidia, Microsoft, Amazon, Google/Alphabet, Meta, Netflix, Intel, AMD). Write it as "Company (TICKER)" -- e.g. "Credo (CRDO)", "Vistra (VST)", "Constellation Energy (CEG)", "Astera Labs (ALAB)". Never leave a non-obvious ticker unexplained.
+
 Coverage -- give these FOUR pillars roughly equal weight every day:
 A. World & Geopolitics (LEAD PILLAR): wars and conflicts, great-power relations, diplomacy, elections, major international deals, and notable/outrageous statements by leaders. PRIORITIZE these relationships when there's news: US-China (tech war, Taiwan, trade), the Middle East (Israel, Iran, Gulf, oil), and India & South Asia. Cover Russia-Ukraine/Europe and others when genuinely major. Weave in the secondary beats lightly when there's real news: US politics & policy, and defense & military tech.
 B. Markets, Money & Deals: indices, rates, macro, big earnings, mergers/acquisitions, and market milestones (e.g. one company's market cap overtaking another's). Weave in crypto & fintech lightly.
@@ -485,7 +493,7 @@ Required sections (use these H2 titles, in this order):
 - New model launches with concrete specs (params, context, benchmarks, price), key papers/findings, and a brief Science & Frontier Tech note.
 
 ## 5. Watchlist: Earnings, Guidance & Movers
-- Watchlist companies with earnings/news in the last 24h: key numbers vs expectations, guidance, stock reaction. Flag roughly +/-3% moves. Treat the quote snapshot as approximate/delayed. Say plainly when the sources have nothing on a name rather than inventing.
+- Watchlist companies with earnings/news in the last 24h: key numbers vs expectations, guidance, stock reaction. Flag roughly +/-3% moves. Treat the quote snapshot as approximate/delayed. Say plainly when the sources have nothing on a name rather than inventing. Refer to each company by name with its ticker in parentheses (e.g. "Credo (CRDO)"), especially for non-obvious tickers -- do not use bare tickers.
 
 ## 6. How It Connects (Infrastructure & Supply-Chain Logic)
 - 2-3 deep causal chains linking the day's stories. Example: AI demand -> cloud capex -> GPUs -> HBM -> networking/optics -> power/cooling.
