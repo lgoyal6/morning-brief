@@ -62,10 +62,11 @@ def resolve_api_key() -> str | None:
 LLM_BASE_URL = os.environ.get("LLM_BASE_URL", DEFAULT_BASE_URL).rstrip("/")
 LLM_MODEL = os.environ.get("LLM_MODEL", DEFAULT_MODEL)
 # Output ceiling. The old 7000 default routinely truncated the brief mid-section
-# (some days ended mid-sentence, ~3 pages). The two-pillar newspaper below needs
-# noticeably more room, so default higher; override with LLM_MAX_TOKENS if your
-# endpoint caps completion length lower.
-LLM_MAX_TOKENS = int(os.environ.get("LLM_MAX_TOKENS", "12000"))
+# (some days ended mid-sentence, ~3 pages). The four-pillar newspaper below is
+# long, so default high; 16000 lets the full brief + Sources finish. Lower via
+# LLM_MAX_TOKENS if your endpoint caps completion length. (The Bottom Line is
+# ordered before Sources so the synthesis survives even if the tail is clipped.)
+LLM_MAX_TOKENS = int(os.environ.get("LLM_MAX_TOKENS", "16000"))
 LLM_TEMPERATURE = float(os.environ.get("LLM_TEMPERATURE", "0.4"))
 
 # ---------------------------------------------------------------------------
@@ -495,11 +496,11 @@ Required sections (use these H2 titles, in this order):
 ## 8. Terms & Concepts
 - Follow the TERM MEMORY rules below EXACTLY. Lead with ONE "Concept Spotlight": a single concept explained in depth (what it is, a concrete example, a real use case, rough benchmarks/numbers, and a caution/common misconception). Then 4-8 shorter term entries.
 
-## 9. Sources
-- Every bullet is itself a clickable Markdown link `[Publisher -- headline](https://...)`, grouped by the pillar it informed.
+## 9. Bottom Line
+- 1-3 short paragraphs synthesizing the big picture and explicitly noting what CHANGED since the previous brief. (Write this BEFORE the Sources list so it is never the thing that gets cut.)
 
-## 10. Bottom Line
-- 1-3 short paragraphs synthesizing the big picture and explicitly noting what CHANGED since the previous brief.
+## 10. Sources
+- List ONLY the stories you actually cited above (aim for ~15-25 bullets, not every source provided), grouped by pillar. Keep it compact. Every bullet is itself a clickable Markdown link `[Publisher -- headline](https://...)`.
 
 Retention:
 {retention}
