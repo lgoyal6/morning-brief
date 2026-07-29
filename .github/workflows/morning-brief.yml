@@ -28,6 +28,9 @@ jobs:
       # LLM endpoint + model. Override with repo Variables if desired.
       LLM_BASE_URL: ${{ vars.LLM_BASE_URL || 'https://api.gmi-serving.com/v1' }}
       LLM_MODEL: ${{ vars.LLM_MODEL || 'deepseek-ai/DeepSeek-V4-Flash' }}
+      # Output ceiling. 12000 gives the full newspaper room to finish; lower it
+      # via the LLM_MAX_TOKENS repo Variable if your endpoint caps completions.
+      LLM_MAX_TOKENS: ${{ vars.LLM_MAX_TOKENS || '12000' }}
       # Live web search (optional). Add a SEARCH_API_KEY secret to enable; with
       # no key the brief falls back to RSS-only. Provider: tavily (default) or brave.
       SEARCH_PROVIDER: ${{ vars.SEARCH_PROVIDER || 'tavily' }}
@@ -46,6 +49,14 @@ jobs:
         with:
           python-version: "3.12"
           cache: pip
+
+      # WeasyPrint (PDF renderer) needs the Pango/Cairo/GDK-Pixbuf system libs.
+      - name: Install WeasyPrint system libraries
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libpango-1.0-0 libpangocairo-1.0-0 libpangoft2-1.0-0 \
+            libcairo2 libgdk-pixbuf-2.0-0 libffi-dev fonts-dejavu-core
 
       - name: Install dependencies
         run: pip install -r requirements.txt

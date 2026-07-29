@@ -31,16 +31,23 @@ DEFAULT_PROVIDER = "tavily"
 MAX_PER_QUERY = int(os.environ.get("SEARCH_MAX_PER_QUERY", "5"))
 SEARCH_TIMEOUT = int(os.environ.get("SEARCH_TIMEOUT", "25"))
 
-# Topic queries mirror the brief's focus areas (see GOOGLE_NEWS_TOPICS in
-# generate_brief.py). Override with SEARCH_QUERIES: a "||"-separated list of
-# "Label::query terms" pairs.
+# Topic queries mirror the brief's focus areas and categories (see
+# GOOGLE_NEWS_TOPICS in generate_brief.py). Each is (category, label, query) so
+# live-search hits bucket into the same world/markets/ai/research pillars.
+# Override with SEARCH_QUERIES: a "||"-separated list of "Label::query terms"
+# pairs (those default to the "ai" category), or "category::Label::query terms".
 DEFAULT_QUERIES = [
-    ("AI Infrastructure", "AI data center GPU Nvidia hyperscaler capex"),
-    ("Semiconductors", "semiconductor TSMC chip export controls HBM foundry"),
-    ("Markets & Rates", "stock market Federal Reserve interest rates earnings guidance"),
-    ("Geopolitics", "geopolitics sanctions war trade restrictions breaking news"),
-    ("Cloud & Enterprise AI", "OpenAI Anthropic Microsoft Google cloud enterprise AI"),
-    ("Data-Center Power", "data center power grid electricity nuclear energy AI demand"),
+    ("world", "Russia-Ukraine War", "Russia Ukraine war ceasefire frontline negotiations"),
+    ("world", "Israel / Iran / Middle East", "Israel Gaza Iran Middle East ceasefire strike"),
+    ("world", "US-China Relations", "US China relations Taiwan trade military tension"),
+    ("world", "India & South Asia", "India Pakistan China geopolitics border relations"),
+    ("markets", "Markets & Rates", "stock market Federal Reserve interest rates earnings guidance"),
+    ("markets", "Major Deals & M&A", "merger acquisition takeover IPO billion deal"),
+    ("ai", "AI Infrastructure", "AI data center GPU Nvidia hyperscaler capex"),
+    ("ai", "Semiconductors", "semiconductor TSMC chip export controls HBM foundry"),
+    ("ai", "Cloud & Enterprise AI", "OpenAI Anthropic Microsoft Google cloud enterprise AI"),
+    ("research", "New Model Launches", "new AI model release open weights benchmark parameters"),
+    ("research", "AI Research", "AI research paper breakthrough results reasoning findings"),
 ]
 
 
@@ -68,18 +75,23 @@ def search_enabled() -> bool:
     return _api_key(_provider()) is not None
 
 
-def _queries() -> list[tuple[str, str]]:
+def _queries() -> list[tuple[str, str, str]]:
     raw = os.environ.get("SEARCH_QUERIES", "").strip()
     if not raw:
         return DEFAULT_QUERIES
-    out: list[tuple[str, str]] = []
+    out: list[tuple[str, str, str]] = []
     for pair in raw.split("||"):
         pair = pair.strip()
         if not pair:
             continue
-        label, _, query = pair.partition("::")
-        query = query or label
-        out.append((label.strip() or "Web Search", query.strip()))
+        parts = [p.strip() for p in pair.split("::")]
+        if len(parts) >= 3:  # category::label::query
+            category, label, query = parts[0], parts[1], "::".join(parts[2:])
+        elif len(parts) == 2:  # label::query (defaults to the ai pillar)
+            category, label, query = "ai", parts[0], parts[1]
+        else:  # bare query
+            category, label, query = "ai", "Web Search", parts[0]
+        out.append((category or "ai", label or "Web Search", query or label))
     return out or DEFAULT_QUERIES
 
 
@@ -108,8 +120,9 @@ def _to_iso(value: str) -> str:
         return ""
 
 
-def _norm(label: str, title: str, link: str, summary: str, published: str) -> dict:
+def _norm(category: str, label: str, title: str, link: str, summary: str, published: str) -> dict:
     return {
+        "category": category,
         "feed": f"Web Search: {label}",
         "publisher": _domain(link) or label,
         "title": " ".join((title or "").split()),
@@ -158,14 +171,14 @@ def _brave_raw(query: str, key: str, days: int, max_results: int) -> list[tuple]
     ]
 
 
-def _search_one(label, query, provider, key, days, max_results) -> list[dict]:
+def _search_one(category, label, query, provider, key, days, max_results) -> list[dict]:
     if provider == "tavily":
         raw = _tavily_raw(query, key, days, max_results)
     elif provider == "brave":
         raw = _brave_raw(query, key, days, max_results)
     else:
         raise ValueError(f"Unknown SEARCH_PROVIDER: {provider!r} (use 'tavily' or 'brave').")
-    return [_norm(label, t, u, c, p) for (t, u, c, p) in raw]
+    return [_norm(category, label, t, u, c, p) for (t, u, c, p) in raw]
 
 
 def fetch_web_search(lookback_hours: int) -> list[dict]:
@@ -183,9 +196,9 @@ def fetch_web_search(lookback_hours: int) -> list[dict]:
     print(f"Web search via {provider}: {len(queries)} queries (last {days}d)...")
 
     collected: list[dict] = []
-    for label, query in queries:
+    for category, label, query in queries:
         try:
-            items = _search_one(label, query, provider, key, days, MAX_PER_QUERY)
+            items = _search_one(category, label, query, provider, key, days, MAX_PER_QUERY)
         except Exception as exc:  # network / auth / quota -> skip this query
             print(f"  ! web search [{label}]: {exc}", file=sys.stderr)
             continue

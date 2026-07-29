@@ -1,11 +1,17 @@
 #!/usr/bin/env python3
-"""Render the generated Markdown brief to a phone-readable PDF (stage 2 of 3).
+"""Render the generated Markdown brief to a two-column magazine PDF (stage 2 of 3).
 
-Uses ReportLab with a small, self-contained Markdown -> flowables converter that
-handles headings, ordered/unordered lists (with nesting), GitHub-flavored tables,
-blockquotes, horizontal rules, fenced code, local images, and inline formatting
-(**bold**, *italic*, `code`, [links](url), and bare URLs). Links stay clickable
-AND visible.
+This replaces the old plain single-column ReportLab layout with an HTML + CSS
+newspaper look rendered by WeasyPrint:
+
+  * a styled masthead (title, date, section tagline),
+  * a genuine two-column article flow with full-width section headers,
+  * a matplotlib chart of the day's biggest watchlist moves ("graphs"), and
+  * best-effort photos pulled from the top stories' Open Graph images ("pics").
+
+Data for the chart/photos comes from ``briefs/YYYY-MM-DD-sources.json`` (written
+by generate_brief.py). Everything visual degrades gracefully: no quotes -> no
+chart; no reachable images -> no photo strip; the text brief always renders.
 
 Reads the target path from the state file written by generate_brief.py, falling
 back to today's date. Writes the dated PDF and copies it to
@@ -14,365 +20,362 @@ back to today's date. Writes the dated PDF and copies it to
 
 from __future__ import annotations
 
+import base64
+import io
+import json
+import os
 import re
 import shutil
 import sys
+from datetime import datetime
 from pathlib import Path
 
-from reportlab.lib import colors
-from reportlab.lib.pagesizes import letter
-from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
-from reportlab.lib.units import inch
-from reportlab.platypus import (
-    HRFlowable,
-    Image,
-    Paragraph,
-    Preformatted,
-    SimpleDocTemplate,
-    Spacer,
-    Table,
-    TableStyle,
-)
+import markdown as md_lib
+import requests
+from bs4 import BeautifulSoup
 
 import common
 
-# ---------------------------------------------------------------------------
-# Page geometry & styles
-# ---------------------------------------------------------------------------
-PAGE_SIZE = letter
-LEFT = RIGHT = 0.75 * inch
-TOP = 0.9 * inch
-BOTTOM = 0.7 * inch
-USABLE_WIDTH = PAGE_SIZE[0] - LEFT - RIGHT
+USER_AGENT = (
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
+    "(KHTML, like Gecko) Chrome/124.0 Safari/537.36"
+)
 
-INK = colors.HexColor("#1a1a1a")
-LINK = colors.HexColor("#1a56db")
-MUTED = colors.HexColor("#64748b")
+# Palette (kept in sync with the four coverage pillars).
+INK = "#141821"
+ACCENT = "#b3202c"       # masthead red
+LINK = "#1a56db"
+GAIN = "#15803d"
+LOSS = "#b91c1c"
 
-_base = getSampleStyleSheet()
-
-BODY = ParagraphStyle(
-    "Body", parent=_base["BodyText"], fontName="Helvetica",
-    fontSize=10.5, leading=15, spaceAfter=6, textColor=INK,
-)
-H1 = ParagraphStyle(
-    "H1", fontName="Helvetica-Bold", fontSize=19, leading=23,
-    spaceBefore=4, spaceAfter=10, textColor=colors.HexColor("#0f172a"),
-)
-H2 = ParagraphStyle(
-    "H2", fontName="Helvetica-Bold", fontSize=14, leading=18,
-    spaceBefore=14, spaceAfter=5, textColor=colors.HexColor("#1e3a8a"),
-)
-H3 = ParagraphStyle(
-    "H3", fontName="Helvetica-Bold", fontSize=11.5, leading=15,
-    spaceBefore=9, spaceAfter=3, textColor=colors.HexColor("#334155"),
-)
-QUOTE = ParagraphStyle(
-    "Quote", parent=BODY, leftIndent=12, textColor=MUTED,
-    borderPadding=(0, 0, 0, 6), fontName="Helvetica-Oblique",
-)
-CODE = ParagraphStyle(
-    "Code", fontName="Courier", fontSize=8.5, leading=11,
-    backColor=colors.HexColor("#f1f5f9"), borderPadding=6, textColor=INK,
-)
-CELL = ParagraphStyle("Cell", parent=BODY, fontSize=9, leading=12, spaceAfter=0)
-CELL_HEAD = ParagraphStyle("CellHead", parent=CELL, fontName="Helvetica-Bold")
-
-HEADING_STYLES = {1: H1, 2: H2, 3: H3, 4: H3, 5: H3, 6: H3}
-
-# Private-use placeholders used to protect rendered links from later regexes.
-_TOK_L, _TOK_R = "", ""
+TAGLINE = "World · Markets & Money · AI & Infrastructure · Models & Research"
 
 
 # ---------------------------------------------------------------------------
-# Inline Markdown -> ReportLab mini-markup
+# Inputs
 # ---------------------------------------------------------------------------
-def _xml_escape(text: str) -> str:
-    return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
-
-
-def _link_markup(text: str, url: str) -> str:
-    return f'<a href="{url}"><font color="#1a56db"><u>{text}</u></font></a>'
-
-
-def inline(text: str) -> str:
-    """Convert inline Markdown to ReportLab paragraph markup (already XML-safe)."""
-    text = _xml_escape(text)
-
-    # 1) Markdown links -> tokens (so bare-URL autolinking can't touch them).
-    stash: list[str] = []
-
-    def _stash_md_link(m: re.Match) -> str:
-        label = m.group(1)
-        url = m.group(2).strip()
-        stash.append(_link_markup(label, url))
-        return f"{_TOK_L}{len(stash) - 1}{_TOK_R}"
-
-    text = re.sub(r"\[([^\]]+)\]\((\S+?)\)", _stash_md_link, text)
-
-    # 2) Autolink bare URLs (trailing sentence punctuation kept outside the link).
-    def _autolink(m: re.Match) -> str:
-        url = m.group(0)
-        trail = ""
-        while url and url[-1] in ".,;:!?)":
-            trail = url[-1] + trail
-            url = url[:-1]
-        stash.append(_link_markup(url, url))
-        return f"{_TOK_L}{len(stash) - 1}{_TOK_R}{trail}"
-
-    text = re.sub(r"https?://[^\s<]+", _autolink, text)
-
-    # 3) Emphasis + inline code (bold before italic so ** wins over *).
-    text = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", text)
-    text = re.sub(r"__(.+?)__", r"<b>\1</b>", text)
-    text = re.sub(r"(?<![\w*])\*(?!\s)(.+?)(?<!\s)\*(?![\w*])", r"<i>\1</i>", text)
-    text = re.sub(r"(?<![\w_])_(?!\s)(.+?)(?<!\s)_(?![\w_])", r"<i>\1</i>", text)
-    text = re.sub(r"`([^`]+)`", r'<font face="Courier">\1</font>', text)
-
-    # 4) Restore protected links.
-    def _restore(m: re.Match) -> str:
-        return stash[int(m.group(1))]
-
-    text = re.sub(f"{_TOK_L}(\\d+){_TOK_R}", _restore, text)
-    return text
-
-
-# ---------------------------------------------------------------------------
-# Block-level helpers
-# ---------------------------------------------------------------------------
-def _is_table_sep(line: str) -> bool:
-    s = line.strip()
-    return bool(s) and "|" in s and "-" in s and set(s) <= set("|:- ")
-
-
-def _split_row(line: str) -> list[str]:
-    return [c.strip() for c in line.strip().strip("|").split("|")]
-
-
-def _build_table(header: list[str], rows: list[list[str]]) -> Table:
-    ncols = max(len(header), max((len(r) for r in rows), default=0))
-    header = (header + [""] * ncols)[:ncols]
-    norm_rows = [(r + [""] * ncols)[:ncols] for r in rows]
-
-    head_style = CELL_HEAD if ncols <= 5 else ParagraphStyle("CH2", parent=CELL_HEAD, fontSize=8)
-    body_style = CELL if ncols <= 5 else ParagraphStyle("CB2", parent=CELL, fontSize=8)
-
-    data = [[Paragraph(inline(c), head_style) for c in header]]
-    data += [[Paragraph(inline(c), body_style) for c in r] for r in norm_rows]
-
-    col_w = USABLE_WIDTH / ncols
-    table = Table(data, colWidths=[col_w] * ncols, hAlign="LEFT", repeatRows=1)
-    table.setStyle(
-        TableStyle(
-            [
-                ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#e2e8f0")),
-                ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#cbd5e1")),
-                ("VALIGN", (0, 0), (-1, -1), "TOP"),
-                ("LEFTPADDING", (0, 0), (-1, -1), 5),
-                ("RIGHTPADDING", (0, 0), (-1, -1), 5),
-                ("TOPPADDING", (0, 0), (-1, -1), 4),
-                ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
-                ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#f8fafc")]),
-            ]
-        )
-    )
-    return table
-
-
-def _image_flowable(path: str, base_dir: Path):
-    img_path = (base_dir / path).resolve() if not Path(path).is_absolute() else Path(path)
-    if not img_path.exists():
-        return None
+def load_provenance(date: str) -> tuple[list[dict], list[dict]]:
+    """Return (quotes, sources) from the day's sources JSON, if available."""
+    path = common.sources_path(date)
+    if not path.exists():
+        return [], []
     try:
-        img = Image(str(img_path))
-    except Exception:
+        data = json.loads(path.read_text())
+        return data.get("quotes", []) or [], data.get("sources", []) or []
+    except (ValueError, OSError):
+        return [], []
+
+
+def pretty_date(date: str) -> str:
+    try:
+        dt = datetime.strptime(date, "%Y-%m-%d")
+    except ValueError:
+        return date
+    # %-d is non-portable; strip a leading zero by hand.
+    return dt.strftime("%A, %B ") + str(dt.day) + dt.strftime(", %Y")
+
+
+# ---------------------------------------------------------------------------
+# Chart: biggest watchlist moves (matplotlib -> data URI)
+# ---------------------------------------------------------------------------
+def movers_chart_uri(quotes: list[dict], top: int = 12) -> str | None:
+    movers = [q for q in quotes if isinstance(q.get("pct_1d"), (int, float))]
+    if len(movers) < 3:
         return None
-    if img.imageWidth > USABLE_WIDTH:
-        ratio = USABLE_WIDTH / img.imageWidth
-        img.drawWidth = USABLE_WIDTH
-        img.drawHeight = img.imageHeight * ratio
-    img.hAlign = "CENTER"
-    return img
+    movers.sort(key=lambda q: abs(q["pct_1d"]), reverse=True)
+    movers = movers[:top][::-1]  # smallest at top so largest ends up on top
 
+    try:
+        import matplotlib
+        matplotlib.use("Agg")
+        import matplotlib.pyplot as plt
+    except Exception as exc:  # matplotlib missing -> just skip the chart
+        print(f"  chart skipped (matplotlib unavailable): {exc}", file=sys.stderr)
+        return None
 
-HEADING_RE = re.compile(r"^(#{1,6})\s+(.*)$")
-BULLET_RE = re.compile(r"^(\s*)[-*+]\s+(.*)$")
-ORDERED_RE = re.compile(r"^(\s*)(\d+)[.)]\s+(.*)$")
-IMAGE_RE = re.compile(r"^!\[(.*?)\]\((.*?)\)\s*$")
+    labels = [q["ticker"] for q in movers]
+    vals = [q["pct_1d"] for q in movers]
+    colors = [GAIN if v >= 0 else LOSS for v in vals]
 
+    fig, ax = plt.subplots(figsize=(7.4, 0.34 * len(movers) + 0.7), dpi=150)
+    bars = ax.barh(labels, vals, color=colors, height=0.68)
+    ax.axvline(0, color="#94a3b8", lw=0.8)
+    ax.set_title("Watchlist — biggest 1-day moves (%)", fontsize=12,
+                 fontweight="bold", color=INK, loc="left", pad=8)
+    for spine in ("top", "right", "left"):
+        ax.spines[spine].set_visible(False)
+    ax.spines["bottom"].set_color("#cbd5e1")
+    ax.tick_params(length=0, labelsize=9, colors=INK)
+    ax.set_xlabel("")
+    pad = max(abs(min(vals)), abs(max(vals))) * 0.14 + 0.3
+    ax.set_xlim(min(vals) - pad * 2.2, max(vals) + pad * 2.2)
+    for bar, v in zip(bars, vals):
+        ax.text(bar.get_width() + (pad * 0.25 if v >= 0 else -pad * 0.25),
+                bar.get_y() + bar.get_height() / 2, f"{v:+.1f}%",
+                va="center", ha="left" if v >= 0 else "right",
+                fontsize=8.5, color=INK, fontweight="bold")
+    ax.margins(y=0.02)
+    fig.tight_layout(pad=0.6)
 
-def markdown_to_flowables(md_text: str, base_dir: Path) -> list:
-    lines = md_text.replace("\r\n", "\n").replace("\r", "\n").split("\n")
-    flow: list = []
-    para: list[str] = []
-    i, n = 0, len(lines)
-
-    def flush_para():
-        if para:
-            txt = " ".join(l.strip() for l in para).strip()
-            if txt:
-                flow.append(Paragraph(inline(txt), BODY))
-            para.clear()
-
-    while i < n:
-        line = lines[i]
-        stripped = line.strip()
-
-        # Fenced code block
-        if stripped.startswith("```"):
-            flush_para()
-            i += 1
-            code: list[str] = []
-            while i < n and not lines[i].strip().startswith("```"):
-                code.append(lines[i])
-                i += 1
-            i += 1  # closing fence
-            flow.append(Preformatted("\n".join(code) or " ", CODE))
-            flow.append(Spacer(1, 6))
-            continue
-
-        # Table (header row followed by a separator row)
-        if "|" in line and i + 1 < n and _is_table_sep(lines[i + 1]):
-            flush_para()
-            header = _split_row(line)
-            i += 2
-            rows = []
-            while i < n and "|" in lines[i] and lines[i].strip():
-                rows.append(_split_row(lines[i]))
-                i += 1
-            flow.append(_build_table(header, rows))
-            flow.append(Spacer(1, 8))
-            continue
-
-        # Blank line -> paragraph break
-        if not stripped:
-            flush_para()
-            i += 1
-            continue
-
-        # Horizontal rule
-        if stripped in ("---", "***", "___") or re.fullmatch(r"-{3,}|\*{3,}|_{3,}", stripped):
-            flush_para()
-            flow.append(Spacer(1, 4))
-            flow.append(HRFlowable(width="100%", thickness=0.6, color=colors.HexColor("#cbd5e1")))
-            flow.append(Spacer(1, 4))
-            i += 1
-            continue
-
-        # Heading
-        m = HEADING_RE.match(stripped)
-        if m:
-            flush_para()
-            level = len(m.group(1))
-            flow.append(Paragraph(inline(m.group(2).strip()), HEADING_STYLES[level]))
-            i += 1
-            continue
-
-        # Image (standalone)
-        m = IMAGE_RE.match(stripped)
-        if m:
-            flush_para()
-            img = _image_flowable(m.group(2).strip(), base_dir)
-            if img is not None:
-                flow.append(Spacer(1, 4))
-                flow.append(img)
-                if m.group(1).strip():
-                    flow.append(Paragraph(inline(m.group(1).strip()),
-                                          ParagraphStyle("Cap", parent=BODY, fontSize=8.5,
-                                                         textColor=MUTED, alignment=1)))
-                flow.append(Spacer(1, 6))
-            i += 1
-            continue
-
-        # Blockquote
-        if stripped.startswith(">"):
-            flush_para()
-            quote_lines = []
-            while i < n and lines[i].strip().startswith(">"):
-                quote_lines.append(lines[i].strip().lstrip(">").strip())
-                i += 1
-            flow.append(Paragraph(inline(" ".join(quote_lines)), QUOTE))
-            continue
-
-        # Unordered list item
-        m = BULLET_RE.match(line)
-        if m:
-            flush_para()
-            level = len(m.group(1)) // 2
-            style = ParagraphStyle(
-                f"UL{level}", parent=BODY, leftIndent=14 + level * 16,
-                bulletIndent=4 + level * 16, spaceAfter=3,
-            )
-            flow.append(Paragraph(inline(m.group(2).strip()), style, bulletText="•"))
-            i += 1
-            continue
-
-        # Ordered list item
-        m = ORDERED_RE.match(line)
-        if m:
-            flush_para()
-            level = len(m.group(1)) // 2
-            style = ParagraphStyle(
-                f"OL{level}", parent=BODY, leftIndent=18 + level * 16,
-                bulletIndent=4 + level * 16, spaceAfter=3,
-            )
-            flow.append(Paragraph(inline(m.group(3).strip()), style, bulletText=f"{m.group(2)}."))
-            i += 1
-            continue
-
-        # Default: accumulate into current paragraph
-        para.append(line)
-        i += 1
-
-    flush_para()
-    return flow
+    buf = io.BytesIO()
+    fig.savefig(buf, format="png", bbox_inches="tight", facecolor="white")
+    plt.close(fig)
+    return "data:image/png;base64," + base64.b64encode(buf.getvalue()).decode()
 
 
 # ---------------------------------------------------------------------------
-# Page furniture (running header / footer)
+# Photos: best-effort Open Graph images from top stories
 # ---------------------------------------------------------------------------
-def _make_page_decorator(date_label: str):
-    def decorate(canvas, doc):
-        canvas.saveState()
-        canvas.setFont("Helvetica", 8)
-        canvas.setFillColor(MUTED)
-        # Header
-        canvas.drawRightString(
-            PAGE_SIZE[0] - RIGHT, PAGE_SIZE[1] - 0.55 * inch, f"Morning Brief · {date_label}"
+# Google News / aggregator / paper hosts don't yield clean article images.
+_SKIP_PHOTO_HOSTS = ("news.google.com", "arxiv.org", "rss.arxiv.org",
+                     "huggingface.co", "hnrss.org", "news.ycombinator.com",
+                     "facebook.com", "reddit.com")
+
+
+def _og_image(url: str, timeout: int) -> str | None:
+    r = requests.get(url, headers={"User-Agent": USER_AGENT}, timeout=timeout)
+    r.raise_for_status()
+    soup = BeautifulSoup(r.text, "html.parser")
+    for sel in (("meta", {"property": "og:image"}), ("meta", {"name": "twitter:image"})):
+        tag = soup.find(*sel)
+        if tag and tag.get("content"):
+            return tag["content"].strip()
+    return None
+
+
+def _download_data_uri(img_url: str, timeout: int) -> str | None:
+    r = requests.get(img_url, headers={"User-Agent": USER_AGENT}, timeout=timeout, stream=True)
+    r.raise_for_status()
+    ctype = (r.headers.get("Content-Type") or "").split(";")[0].strip()
+    if not ctype.startswith("image/"):
+        return None
+    data = r.content
+    if len(data) > 4_000_000 or len(data) < 2_000:  # skip oversized / tracking pixels
+        return None
+    return f"data:{ctype};base64," + base64.b64encode(data).decode()
+
+
+def fetch_photos(sources: list[dict], limit: int) -> list[dict]:
+    if limit <= 0 or not common.env_flag("BRIEF_PHOTOS", default=True):
+        return []
+    timeout = int(os.environ.get("BRIEF_PHOTO_TIMEOUT", "6"))
+    # Prefer world/markets stories (they carry real photos), from direct publishers.
+    order = {"world": 0, "markets": 1, "ai": 2, "research": 3}
+    cand = [s for s in sources
+            if s.get("link") and not any(h in s["link"] for h in _SKIP_PHOTO_HOSTS)]
+    cand.sort(key=lambda s: order.get(s.get("category", "ai"), 9))
+
+    photos: list[dict] = []
+    seen: set[str] = set()
+    for s in cand:
+        if len(photos) >= limit:
+            break
+        try:
+            img = _og_image(s["link"], timeout)
+            if not img or img in seen:
+                continue
+            uri = _download_data_uri(img, timeout)
+            if not uri:
+                continue
+            seen.add(img)
+            photos.append({"uri": uri, "caption": s.get("title", ""),
+                           "publisher": s.get("publisher", "")})
+            print(f"  photo: {s.get('publisher','?')} — {s.get('title','')[:60]}")
+        except Exception:
+            continue  # any failure -> just try the next story
+    return photos
+
+
+# ---------------------------------------------------------------------------
+# Markdown -> HTML
+# ---------------------------------------------------------------------------
+def md_to_html(md_text: str) -> tuple[str, str, str]:
+    """Return (title, footer_html, body_html). The H1 becomes the masthead and
+    the trailing '_Generated ..._' provenance line becomes the footer."""
+    html = md_lib.markdown(
+        md_text,
+        extensions=["extra", "sane_lists"],
+        output_format="html5",
+    )
+    soup = BeautifulSoup(html, "html.parser")
+
+    title = "Morning Brief"
+    h1 = soup.find("h1")
+    if h1:
+        title = h1.get_text(" ", strip=True)
+        h1.decompose()
+
+    # Pull the provenance footer (last <hr> onward) out of the column flow.
+    footer_html = ""
+    hrs = soup.find_all("hr")
+    if hrs:
+        last_hr = hrs[-1]
+        tail = []
+        node = last_hr.next_sibling
+        while node is not None:
+            nxt = node.next_sibling
+            tail.append(str(node))
+            node.extract()
+            node = nxt
+        last_hr.decompose()
+        footer_html = "".join(tail).strip()
+
+    # Make every external link open its real URL and carry the link colour.
+    for a in soup.find_all("a"):
+        a["class"] = a.get("class", []) + ["src"]
+
+    # WeasyPrint only honours `column-span: all` on a block box, not on a raw
+    # <table>. Wrap each table so it spans both columns instead of fragmenting
+    # across the column break.
+    for table in soup.find_all("table"):
+        wrapper = soup.new_tag("div")
+        wrapper["class"] = ["fullspan"]
+        table.insert_before(wrapper)
+        wrapper.append(table.extract())
+
+    return title, footer_html, str(soup)
+
+
+# ---------------------------------------------------------------------------
+# HTML assembly
+# ---------------------------------------------------------------------------
+def photo_strip_html(photos: list[dict]) -> str:
+    if not photos:
+        return ""
+    cells = []
+    for p in photos:
+        cap = BeautifulSoup(p["caption"], "html.parser").get_text()[:90]
+        pub = BeautifulSoup(p.get("publisher", ""), "html.parser").get_text()[:40]
+        cells.append(
+            f'<figure class="photo"><img src="{p["uri"]}" alt="">'
+            f'<figcaption><b>{pub}</b> — {cap}</figcaption></figure>'
         )
-        canvas.setStrokeColor(colors.HexColor("#e2e8f0"))
-        canvas.setLineWidth(0.5)
-        canvas.line(LEFT, PAGE_SIZE[1] - 0.62 * inch, PAGE_SIZE[0] - RIGHT, PAGE_SIZE[1] - 0.62 * inch)
-        # Footer
-        canvas.drawString(LEFT, 0.45 * inch, "AI · Tech Infra · Markets · Geopolitics")
-        canvas.drawRightString(PAGE_SIZE[0] - RIGHT, 0.45 * inch, f"Page {doc.page}")
-        canvas.restoreState()
+    return f'<div class="photostrip">{"".join(cells)}</div>'
 
-    return decorate
+
+def build_html(title, date, body_html, footer_html, chart_uri, photos) -> str:
+    date_label = pretty_date(date)
+    chart_block = (
+        f'<figure class="chart"><img src="{chart_uri}" alt="Watchlist movers chart">'
+        f'<figcaption>Approximate 1-day moves from the watchlist snapshot.</figcaption></figure>'
+        if chart_uri else ""
+    )
+    strip = photo_strip_html(photos)
+    footer_block = f'<div class="provenance">{footer_html}</div>' if footer_html else ""
+
+    return f"""<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><title>{title}</title>
+<style>
+@page {{
+  size: Letter; margin: 1.5cm 1.4cm 1.5cm 1.4cm;
+  @top-left {{ content: "Morning Brief"; font: 8pt Georgia, serif; color: #94a3b8; }}
+  @top-right {{ content: "{date_label}"; font: 8pt Georgia, serif; color: #94a3b8; }}
+  @bottom-left {{ content: "{TAGLINE}"; font: 7.5pt 'Helvetica Neue', Arial, sans-serif; color: #94a3b8; }}
+  @bottom-right {{ content: "Page " counter(page) " / " counter(pages); font: 8pt 'Helvetica Neue', Arial, sans-serif; color: #94a3b8; }}
+}}
+* {{ box-sizing: border-box; }}
+html {{ font-size: 10.3pt; }}
+body {{ margin: 0; color: {INK};
+  font-family: 'Helvetica Neue', Arial, 'DejaVu Sans', sans-serif;
+  line-height: 1.42; }}
+
+/* Masthead */
+.masthead {{ border-bottom: 3px double {INK}; padding-bottom: 8px; margin-bottom: 12px; }}
+.masthead .kicker {{ font: 700 8pt 'Helvetica Neue', Arial, sans-serif;
+  letter-spacing: 3px; text-transform: uppercase; color: {ACCENT}; }}
+.masthead h1 {{ font-family: Georgia, 'DejaVu Serif', serif; font-weight: 700;
+  font-size: 30pt; line-height: 1.03; margin: 3px 0 6px; color: {INK}; letter-spacing: -0.5px; }}
+.masthead .dateline {{ display: flex; justify-content: space-between;
+  border-top: 1px solid #cbd5e1; padding-top: 5px;
+  font: 8.5pt Georgia, serif; color: #475569; }}
+.masthead .tagline {{ font-style: italic; }}
+
+/* Lead visuals span full width above the columns */
+.lead {{ margin: 0 0 12px; }}
+figure {{ margin: 0 0 10px; }}
+.chart img {{ width: 100%; border: 1px solid #e2e8f0; border-radius: 4px; }}
+figure figcaption {{ font-size: 7.6pt; color: #64748b; margin-top: 3px; font-style: italic; }}
+.photostrip {{ display: flex; gap: 8px; margin-bottom: 12px; }}
+.photostrip .photo {{ flex: 1; margin: 0; }}
+.photostrip .photo img {{ width: 100%; height: 96px; object-fit: cover;
+  border-radius: 4px; border: 1px solid #e2e8f0; }}
+.photostrip figcaption {{ font-size: 7pt; line-height: 1.2; }}
+
+/* Two-column article body */
+.article {{ column-count: 2; column-gap: 20px; text-align: left; }}
+.article h2 {{ column-span: all; font-family: Georgia, 'DejaVu Serif', serif;
+  font-size: 14.5pt; color: {INK}; margin: 14px 0 7px;
+  padding: 4px 0 4px 9px; border-left: 4px solid {ACCENT};
+  background: #f8fafc; break-after: avoid; }}
+.article h2:first-of-type {{ margin-top: 0; }}
+.article h3 {{ font-size: 10.6pt; font-weight: 700; color: {ACCENT};
+  margin: 9px 0 2px; break-after: avoid; }}
+.article h4 {{ font-size: 10pt; font-weight: 700; margin: 7px 0 2px; break-after: avoid; }}
+.article p {{ margin: 0 0 7px; }}
+.article ul, .article ol {{ margin: 0 0 8px; padding-left: 16px; }}
+.article li {{ margin: 0 0 3px; }}
+.article strong {{ color: {INK}; }}
+a.src {{ color: {LINK}; text-decoration: none; border-bottom: 0.6px solid #bcccf5;
+  word-break: break-word; }}
+blockquote {{ margin: 6px 0; padding: 2px 0 2px 10px; border-left: 3px solid #cbd5e1;
+  color: #475569; font-style: italic; }}
+code {{ font-family: 'DejaVu Sans Mono', monospace; font-size: 8.6pt;
+  background: #f1f5f9; padding: 0 2px; border-radius: 2px; }}
+
+/* Tables span both columns so they stay readable */
+.fullspan {{ column-span: all; margin: 4px 0 12px; }}
+table {{ width: 100%; border-collapse: collapse; margin: 0; font-size: 8.6pt;
+  break-inside: avoid; }}
+th, td {{ border: 0.6px solid #cbd5e1; padding: 4px 6px; text-align: left; vertical-align: top; }}
+thead th {{ background: #eef2f7; font-weight: 700; }}
+tbody tr:nth-child(even) {{ background: #f8fafc; }}
+
+.provenance {{ column-span: all; margin-top: 14px; padding-top: 6px;
+  border-top: 1px solid #e2e8f0; font-size: 7.8pt; color: #94a3b8; }}
+.provenance a {{ color: #94a3b8; }}
+</style></head>
+<body>
+  <header class="masthead">
+    <div class="kicker">Laksh's Daily Brief</div>
+    <h1>{title}</h1>
+    <div class="dateline"><span>{date_label}</span><span class="tagline">{TAGLINE}</span></div>
+  </header>
+  <div class="lead">{chart_block}{strip}</div>
+  <main class="article">
+    {body_html}
+    {footer_block}
+  </main>
+</body></html>"""
+
+
+# ---------------------------------------------------------------------------
+# Render
+# ---------------------------------------------------------------------------
+def render(md_file: Path, pdf_file: Path, date: str) -> None:
+    from weasyprint import HTML
+
+    md_text = md_file.read_text(errors="ignore")
+    quotes, sources = load_provenance(date)
+
+    title, footer_html, body_html = md_to_html(md_text)
+    chart_uri = movers_chart_uri(quotes)
+    photo_limit = int(os.environ.get("BRIEF_PHOTO_LIMIT", "3"))
+    photos = fetch_photos(sources, photo_limit)
+
+    html = build_html(title, date, body_html, footer_html, chart_uri, photos)
+
+    # Keep the assembled HTML next to the PDF for debugging (gitignored).
+    try:
+        pdf_file.with_suffix(".debug.html").write_text(html)
+    except OSError:
+        pass
+
+    HTML(string=html, base_url=str(md_file.parent)).write_pdf(str(pdf_file))
 
 
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
-def render(md_file: Path, pdf_file: Path, date_label: str) -> None:
-    md_text = md_file.read_text(errors="ignore")
-    flowables = markdown_to_flowables(md_text, base_dir=md_file.parent)
-
-    doc = SimpleDocTemplate(
-        str(pdf_file),
-        pagesize=PAGE_SIZE,
-        leftMargin=LEFT,
-        rightMargin=RIGHT,
-        topMargin=TOP,
-        bottomMargin=BOTTOM,
-        title=f"Morning Brief — {date_label}",
-        author="morning-brief-bot",
-        subject="AI · Tech Infrastructure · Markets · Geopolitics",
-    )
-    decorate = _make_page_decorator(date_label)
-    doc.build(flowables, onFirstPage=decorate, onLaterPages=decorate)
-
-
 def main() -> int:
     state = common.load_state()
 
