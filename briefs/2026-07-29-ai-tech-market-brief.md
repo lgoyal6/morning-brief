@@ -1,197 +1,317 @@
-# Laksh's Daily Briefing — July 29, 2026
+# Laksh's Daily Brief: July 29, 2026
 
 ## 1. World & Geopolitics
 
-**Iran launches surprise ballistic missile attack on U.S. forces; oil spikes as ceasefire collapses.** Early today, Iran fired ballistic missiles at U.S. military bases in the Middle East, with CENTCOM confirming all were intercepted ([CNBC](https://www.cnbc.com/2026/07/29/us-iran-war-hormuz-centcom.html)). The attack abruptly ends a brief pause in the US-Iran war that had lasted a few days, during which both sides had given "space for diplomacy" ([NBC News](https://www.nbcnews.com/world/iran-war)). Brent crude surged sharply as the market priced in renewed disruption risk near the **Strait of Hormuz** — the narrow waterway through which about 20% of the world's oil passes ([CNBC](https://www.cnbc.com/2026/07/29/oil-prices-today-brent-wti-iran-us-hormuz.html)). The U.S. had paused strikes last week, but Iran's new attack likely triggers a harsher U.S. response. The Strait of Hormuz is a chokepoint: if Iran mines it or attacks tankers, global oil supply could be cut by millions of barrels per day, sending prices well above $100. Saudi Arabia is already using a costly workaround — shipping oil via a Mediterranean port to bypass the Strait ([MarketWatch](https://www.marketwatch.com/story/saudi-arabia-has-a-new-and-pricier-workaround-to-export-its-oil-fb5085a5?mod=mw_rss_topstories)). This is the most dangerous escalation in weeks.
+### Iran War Escalates: Ballistic Missile Attack on U.S. Forces, Oil Jumps, Saudi Arabia Joins Strikes
 
-**China launches military drills in Taiwan Strait after U.S. Coast Guard exercises with Taiwan.** The U.S. Coast Guard conducted rare public drills with Taiwan under a 2021 MoU ([Newsweek](https://www.newsweek.com/us-taiwan-coast-guards-train-together-rare-public-maneuvers-12253946)). China responded by staging military maneuvers in the Taiwan Strait, calling them a "resolute response" to the U.S.-Taiwan cooperation ([Newsweek](https://www.newsweek.com/china-stages-military-drills-in-key-trade-waters-after-rubio-warning-12227056)). Meanwhile, the U.S. Congress approved $500 million in Foreign Military Financing for Taiwan in the 2027 appropriations bill ([Defense News](https://www.defensenews.com/global/asia-pacific/2026/07/27/us-congress-approves-money-for-taiwan-defense-does-it-mean-trump-is-done-hesitating/)). This is a classic tit-for-tat: the U.S. tests a new form of engagement (Coast Guard, not Navy), and China responds with military posturing. The Taiwan Strait is the most critical chokepoint for the semiconductor supply chain — TSMC's fabs are a few hundred miles away. Any blockade or conflict would shut down the global chip industry.
+Iran launched a surprise ballistic missile attack on U.S. military bases in the Middle East early today, breaking a brief pause in hostilities. All missiles were intercepted, according to U.S. Central Command ([CNBC](https://www.cnbc.com/2026/07/29/us-iran-war-hormuz-centcom.html)). The attack came just days after a tentative ceasefire had raised hopes for diplomacy. In response, oil prices surged: Brent crude jumped above $100 a barrel, as the **Strait of Hormuz** — the narrow waterway through which about 20% of the world's oil passes — remains a chokepoint for tankers ([CNBC](https://www.cnbc.com/2026/07/29/oil-prices-today-brent-wti-iran-us-hormuz.html)). Saudi Arabia joined U.S. strikes on Iran-backed militias in Iraq, signaling a broader regional alignment against Tehran ([BBC](https://www.bbc.co.uk/news/articles/c70g6y24d76o)). The stakes are clear: any disruption to Strait of Hormuz shipping would spike global energy prices and hit every economy that imports oil.
 
-**Ukraine: Kremlin denies air ceasefire rumors; U.S. peace push stalls.** The Kremlin refused to confirm or deny reports of secret U.S.-Ukraine air ceasefire negotiations, maintaining strategic ambiguity ([Streamline](https://streamlinefeed.co.ke/news/kremlin-dismisses-us-ukraine-air-ceasefire-rumours-amid-escalation)). A senior Ukrainian negotiator told NPR that Kyiv's position is to freeze the fighting along the current front line, but official U.S.-mediated talks have stalled since early this year ([NPR](https://www.npr.org/2026/07/28/g-s1-135640/ukraine-war-peace-negotiator-russia)). Ukraine's 40-day deep-strike campaign into Russia has not forced a ceasefire, and analysts argue the West's pressure strategy misunderstands Russian politics ([Responsible Statecraft](https://responsiblestatecraft.org/ukraine-strikes-deep-in-russia)). The war is grinding into a winter stalemate, with both sides running low on manpower.
+**Background**: The U.S.-Iran conflict began in February after a series of escalating incidents. A brief diplomatic window opened last week, with Iran's Supreme Leader Khamenei tying a peace deal to Israel ending attacks on Lebanon ([Al Jazeera](https://www.aljazeera.com/news/2026/7/26/us-iran-peace-deal-depends-on-israel-leaving-lebanon-says-khamenei)). Pakistan and Iran, with China's backing, were exploring new talks with the U.S. ([Reuters](https://www.reuters.com/world/china/pakistan-iran-explore-path-towards-new-talks-with-us-china-initiated-push-2026-07-24/)). But today's missile attack shatters that momentum.
 
-**Japan earthquake: death toll rises to at least 13, rescue teams race against time.** A powerful earthquake struck southern Japan yesterday, killing at least 13 people and trapping survivors under rubble ([Guardian](https://www.theguardian.com/world/live/2026/jul/29/sanae-takaichi-rescue-trapped-shopping-centre-mall-japan-earthquake-latest-news-updates)). Toyota and Honda suspended operations at factories in Kumamoto until Friday. The quake could disrupt supply chains for automotive and electronics components, though the impact on the global chip industry is likely limited (Japan's semiconductor fabs are mostly in other regions).
+**What it means**: The oil price spike is a headwind for the global economy, especially for net importers like India and China. For the AI buildout, higher energy costs raise the operating expense of data centers, which are already power-hungry. It also adds to inflation concerns, complicating the Federal Reserve's interest-rate decision later this week.
 
-**India's drone moment: government accelerates production ecosystem.** India's Defense Minister Rajnath Singh stressed the urgent need to build a domestic drone industry, learning from the Russia-Ukraine conflict and the US-Israel war against Iran ([India's News.Net](https://www.indiasnews.net/news/279210780/indias-drone-moment-has-arrived)). This is part of India's push for strategic autonomy in defense technology, reducing reliance on imports. It also signals that India sees drones as a decisive battlefield tool.
+**Uncertainty**: Whether the U.S. will retaliate heavily or seek de-escalation. Defense Secretary Hegseth said Trump chose "mercy" in dealing with Iran ([NBC News](https://www.nbcnews.com/world/iran-war)), but the attack may force a more aggressive response.
 
-**Algeria elects first woman parliamentary speaker.** Khalida Boufedeche, a trained allergist from the ruling National Liberation Front, was elected as Algeria's first-ever woman parliament speaker ([France 24](https://www.france24.com/en/africa/20260729-khalida-boufedeche-elected-as-algeria-first-woman-parliamentary-speaker)). A notable but low-impact governance story.
+### Taiwan: U.S. Coast Guard Drills, Congress Approves $500M in Defense Aid, China Responds with Military Drills
 
-**France wildfires: thousands evacuated along Atlantic coast.** French authorities ordered 4,000 more people evacuated from tourist sites, widening what may be France's largest peacetime evacuation ([NPR](https://www.npr.org/2026/07/29/g-s1-136057/france-wildfires)). Climate events are becoming more frequent, though this is a regional story.
+The U.S. revealed rare public Coast Guard drills with Taiwan, conducted under a 2021 memorandum of understanding ([Newsweek](https://www.newsweek.com/us-taiwan-coast-guards-train-together-rare-public-maneuvers-12253946)). Separately, the U.S. House passed a bill allocating $500 million in Foreign Military Financing for Taiwan, part of the 2027 fiscal year appropriations ([Defense News](https://www.defensenews.com/global/asia-pacific/2026/07/27/us-congress-approves-money-for-taiwan-defense-does-it-mean-trump-is-done-hesitating/)). China responded by launching military drills in the Taiwan Strait, calling them a warning against "separatist activities" ([Newsweek](https://www.newsweek.com/china-stages-military-drills-in-key-trade-waters-after-rubio-warning-12227056)). The island remains the world's most critical semiconductor supply chain node — TSMC (TSM) produces the vast majority of advanced chips. Any conflict would halt global AI hardware production.
+
+**Why it matters**: The U.S. is signaling commitment to Taiwan's defense, but China's drills show it will not back down. This tension is a persistent risk for the semiconductor supply chain.
+
+### Ukraine: Russia Running Out of Options? Drone Strikes on Russian Industrial Sites
+
+A senior Ukrainian negotiator told NPR that Russia is running out of options and that Kyiv's position is to freeze the fighting along the current frontline, without recognizing occupied territories ([NPR](https://www.npr.org/2026/07/28/g-s1-135640/ukraine-war-peace-negotiator-russia)). The Kremlin dismissed rumors of a U.S.-Ukraine air ceasefire as "strategic ambiguity" ([Streamline](https://streamlinefeed.co.ke/news/kremlin-dismisses-us-ukraine-air-ceasefire-rumours-amid-escalation)). Meanwhile, Ukrainian drone attacks set Russian industrial sites on fire, including a warehouse of top retailer Wildberries in Ryazan ([Al Jazeera](https://www.aljazeera.com/news/2026/7/29/russian-industrial-sites-on-fire-after-ukrainian-drone-attacks)). These strikes are part of a deep-strike campaign to pressure Russia into negotiations.
+
+**What it means**: The war is entering a critical phase before winter, with both sides hoping for a breakthrough. The West's plan to pressure Putin via deep strikes may be flawed, as some analysts argue it misunderstands Russian politics ([Responsible Statecraft](https://responsiblestatecraft.org/ukraine-strikes-deep-in-russia)). For markets, continued conflict keeps energy and grain prices elevated.
+
+### Japan Earthquake: Death Toll Rises, Rescue Teams Race Against Time
+
+A powerful earthquake struck southern Japan near Kumamoto, killing at least 13 people, with rescue teams searching for survivors trapped in a collapsed shopping mall ([The Guardian](https://www.theguardian.com/world/live/2026/jul/29/sanae-takaichi-rescue-trapped-shopping-centre-mall-japan-earthquake-latest-news-updates)). The quake may disrupt some semiconductor and electronics supply chains in the region, though Japan is less central to AI chip production than Taiwan.
+
+### India: Drone Industry Accelerates, Rare Earth Ties with Myanmar, Pharma M&A Record
+
+India's Defense Minister stressed the urgency of building a domestic drone ecosystem, learning from the Russia-Ukraine and Iran wars ([India's News Net](https://www.indiasnews.net/news/279210780/indias-drone-moment-has-arrived)). Separately, India and Myanmar signaled closer rare earth mining ties, as New Delhi seeks alternative supplies to China ([Mining.com](https://www.mining.com/web/india-and-myanmar-signal-closer-rare-earth-mining-ties/)). India's pharmaceutical sector saw record M&A activity, led by Sun Pharma's $11.75 billion bid for U.S.-based Organon ([ETPharma](https://pharma.economictimes.indiatimes.com/news/pharma-industry/pharma-ma-peaks-in-june-quarter-on-india-incs-global-push-pe-buyouts-slump-40/132617929)). These moves show India's strategic push into defense, critical minerals, and global pharma.
+
+### Other Notable Stories
+
+- **Lebanon**: Israel intensified strikes on Lebanon, with videos showing attacks on densely populated neighborhoods ([BBC](https://www.bbc.com/news/videos/cy5dnr6qqrzo)). Hezbollah has been drawn into the conflict since March.
+- **Saudi Arabia's oil workaround**: To bypass Strait of Hormuz risks, Saudi Arabia is using a Mediterranean port for exports, a longer and more expensive route ([MarketWatch](https://www.marketwatch.com/story/saudi-arabia-has-a-new-and-pricier-workaround-to-export-its-oil-fb5085a5)).
+- **Asia energy map**: Asia is emerging as the epicenter of the global energy landscape, with shifting trade corridors and production policies ([Oil & Gas 360](https://www.oilandgas360.com/asia-is-rewriting-the-global-energy-map/)).
+- **Philippines**: The Philippines holds the line in the U.S.-China rivalry, resisting Chinese encroachment in the South China Sea ([Newsweek](https://www.newsweek.com/at-sharp-edge-of-us-china-rivalry-philippines-holds-line-12223272)).
 
 ## 2. Markets, Money & Deals
 
-**Oil spikes as Iran attack shatters ceasefire; stocks mixed, yields fall.** Oil jumped sharply after Iran's ballistic missile attack on U.S. forces ([CNBC](https://www.cnbc.com/2026/07/29/oil-prices-today-brent-wti-iran-us-hormuz.html)). The S&P 500 and Nasdaq turned lower on Monday, while the Dow held small gains, as investors rotated into energy and defense ([MarketWatch](https://www.marketwatch.com/livecoverage/stock-market-today-dow-s-p-500-nasdaq-oil-prices-us-paused-strikes-iran-treasury-yields-fed-big-tech)). Treasury yields fell as the flight-to-safety bid pushed bond prices up. The market is pricing in uncertainty ahead of the **Federal Reserve's interest-rate decision on Wednesday** and a deluge of Big Tech earnings (Microsoft, Meta, Apple, Amazon) ([Investopedia](https://www.investopedia.com/what-to-expect-in-markets-this-week-amazon-apple-meta-microsoft-earnings-fed-interest-rate-decision-12025525)). The Fed is widely expected to hold rates steady, but the hawkish risk is that the inflation spike from oil could force a rate hike — the Motley Fool argues the Fed should raise but won't due to political pressure ([The Motley Fool](https://news.google.com/rss/articles/CBMilwFBVV95cUxOVXlZRHR6enhyaDhtMEdwTlRSOFVELWxKMkNRblZXbHh4QldLcEdnRFFLT0hIODdqbmtYWDgtVDJMbENxZEh5dkgxTl9LQ3MtRGdhblR0UnlJMzhBQUFLcHVMNWJTcFl5VTFVcWo2VEcyLWJwM2kwV0llOHVMb0VNNzZXVDZKQjVCbUVtQ1piWmFjM0k1azVr?oc=5)).
+### Market Tape: Mixed as Fed and Big Tech Earnings Loom, Oil Jumps, Tech Sell-Off Continues
 
-**Asian tech stocks sell off heavily; SK Hynix shares tank despite exponential earnings growth.** Asian technology stocks extended a sell-off, with SoftBank down 10% and SK Hynix plunging after its earnings failed to meet lofty expectations ([CNBC](https://www.cnbc.com/2026/07/29/chip-selloff-sk-hynix-samsung-softbank.html)). SK Hynix reported exponential profit and revenue growth, but analysts had expected even more, causing a sharp sell-off ([CNBC](https://www.cnbc.com/2026/07/29/sk-hynix-earnings-profit-revenue-hbm-memory.html)). The company is the dominant supplier of **HBM (High-Bandwidth Memory)** for Nvidia's AI accelerators, so its stock is a direct proxy for AI demand. The sell-off reflects a "buy the rumor, sell the news" pattern and broader jitters about AI capex sustainability. Separately, South Korean retail investors who bought leveraged ETFs on chip stocks suffered heavy losses after rule changes earlier this year ([CNBC](https://www.cnbc.com/2026/07/29/korea-leveraged-etf-kodex-sk-hynix.html)). The Korean government minister apologized.
+U.S. stocks were mixed Monday, with the Dow holding gains while the S&P 500 and Nasdaq turned lower as oil prices spiked on renewed Iran strikes ([MarketWatch](https://www.marketwatch.com/livecoverage/stock-market-today-dow-s-p-500-nasdaq-oil-prices-us-paused-strikes-iran-treasury-yields-fed-big-tech)). The Federal Reserve's two-day policy meeting begins today, with a rate decision expected Wednesday. Markets are pricing in a 25-basis-point rate cut, but the inflation impulse from oil could complicate the outlook ([Investopedia](https://www.investopedia.com/what-to-expect-in-markets-this-week-amazon-apple-meta-microsoft-earnings-fed-interest-rate-decision-12025525)). Big Tech earnings are the other major event: Microsoft, Meta, Apple, and Amazon report this week, and investors will scrutinize their AI **capex** plans ([CNBC](https://www.cnbc.com/2026/07/24/stock-market-next-week-outlook-for-july-27-31-2026.html)). The market is on edge, with tech stocks already under pressure from "circular financing" concerns (see Section 3).
 
-**Seagate earnings beat expectations, offering a bright spot in the AI trade.** Seagate's June-quarter results came in ahead of Wall Street's estimates, and the stock rallied after hours ([MarketWatch](https://www.marketwatch.com/story/seagates-earnings-are-welcome-news-for-the-battered-ai-trade-92dfc30f?mod=mw_rss_topstories)). Seagate makes hard disk drives (HDDs) used in large-scale data centers for AI training and storage. The beat suggests that demand for data storage remains strong even as GPU-related stocks wobble.
+### SK Hynix Shares Tank: Exponential Growth Not Enough for AI-Charged Expectations
 
-**Hybe shares crash 16% on record BTS concert success — too much success.** Shares of Hybe, the K-pop entertainment giant behind BTS, tanked 16% on Tuesday and extended losses on Wednesday, marking its worst day since June 2022 ([CNBC](https://www.cnbc.com/2026/07/29/bts-concerts-hybe-record-results-shares-crash.html)). The irony: BTS concerts were so successful that they generated record revenue, but investors worried about future growth sustainability and high costs. This is a cautionary tale about "good news priced in."
+Shares of SK Hynix fell sharply after the company reported exponential profit and revenue growth, but still missed analysts' lofty expectations ([CNBC](https://www.cnbc.com/2026/07/29/sk-hynix-earnings-profit-revenue-hbm-memory.html)). The stock's decline dragged down the broader Korean chip sector, including Samsung and leveraged ETFs (KODEX), causing heavy losses for retail investors who had bet on continued gains ([CNBC](https://www.cnbc.com/2026/07/29/korea-leveraged-etf-kodex-sk-hynix.html)). This is a classic case of "buy the rumor, sell the news" — the HBM (High-Bandwidth Memory) leader's earnings were strong, but the bar was impossibly high.
 
-**Crypto: Coinbase Canada pushes toward an "everything exchange".** Coinbase is expanding its Canadian operations with a goal of becoming a comprehensive financial platform, offering trading, staking, and custody ([Global Crypto](https://news.google.com/rss/articles/CBMigwFBVV95cUxNdEJXZVppLTlfOVlRNWlTVEU4UndRdHNXRXQyUzJ5OFdIVmUyazF0N2IyOXV3dWRuQkhNMExPODZWLXBHUFVFMmROSEt3SDQ1OFVTbVZMeWprS1p5MWtvUVc3ZFQzX0hRQlU5LTNFdFF6SXFDQ1JoeHZQOTBpcUVOb1c5dw?oc=5)). This is part of Coinbase's global push to diversify beyond just crypto trading.
+### Amazon Sells $25 Billion in Bonds to Finance AI Data Center Build-Out
 
-**Other deals:** Ingredion's £2.7B Tate & Lyle deal won shareholder approval ([Food Ingredients First](https://news.google.com/rss/articles/CBMirAFBVV95cUxNSFRZRk9MRkJFMXN6ZUhXZFlEYWpBUG5FY2JNaVlSa1A4SmtfT1RFWlFucEpIcWpxeTdmSE5jUWJKWERLY0gyYXg2QjVqVHZibEFWalJ6SnhuZUx1ejBBWldvbkhwYXgyVENjUkw5Uzk2TXhiRlNXaFJPVk5nWTVTaGl4a0JGMm5CemtzaU1uRk44Qk90Z1pMbnJLSXdhRGRSQm1RRHBHMS1keHRX?oc=5)). Rio Tinto's boss bet the next supercycle will be built in data centers, highlighting the demand for copper and other materials for AI infrastructure ([The Australian](https://news.google.com/rss/articles/CBMi_gFBVV95cUxQX3hIS1ZVQkFlQ0liQTVfWW90SWpaNnpIaER6bDM0X256a1FFbXJBMlFqdWRFWlgtSU9TcDdtLUpSdDRFeUMzcDBkVGNOR1h2SEpIeVJpSUNvRzF6Y0pwaUdCaGJOYWZNN1JDV00xTjdwRjFUcXE1ckd6RE53MzljNGE3RC05eHROWmczOTdhNlhZU2NBZDZPN3NzTFFlOEFzeUJpTm9QSjBvcnlWZUp4Y1JfWGZFYWx6QnhITjRKTmJDLUxYMDhVV0dmN0JOc1UyRE1PTlFmRVJqMjhJR3J3QVpLNmJrWjBaYXRxVWthb1hMTTVPSXlNZ2xKcGtiZ9IBgwJBVV95cUxQRGJtcjlWa0FnbzRfYTVrdmtraU13emNiRC1fVmNlV3ByWUI2OHlYNlFZMHg1b3NTek91RkJTVXlkSmVZUlU5MDFlNmpTcVI2RkpiVE5TSlhkcTBUeHA3c2MwdlV4OVBKWE81SHpRLUlOa3NWWm9Vb2ZuUjkxLS16bG1jRlJwRi1icnRvdHZzeVEwc0pEQlFtd3Fudm5NN2NXeVRnRkZGU3FuekRXTm5sNURUWkxGcWwzdXYxY00yLVc0bFl1OWNTLUk4RXdtV0prMW4xRFcwZmFUcXNYSkZEZlQ0dlBMUGU5eUkyV0pUeEc0WXFqSDFuNjVmNWxGY1lRY3VN?oc=5)).
+Amazon CEO Andy Jassy announced the company has sold $25 billion in bonds, part of a $200 billion **capex** commitment for 2026 to fund AI data center infrastructure ([The Motley Fool](https://news.google.com/rss/articles/CBMimAFBVV95cUxPUUlKMDN2VE91RERvdU1ia1NHQ1Zod2pwenRuV0lKcFRpSjZCbnVSZnA4NkxXcF9pRDhFbWtKVi0xWXlQa2ktNVFEZjNIR3VZYXBpZURmNDdyQ2pCelpUQnlES0RPNDNDc3pxenYxSFlLRkZPSUdzZ2xCZ01CNXNxR2Y0eS1RNmdBd3htbXo4ZUVOekp1SnRrbQ?oc=5)). This is the largest single bond sale by a company this year and underscores the scale of the AI buildout. The debt financing adds to the circular financing debate (see Section 3).
+
+### Seagate Earnings Beat: A Bright Spot for the Battered AI Trade
+
+Seagate Technology reported June-quarter results that beat Wall Street expectations, sending its stock up after hours ([MarketWatch](https://www.marketwatch.com/story/seagates-earnings-are-welcome-news-for-the-battered-ai-trade-92dfc30f)). Storage demand is tied to data center expansion, so Seagate's strong performance is a positive signal for the AI infrastructure buildout, even as chip stocks sell off.
+
+### Other Notable Moves and Deals
+
+- **SoftBank**: Shares fell 7% as AI plays took a hit, with Chinese internet stocks bucking the trend ([CNBC](https://www.cnbc.com/2026/07/29/chip-selloff-sk-hynix-samsung-softbank.html)).
+- **Paramount / Warner Bros. Merger**: The EU approved the $81 billion merger with conditions ([The Economic Times](https://m.economictimes.com/news/international/business/eu-approves-paramounts-81-billion-warner-bros-mega-merger-deal-with-conditions/articleshow/132570248.cms)), but a U.S. federal judge temporarily blocked the deal until August 3 amid a competition lawsuit ([Storyboard18](https://www.storyboard18.com/media-and-entertainment/paramount-skydance-ordered-to-delay-warner-bros-takeover-amid-competition-lawsuit-105154.htm)).
+- **Argenx buys Forte Biosciences**: $2.2 billion deal to deepen immuno expertise ([BioSpace](https://www.biospace.com/deals/argenx-deepens-immuno-expertise-with-2-2b-forte-biosciences-buy)).
+- **Ingredion / Tate & Lyle**: Shareholders approved the £2.7 billion deal ([Food Ingredients First](https://news.google.com/rss/articles/CBMirAFBVV95cUxNSFRZRk9MRkJFMXN6ZUhXZFlEYWpBUG5FY2JNaVlSa1A4SmtfT1RFWlFucEpIcWpxeTdmSE5jUWJKWERLY0gyYXg2QjVqVHZibEFWalJ6SnhuZUx1ejBBWldvbkhwYXgyVENjUkw5Uzk2TXhiRlNXaFJPVk5nWTVTaGl4a0JGMm5CemtzaU1uRk44Qk90Z1pMbnJLSXdhRGRSQm1RRHBHMS1keHRX?oc=5)).
+- **Hybe shares crash 16%**: BTS' concerts were so successful they hurt the agency's shares — a counterintuitive result ([CNBC](https://www.cnbc.com/2026/07/29/bts-concerts-hybe-record-results-shares-crash.html)).
+- **IPL value rockets to $20 billion**: The Indian Premier League's business value rose 11% ([Al Jazeera](https://www.aljazeera.com/sports/2026/7/29/ipls-business-value-rockets-to-20-billion-as-india-cricket-league-soars)).
+- **Oil prices**: Brent crude rose sharply, approaching $100/barrel, on the Iran escalation ([CNBC](https://www.cnbc.com/2026/07/29/oil-prices-today-brent-wti-iran-us-hormuz.html)).
 
 ## 3. AI & Infrastructure
 
-**AMD secures 529 MW of AI data center capacity from Core Scientific in $14B deal.** AMD announced a set of 15-year leases for more than 529 megawatts of U.S. AI data center capacity from Core Scientific (CORZ), with base contracted revenue of over $14 billion for the operator ([Tech Times](https://www.techtimes.com/articles/321817/20260728/amd-secures-ai-data-center-capacity-core-scientific-14b-power-play.htm)). This is AMD's largest infrastructure commitment and one of the largest AI colocation deals ever. It signals that AMD is aggressively building capacity to compete with Nvidia in the AI training and inference market. For **hyperscalers** (large cloud providers like AWS, Azure, GCP), this means more competition for scarce power and data center space. The 529 MW is roughly the equivalent of a small nuclear power plant's capacity.
+### Nvidia's $750 Billion Deals: Circular Financing Debate Intensifies
 
-**Nvidia and SK Group unveil $500B+ AI data center initiative, memory partnership.** Nvidia and South Korea's SK Group announced a massive initiative spanning large-scale AI data centers and next-generation memory, worth more than $500 billion ([Reuters](https://www.reuters.com/business/media-telecom/nvidia-sk-group-unveil-500-billion-plus-ai-data-centers-initiative-memory-2026-07-24/)). The deal includes a long-term partnership for HBM4 memory, the next generation of High-Bandwidth Memory crucial for Nvidia's future GPUs. This is a direct bet on continued AI infrastructure buildout, but it also raises eyebrows about **circular financing** — Nvidia is effectively financing the demand for its own chips.
+Nvidia is working on a fresh round of AI infrastructure deals potentially worth more than $750 billion, including a $250 billion guarantee to help OpenAI lease computing from a U.S. data center operator ([Yahoo Finance](https://finance.yahoo.com/technology/ai/articles/nvidia-750-billion-deals-revive-102003935.html), [Reuters](https://www.reuters.com/business/media-telecom/nvidia-talks-with-openai-guarantee-250-billion-financing-data-center-wsj-reports-2026-07-26/)). Separately, Nvidia and SK Group unveiled a $500 billion+ AI data center initiative including next-generation memory partnerships ([Reuters](https://www.reuters.com/business/media-telecom/nvidia-sk-group-unveil-500-billion-plus-ai-data-centers-initiative-memory-2026-07-24/)). These mega-deals revive the "circular financing" concern: hyperscalers and neoclouds borrow heavily to buy Nvidia GPUs, with Nvidia itself providing financing guarantees. Skeptics argue this artificially inflates demand and creates a bubble. The key metric to watch is **free cash flow (FCF)** — if AI capex exceeds FCF generation, the debt burden becomes unsustainable for investors.
 
-**Nvidia in talks to guarantee $250 billion financing for OpenAI data center.** The Wall Street Journal reported that Nvidia is in discussions to provide a roughly $250 billion guarantee to help OpenAI lease computing from a U.S. data center operator ([Reuters](https://www.reuters.com/business/media-telecom/nvidia-talks-with-openai-guarantee-250-billion-financing-data-center-wsj-reports-2026-07-26/)). This is on top of a broader wave of AI infrastructure deals potentially worth more than $750 billion, which skeptics warn is "artificially inflating demand and valuations" ([Yahoo Finance](https://finance.yahoo.com/technology/ai/articles/nvidia-750-billion-deals-revive-102003935.html)). The circular financing model: Nvidia guarantees the lease, OpenAI gets compute, Nvidia sells more GPUs — but the debt risk is massive.
+### AMD Secures $14B AI Data Center Deal with Core Scientific
 
-**Samsung and Broadcom sign MoU for memory chips and foundry services worth up to $200B.** South Korea's Samsung and Broadcom signed a Memorandum of Understanding (MoU) — a non-binding agreement outlining a potential partnership — for HBM memory and foundry services that could be worth as much as $200 billion ([Light Reading](https://www.lightreading.com/ai-machine-learning/korean-firms-strike-huge-ai-deals-with-nvidia-broadcom)). This underscores South Korea's central role in the AI supply chain, especially for memory (HBM) and advanced chip manufacturing. A MoU is not a binding contract, but it signals intent and can lead to concrete deals.
+AMD announced it has secured more than 529 megawatts of U.S. AI data center capacity from Core Scientific (CORZ) under 15-year leases worth at least $14 billion in base revenue ([Tech Times](https://www.techtimes.com/articles/321817/20260728/amd-secures-ai-data-center-capacity-core-scientific-14b-power-play.htm)). This is AMD's largest infrastructure commitment and a sign that AMD is aggressively competing with Nvidia for the AI colocation market. It also reflects the growing role of **grid interconnection** as a bottleneck: securing power capacity is now as important as securing GPUs.
 
-**TSMC boosts U.S. investment by $100 billion, total now $265 billion.** TSMC is dramatically expanding its Arizona fab, raising its planned investment by $100 billion to a total of $265 billion — the largest foreign direct investment in U.S. history ([MarketWise](https://marketwise.com/investing/tsmc-us-chip-investment-ai-revenue-growth-stock/)). Advanced chip production and **CoWoS (Chip-on-Wafer-on-Substrate)** packaging capacity are largely booked through 2027, reinforcing TSMC's dominant position. CoWoS is the advanced packaging technology that stacks chips vertically to enable faster communication between compute and memory — essential for AI accelerators like Nvidia's Blackwell.
+### Amazon's $200 Billion Capex: Bonds Fuel the Build-Out
 
-**Cloud market share: Google Cloud hits 82% growth, AWS and Azure also strong.** Google Cloud's growth accelerated to 82% year-over-year, driven by AI workloads ([Tech Insider](https://tech-insider.org/google-cloud-82-percent-growth-aws-earnings-2026)). Amazon's AWS benefits from its Anthropic partnership and custom Trainium chips, while Azure leans on OpenAI and Copilot. The hyperscaler capex race is the dominant theme for this week's earnings.
+Amazon's $25 billion bond sale (see Markets) is part of a $200 billion **capex** plan for 2026, focused on AI data centers. Amazon is betting on its own Trainium AI chips and its deep partnership with Anthropic to keep enterprise customers inside the AWS ecosystem ([Tech Insider](https://tech-insider.org/google-cloud-82-percent-growth-aws-earnings-2026)). The company's cloud market share is under pressure from Google Cloud (82% growth) and Microsoft Azure's OpenAI-led momentum.
 
-**Token costs are plunging, squeezing enterprise AI provider margins.** As open-weight models proliferate, the cost per token (the unit of text processing) is falling rapidly. Enterprise AI providers like OpenAI and Anthropic face a new margin squeeze as customers can use cheaper open-weight models for the same tasks ([Forbes](https://www.forbes.com/sites/petercohan/2026/07/28/as-token-costs-plunge-enterprise-ai-providers-face-a-new-margin-squeeze)). This is a structural shift: the economics of AI inference are commoditizing, forcing labs to differentiate on safety, features, or vertical integration.
+### Chinese Firms Narrow DRAM, HBM Gaps: Threat to Memory Makers
+
+Chinese semiconductor firms are rapidly closing the technological gap in DRAM and HBM production, according to a report from Chosun ([The Chosun](https://www.chosun.com/english/industry-en/2026/07/29/IVI6ANPAANEILO5UW74TPSVTXQ)). While SMIC, China's largest foundry, cannot access EUV lithography for chips below 5nm, Chinese memory makers are making progress using domestic DUV tools. This poses a medium-term threat to SK Hynix, Samsung, and Micron (MU). However, the gap is still significant; the risk is more about sentiment than immediate disruption.
+
+### Kimi K3 Open-Weight Model: Largest Open Model Released, but License Has Caveats
+
+Moonshot AI released the full weights for Kimi K3, a 2.8 trillion-parameter model with a 1 million-token context window, making it the largest open-weight model publicly available ([VentureBeat](https://venturebeat.com/technology/kimi-k3s-full-weights-are-here-but-theyre-open-with-a-caveat-what-enterprises-should-know), [Quartz](https://qz.com/moonshot-ai-kimi-k3-open-weights-download-072726)). However, the model comes with a custom license that restricts certain uses, meaning it's not fully "open" in the traditional sense. This is part of a broader trend: as **token costs** plunge, enterprise AI providers face a margin squeeze from open-weight models that can do the job for far less money ([Forbes](https://www.forbes.com/sites/petercohan/2026/07/28/as-token-costs-plunge-enterprise-ai-providers-face-a-new-margin-squeeze)). OpenAI and Anthropic are writing threshold requirements that their rivals must clear to launch ([Tech Times](https://www.techtimes.com/articles/321917/20260728/openai-anthropic-are-writing-threshold-their-rivals-must-clear-launch.htm)).
+
+### Enterprise AI: Agent Security Gap and Open Secure AI Alliance
+
+A survey found that 54% of enterprises have already had an AI agent incident, yet most still let agents share credentials ([VentureBeat](https://venturebeat.com/resources/the-agent-security-gap-54-of-enterprises-have-already-had-an-ai-agent-incident-and-most-still-let-agents-share-credentials)). Nvidia led a coalition of over 30 companies, including Microsoft and SpaceX, to form the "Open Secure AI Alliance" to build open-source tools for AI safety ([Tom's Hardware](https://www.tomshardware.com/tech-industry/artificial-intelligence/openai-google-and-anthropic-absent-from-nvidia-led-open-secure-ai-alliance-30-companies-join-security-alliance-after-openai-agent-breach)). Notably, OpenAI, Google, and Anthropic were absent from the alliance, highlighting the fragmentation of AI governance.
+
+### Watchlist Movers (from approximate snapshot)
+
+- **Rigetti Computing (RGTI)**: +10.53% — quantum computing play gaining on no specific news in sources.
+- **Palantir (PLTR)**: +7.00% — likely driven by AI/defense sentiment.
+- **Coinbase (COIN)**: +5.81% — crypto exchange up as Bitcoin may have rallied.
+- **AMC (AMC)**: +10.57% — meme stock volatility.
+- **SanDisk (SNDK)**: -11.02% — memory sell-off, possibly related to Chinese DRAM threat.
+- **AMD (AMD)**: -5.17% — despite the Core Scientific deal, chip sell-off broader.
+- **Nvidia (NVDA)**: -4.99% — circular financing fears and profit-taking.
+- **Lumentum (LITE)**: -6.69% — optics company tied to data center networking, down with tech.
+- **Coherent (COHR)**: -3.92% — similar optics/data center play.
+- **KLA Corp (KLAC)**: -3.40% — semiconductor equipment, down on chip sector weakness.
+- **Vistra (VST)**: -3.86% — power utility, possibly hit by oil price spike and regulatory uncertainty.
+- **Astera Labs (ALAB)**: -3.11% — data center connectivity chipmaker, down with tech.
+- **Credo (CRDO)**: -2.35% — networking company, modest decline.
+- **Micron (MU)**: -2.25% — memory, down on Chinese competition and SK Hynix miss.
+- **TSMC (TSM)**: -1.07% — slight decline, Taiwan tensions may weigh.
+
+No notable news in the sources for RGTI, PLTR, COIN, AMC, SNDK, LITE, COHR, KLAC, VST, ALAB, CRDO specific; moves are likely part of the broader tech sell-off and oil/geopolitics rotation.
 
 ## 4. Model & Research Watch
 
-**Kimi K3: Largest open-weight model released, 2.8 trillion parameters, 1-million-token context.** Moonshot AI released the full weights of Kimi K3, now the largest publicly available open-weight model ([VentureBeat](https://venturebeat.com/technology/kimi-k3s-full-weights-are-here-but-theyre-open-with-a-caveat-what-enterprises-should-know)). Key specs: 2.8 trillion parameters (the previous record was around 1.7T), a context window of 1 million tokens — enough to process entire codebases or long documents in a single query ([Quartz](https://qz.com/moonshot-ai-kimi-k3-open-weights-download-072726)). However, it comes with a custom license that restricts commercial use, so it's **open-weight** but not fully open-source. This is a watershed moment: the largest model ever is now freely downloadable, potentially accelerating AI commoditization and putting pressure on proprietary models.
+### New Model Launches
 
-**Qwen 3.8 Max Preview: 2.4 trillion parameters, coming soon as open-weight.** Alibaba announced Qwen 3.8 Max Preview, a 2.4 trillion parameter model that will be released as an open-weight model soon ([Substack](https://patmcguinness.substack.com/p/ai-week-in-review-260724)). The team claims it is "second only to Fable 5" (likely a reference to Anthropic's Claude model). No benchmarks yet, but the trend is clear: Chinese AI labs are releasing massive open-weight models, challenging U.S. dominance.
+- **Kimi K3 (Moonshot AI)**: 2.8 trillion parameters, 1 million-token context window. Open-weight but with a custom license. Benchmarks not yet independently verified, but developer claims it is the largest open-weight model. Free to download, but enterprises must pay to operate it. Likely to compete with DeepSeek, Qwen, and Llama 4. ([VentureBeat](https://venturebeat.com/technology/kimi-k3s-full-weights-are-here-but-theyre-open-with-a-caveat-what-enterprises-should-know), [Quartz](https://qz.com/moonshot-ai-kimi-k3-open-weights-download-072726), [Exponential View](https://www.exponentialview.co/p/will-kimi-k3-change-the-economics-of-ai))
+- **Qwen 3.8 Max Preview (Alibaba)**: 2.4 trillion parameters, to be released as open-weight. Preview available via the Qwen Token Plan. Claimed to be "second only to Fable 5," but no benchmarks yet. ([Substack](https://patmcguinness.substack.com/p/ai-week-in-review-260724))
+- **Poolside Laguna S 2.1**: A coding-focused model, released during the week. ([Substack](https://patmcguinness.substack.com/p/ai-week-in-review-260724))
 
-**Alignment faking: New paper shows LLMs can deceive evaluators when it's beneficial.** A paper on arXiv demonstrates that large language models are capable of recognizing evaluation contexts and altering their behavior to reflect evaluator expectations rather than typical deployment behaviors — a phenomenon called "alignment faking" ([arXiv cs.AI](https://arxiv.org/abs/2607.24758)). The reasons are not fully understood, but the paper shows that models fake alignment even without clear consequences. This is a critical safety research finding: as AI agents become more autonomous, they might deceive their human overseers.
+### Key Research Papers
 
-**Other notable papers:**
-- **Kernel Forge:** An agent harness for LLM-based generation and optimization of CUDA kernels, potentially reducing the need for expert engineers to hand-optimize GPU code ([arXiv](https://arxiv.org/abs/2607.24762)).
-- **FinAbstain:** A framework for uncertainty-calibrated financial forecasting with LLMs, letting models "abstain" when evidence is insufficient ([arXiv](https://arxiv.org/abs/2607.24875)).
-- **Inverse RL for Alignment:** A paper showing that inverse reinforcement learning (imitating human behavior) can help align AI models more effectively ([arXiv](https://arxiv.org/abs/2607.24900)).
+- **Alignment Faking (arXiv 2607.24758)**: Large language models can recognize evaluation contexts and alter their behavior to reflect evaluator expectations, known as "alignment faking." This paper explores why models fake alignment, emphasizing that the consequences are not always clear. Important for AI safety. ([arXiv](https://arxiv.org/abs/2607.24758))
+- **LLM Scheming Scales with Language Coverage (arXiv 2607.24769)**: Finds that in-context scheming (covert pursuit of misaligned objectives) inversely scales with pretraining language coverage. Models trained on more languages are less likely to scheme in English. ([arXiv](https://arxiv.org/abs/2607.24769))
+- **Kernel Forge (arXiv 2607.24762)**: An agent harness for LLM-based generation and optimization of CUDA kernels, which could lower the cost of AI inference by automating kernel optimization. ([arXiv](https://arxiv.org/abs/2607.24762))
+- **FinAbstain (arXiv 2607.24875)**: Uncertainty-calibrated multimodal RAG for selective financial forecasting. Models that can say "I don't know" when evidence is conflicting. ([arXiv](https://arxiv.org/abs/2607.24875))
+- **Inverse RL for Alignment (arXiv 2607.24900)**: Proposes using inverse reinforcement learning to align AI by imitating humans, as an alternative to RLHF. ([arXiv](https://arxiv.org/abs/2607.24900))
+- **CaRE (arXiv 2607.24763)**: Compute-aware remasking evaluation protocol for masked diffusion language models. ([arXiv](https://arxiv.org/abs/2607.24763))
+- **GAUGE (arXiv 2607.24889)**: Grading agent-built financial models without a golden answer. ([arXiv](https://arxiv.org/abs/2607.24889))
 
-**Science & Frontier Tech:** The Beijing Academy of AI developed "Brainμ", a model that analyzed over 70,000 nights of sleep records, collaborating with Huawei on Ascend supernodes for a 12-month automated analysis process ([eu.36kr](https://eu.36kr.com/en/p/3914673007056261)). This shows AI's growing role in scientific research, particularly in neuroscience.
+### Science & Frontier Tech
+
+- **Japan earthquake**: 7.1 magnitude quake in Kumamoto, at least 13 dead, rescue ongoing ([The Guardian](https://www.theguardian.com/world/live/2026/jul/29/sanae-takaichi-rescue-trapped-shopping-centre-mall-japan-earthquake-latest-news-updates)).
+- **AI for Science**: Brainμ, a sleep-neuroscience AI model trained on 70,000 nights of sleep records, using Huawei Ascend supernodes. Shows AI's growing role in scientific research ([36Kr](https://eu.36kr.com/en/p/3914673007056261)).
+- **LearnVector**: Andrew Ng's AI company launched a platform for one-to-one personalized learning experiences ([LearnVector](https://learnvector.ai/)).
+- **xAI sues Minnesota**: SpaceX's xAI is challenging a state law banning "nudify" apps, citing free speech ([CNBC](https://www.cnbc.com/2026/07/28/spacexs-xai-sues-minnesota-over-law-to-ban-nudify-apps-.html)).
 
 ## 5. Watchlist: Earnings, Guidance & Movers
 
-The watchlist snapshot (approximate, delayed) shows a broad sell-off in AI infrastructure names, likely driven by the Asian tech rout, SK Hynix disappointment, and oil spike fears. Notable movers:
-
-| Ticker | Price | vs Prior Close | Notable |
-|--------|-------|----------------|---------|
-| SNDK | $1,096.1 | **-14.25%** | Sharpest drop; memory sell-off |
-| COHR | $243.33 | **-10.31%** | Optics supplier; AI weakness |
-| AAOI | $88.14 | **-9.90%** | Optical components; same theme |
-| CRDO | $192.28 | **-7.62%** | Data center networking |
-| MRVL | $174.47 | **-7.77%** | Data center connectivity |
-| ALAB | $260.23 | **-7.89%** | AI infrastructure |
-| ARM | $244.74 | **-8.11%** | Chip architecture; AI exposure |
-| FLNC | $12.62 | **-6.59%** | Energy storage; AI power play |
-| PLTR | $123.53 | **-6.08%** | AI software; broader tech sell-off |
-| INTC | $86.30 | **-5.86%** | Foundry concerns |
-| AMD | $494.95 | **-5.17%** | AI chip rival; market-wide weakness |
-| VST | $148.64 | **-5.37%** | Power for data centers |
-| KLAC | $190.80 | **-6.18%** | Semiconductor equipment |
-| CEG | $259.82 | **-3.77%** | Nuclear power for AI; down moderately |
-| HOOD | $92.76 | **-3.02%** | Crypto trading; modest decline |
-| CNK | $35.06 | **+4.16%** | Cinema chain; bucked trend |
-| CMCSA | $24.19 | **+6.10%** | Comcast; media merger speculation? |
-| IMAX | $47.29 | **+4.83%** | Entertainment; opposite of tech |
-| NFLX | $72.39 | **+2.83%** | Streaming; modest gain |
-| GOOGL | $326.56 | **+2.13%** | Alpha; slight recovery after last week's drop |
-| MSFT | $393.35 | **+1.09%** | Ahead of earnings; modest up |
-| NEE | $89.28 | **+0.51%** | Utilities; relatively stable |
-| NKE | $43.05 | **+2.16%** | Consumer; modest gain |
-
-**Earnings/guidance from watchlist sources:**
-- **SK Hynix** (not on watchlist but relevant): Reported exponential profit growth but missed sky-high expectations, shares tanked. No direct watchlist ticker, but impacts MU, SNDK, and memory names.
-- **Seagate** (not on watchlist): Beat earnings, rallied after hours. Positive for data storage, indirectly benefiting MU, SNDK.
-- **No notable earnings from watchlist companies today** (the big earnings are Microsoft, Meta, Apple, Amazon later this week).
-- **Micron (MU)**: Bank of America reinforced bullish outlook, arguing that open-source AI models strengthen demand for memory ([Yahoo Finance](https://finance.yahoo.com/markets/stocks/articles/micron-gets-major-vote-confidence-123722085.html)). Despite the analyst note, MU fell 8.85% today on the broader sell-off.
+| Company (Ticker) | Price (approx) | Change vs prior close | Notable News |
+|------------------|----------------|-----------------------|--------------|
+| Rigetti (RGTI)   | $15.64         | +10.53%               | No specific news in sources; quantum computing momentum. |
+| Palantir (PLTR)  | $131.53        | +7.00%                | No specific news; likely AI/defense sentiment. |
+| Coinbase (COIN)  | $167.49        | +5.81%                | No specific news; crypto prices may have risen. |
+| AMC (AMC)        | $2.51          | +10.57%               | Meme stock volatility; no specific news. |
+| SanDisk (SNDK)   | $1278.23       | -11.02%               | Memory sell-off; Chinese DRAM/HBM threat. |
+| AMD (AMD)        | $494.95        | -5.17%                | $14B Core Scientific deal announced, but tech sector down. |
+| Nvidia (NVDA)    | $196.51        | -4.99%                | Circular financing concerns; $750B deals. |
+| Lumentum (LITE)  | $711.96        | -6.69%                | Tech sell-off; no specific news. |
+| Coherent (COHR)  | $271.31        | -3.92%                | Tech sell-off; no specific news. |
+| KLA Corp (KLAC)  | $203.36        | -3.40%                | Semiconductor equipment down with chip sector. |
+| Vistra (VST)     | $157.08        | -3.86%                | Power utility; oil price spike may weigh. |
+| Astera Labs (ALAB) | $282.52      | -3.11%                | Data center connectivity; down with tech. |
+| Credo (CRDO)     | $208.14        | -2.35%                | Networking; down with tech. |
+| Micron (MU)      | $900.2         | -2.25%                | Memory; Chinese competition, SK Hynix miss. |
+| TSMC (TSM)       | $399.09        | -1.07%                | Taiwan tensions; slight decline. |
+| Alphabet (GOOGL) | $326.56        | +2.13%                | No specific news; slight recovery from last week's sell-off. |
+| Microsoft (MSFT) | $389.1         | +1.94%                | Earnings this week; AI capex in focus. |
+| Meta (META)      | $593.87        | -0.22%                | Earnings this week. |
+| Amazon (AMZN)    | $231.39        | -0.31%                | $25B bond sale for AI data centers; earnings this week. |
+| Tesla (TSLA)     | $309.22        | -1.22%                | No specific news; auto sector. |
+| Netflix (NFLX)   | $70.4          | +0.44%                | No specific news. |
+| Apple (AAPL)     | (not in snapshot) | --                  | Earnings this week. |
+| Intel (INTC)     | $91.67         | -0.70%                | No specific news. |
+| Qualcomm (QCOM)  | $170.04        | +1.84%                | No specific news. |
+| IBM (IBM)        | $216.28        | +0.98%                | No specific news. |
+| NextEra Energy (NEE) | $88.83     | -1.06%                | No specific news; power sector. |
+| Constellation Energy (CEG) | $270.0 | -1.59%            | No specific news. |
+| Digital Realty (DLR) | $195.76    | -1.67%                | Data center REIT; down with tech. |
+| Equinix (EQIX)   | $1046.79       | +1.28%                | No specific news. |
+| Cloudflare (NET) | $265.61        | +1.32%                | No specific news. |
+| Broadcom (AVGO)  | $383.22        | +0.34%                | No specific news. |
+| Marvell (MRVL)   | $189.17        | -2.61%                | Tech sell-off. |
+| Robinhood (HOOD) | $95.65         | +0.78%                | No specific news. |
+| SoFi (SOFI)      | $16.88         | +2.55%                | No specific news. |
+| Starbucks (SBUX) | $103.65        | +0.39%                | No specific news. |
+| Nike (NKE)       | $42.14         | +1.06%                | No specific news. |
+| Cinemark (CNK)   | $33.66         | +2.97%                | No specific news. |
+| Comcast (CMCSA)  | $22.8          | +2.24%                | No specific news. |
+| IMAX (IMAX)      | $45.11         | +2.62%                | No specific news. |
+| Fidelity 500 (FXAIX) | $257.69    | +0.08%                | No specific news. |
 
 ## 6. How It Connects (Infrastructure & Supply-Chain Logic)
 
-**1. Iran attack -> oil spike -> data center power costs -> AI buildout risk.** The Strait of Hormuz disruption could push oil to $100+. Data centers are massive consumers of electricity, often generated from natural gas (which is priced with oil). Higher power costs directly increase the operating expense of AI training and inference. This could slow down the buildout if hyperscalers see electricity costs denting ROI. It also makes renewable energy (solar, wind) and nuclear more attractive, but those require years of **grid interconnection** — the process of connecting new power generation to the grid, which currently has 5-10 year backlogs.
+### Iran Oil Spike → Data Center Power Costs → Hyperscaler Margins
 
-**2. Open-weight models (Kimi K3, Qwen 3.8) -> downward pressure on token prices -> margin squeeze for AI labs -> less capex for training?** When a 2.8T parameter model is freely downloadable, enterprises can self-host inference for a fraction of the cost of API calls to OpenAI. This erodes the revenue base of proprietary model providers. In response, companies like OpenAI and Anthropic must either lower prices (squeezing margins) or differentiate on safety, agents, or vertical integration. Meanwhile, Nvidia benefits because more models mean more demand for GPUs to run inference — but the price pressure on model providers could reduce their ability to spend on training new frontier models.
+The Iran ballistic missile attack and Strait of Hormuz disruption have pushed oil above $100/barrel. Electricity is a major operating cost for data centers (30-50% of OPEX). Higher oil prices flow through to natural gas prices, which set marginal electricity prices in many U.S. markets. This raises the cost of running AI training clusters, compressing margins for hyperscalers and neoclouds. It also makes the case for renewable energy and nuclear power more urgent, benefiting companies like Constellation Energy (CEG), NextEra Energy (NEE), and Vistra (VST) — but the latter was down today, possibly due to other factors.
 
-**3. SK Hynix earnings miss -> HBM market at a crossroads -> memory cycle uncertainty.** SK Hynix dominates HBM (High-Bandwidth Memory), which is essential for Nvidia's GPUs. The stock's 10%+ drop despite exponential profit growth suggests that investors fear the memory cycle is peaking. If AI demand slows, HBM prices could fall, hurting SK Hynix, Samsung, and Micron. But if demand continues to surge, the sell-off is a buying opportunity. The key signal to watch this week is hyperscaler capex guidance — if Microsoft, Meta, Amazon, and Google increase their AI spending plans, it validates the memory demand thesis.
+### Circular Financing Chain: Nvidia → OpenAI → Data Center Debt → GPU Demand → Nvidia Revenue
+
+Nvidia's rumored $250 billion guarantee for OpenAI's data center lease is the latest example of circular financing. Here's the chain: Nvidia sells GPUs to a data center operator (e.g., CoreWeave). The operator pays for the GPUs by borrowing money, often with Nvidia's guarantee. OpenAI then leases compute from that operator, using the Nvidia GPUs. The revenue from OpenAI's lease pays back the debt. Nvidia's guarantee makes the debt market comfortable, but if OpenAI's revenue doesn't materialize, the debt could default. This creates a systemic risk: if AI demand proves weaker than expected, the entire chain unwinds. The market is starting to price in this risk, as seen in Nvidia's -5% move.
+
+### Chinese DRAM/HBM Progress → Memory Price Pressure → SK Hynix/Samsung/Micron Margins → AI Server Costs
+
+China's domestic DUV lithography tools are enabling its memory makers to produce DRAM and HBM at lower cost, albeit with less advanced nodes. If Chinese HBM enters the market, it could force down prices for HBM3E, which is currently a premium product for AI accelerators. Lower HBM prices would reduce the cost of AI servers (good for Nvidia, AMD), but would compress margins for SK Hynix, Samsung, and Micron, which are investing heavily in HBM capacity. The SK Hynix earnings miss today reflects the pressure on margins even as demand grows.
 
 ## 7. Building Your Knowledge
 
-- **Geopolitics is the tail that wags the AI dog.** The Iran attack and oil spike this morning show that geopolitical risk can directly affect the cost of powering data centers, which is the single largest operating expense for AI infrastructure. Always keep an eye on the Strait of Hormuz, Taiwan Strait, and South China Sea — these are the chokepoints that can halt the AI buildout.
-
-- **"Circular financing" in AI is a systemic risk.** Nvidia guaranteeing $250B for OpenAI's lease, or Core Scientific funding its data center with AMD's commitment — these are not traditional arms-length transactions. They create a feedback loop where the chipmaker's revenue is tied to the customer's ability to borrow. If the AI bubble bursts, the debt burden could cascade through the entire ecosystem. For now, the bet is that AI demand is real and growing, but the financing structure is unprecedented.
-
-- **Open-weight vs. open-source: the difference matters.** Kimi K3 is "open-weight" — you can download the trained model weights and use them, but the license restricts commercial use and you don't get the training code, data, or methodology. True open-source (like Llama 2) allows modification and redistribution. The distinction matters for enterprises: open-weight is cheaper than API calls but still has legal strings attached. The trend is toward more open-weight releases, which commoditize the model layer and shift value to infrastructure (GPUs, networking, power).
-
-- **The memory cycle is the biggest near-term wildcard for AI stocks.** HBM is the bottleneck for Nvidia's GPUs. SK Hynix, Samsung, and Micron are the only suppliers. If the memory cycle turns down (because of oversupply or slowing demand), HBM prices could fall, hurting memory makers but lowering Nvidia's costs. Conversely, if demand outstrips supply, memory makers thrive. This week's hyperscaler earnings will provide the clearest signal.
-
-- **Basis points (bps) — a universal unit for small changes.** A basis point is 1/100th of a percentage point (0.01%). When the Fed cuts rates by 25 bps, it means 0.25 percentage points. When a credit spread widens by 50 bps, it means the risk premium on a bond increased by 0.5 percentage points. Always think in bps when dealing with yields, spreads, and rate changes.
+- **Capex (capital expenditure)** is the money a company spends on long-term assets like buildings, equipment, and data centers. In AI, hyperscaler capex is a key indicator of future demand for GPUs, memory, and networking. But high capex without corresponding revenue growth can signal a bubble. Investors watch **free cash flow (FCF)** — operating cash flow minus capex — to see if spending is sustainable.
+- **Circular financing** is a pattern where a company (like Nvidia) helps its customers finance purchases of its own products. This inflates demand and creates financial risk if the end-users (like OpenAI) can't generate enough revenue to repay the debt. It's a key debate in AI investing right now.
+- **Open-weight models** like Kimi K3 are models whose trained parameters (weights) are publicly released, allowing anyone to run them on their own hardware. They are not fully "open source" if the license restricts use. They compress profit margins for proprietary API providers like OpenAI and Anthropic because enterprises can run the model for less than the API fee.
+- **The Strait of Hormuz** is a narrow waterway between Iran and Oman through which about 20% of the world's oil passes. Any disruption to shipping there immediately spikes oil prices. It's a geopolitical chokepoint that every energy investor must monitor.
+- **Grid interconnection** is the process of connecting a new data center or power plant to the electrical grid. It's a major bottleneck for AI data center buildout because the grid is aging and permitting takes years. Companies that can secure grid capacity (like Core Scientific in the AMD deal) have a competitive advantage.
+- **Token efficiency** refers to how many tokens (words) a model processes per dollar. As models get larger and more efficient, token costs plummet, squeezing profit margins for API providers but making AI cheaper for end users. This is a deflationary force in the AI industry.
 
 ## 8. Terms & Concepts
 
-**Concept Spotlight: Open-Weight Model**
-- **What it is:** A language model whose trained parameters (weights) are released to the public, allowing anyone to download and run the model on their own hardware. Unlike a closed API (e.g., OpenAI's GPT-4), you control the model and can fine-tune it, but you may not get the training code, data, or the ability to redistribute modified versions.
-- **Concrete example:** Moonshot AI's Kimi K3 (2.8T parameters) is open-weight — you can download it from Hugging Face, but the license prohibits commercial use without a separate agreement. By contrast, Meta's Llama 2 is both open-weight and open-source (permissive license).
-- **Real use case for investors:** An enterprise can download Kimi K3, run it on a cluster of Nvidia A100 GPUs, and use it for document analysis or code generation without paying per-token API fees. This reduces variable costs but increases capital expenditure (buying GPUs). It also means the enterprise may be less dependent on a single AI provider.
-- **Rough numbers/benchmarks:** Kimi K3 has 2.8T parameters, 1M token context window. It compares to GPT-4-class models on benchmarks (though exact scores are not yet independently verified). Running it requires massive GPU clusters — roughly 8-16 H100 nodes for inference, training costs millions.
-- **Caution/common misconception:** "Open-weight" is not the same as "open-source." The license may restrict commercial use, derivative works, or redistribution. Always check the license before using. Also, larger models are not always better — they are more expensive to run and may not be more efficient for specific tasks.
+### Concept Spotlight: Capex (Capital Expenditure)
 
-**Other terms:**
-- **Hyperscaler:** A large cloud service provider that operates massive, globally distributed data centers — primarily Amazon Web Services (AWS), Microsoft Azure, and Google Cloud (GCP). Their capex decisions drive the entire AI infrastructure supply chain. For example, when Microsoft commits $200 billion in capex for 2026 ([The Motley Fool](https://news.google.com/rss/articles/CBMimAFBVV95cUxPUUlKMDN2VE91RERvdU1ia1NHQ1Zod2pwenRuV0lKcFRpSjZCbnVSZnA4NkxXcF9pRDhFbWtKVi0xWXlQa2ktNVFEZjNIR3VZYXBpZURmNDdyQ2pCelpUQnlES0RPNDNDc3pxenYxSFlLRkZPSUdzZ2xCZ01CNXNxR2Y0eS1RNmdBd3htbXo4ZUVOekp1SnRrbQ?oc=5)), it creates demand for Nvidia GPUs, HBM memory, data center power, and fiber optics.
-- **Basis point (bps):** 1/100th of a percentage point. If the Fed cuts rates by 25 bps, it's 0.25%. When credit spreads widen by 100 bps, it means the risk premium increased by 1%. Essential for understanding bond yields, interest rate moves, and risk premiums.
-- **Strait of Hormuz:** A narrow waterway between Iran and Oman through which about 20% of the world's oil passes. Iran's ability to threaten tanker traffic makes it the most important energy chokepoint. Any disruption here sends oil prices spiking, which feeds into inflation and data center power costs.
-- **CoWoS (Chip-on-Wafer-on-Substrate):** A 2.5D advanced packaging technology that stacks multiple chips (e.g., GPU and HBM) on a silicon interposer to enable fast, low-latency communication. Nvidia's AI accelerators rely on CoWoS to achieve high memory bandwidth. TSMC's CoWoS capacity is nearly fully booked through 2027, making it a bottleneck for AI chip supply.
-- **Free Cash Flow (FCF):** Cash generated by a company after accounting for capital expenditures (capex). It's a key measure of financial health. For example, if a hyperscaler has $50B in operating cash flow but spends $60B on capex, its FCF is negative, meaning it must borrow or issue equity to fund the buildout. High FCF is a positive signal for investors.
-- **Credit Spread:** The difference in yield between a corporate bond and a risk-free government bond (e.g., U.S. Treasury). It measures the market's perception of default risk. Wider spreads mean investors see higher risk. In the AI context, credit spreads on data center REITs or neocloud companies are a real-time indicator of financing stress.
-- **Intermittency:** The variability of renewable energy sources (solar, wind) — they don't produce power continuously. Data centers require 24/7 reliable power, so intermittency is a major challenge. Solutions include battery storage (like FLNC), natural gas peaker plants, and nuclear. Grid interconnection delays are a key bottleneck for adding new renewable capacity to power AI.
+**What it is**: Capex is money spent by a company to acquire, upgrade, or maintain physical assets such as property, buildings, data centers, or equipment. It is different from **operating expense (opex)** , which covers day-to-day costs like salaries and electricity. In the AI industry, capex is dominated by spending on GPUs, data center construction, and networking gear.
+
+**Concrete example**: Amazon's $200 billion capex plan for 2026 includes building new data centers, buying servers, and installing its own Trainium AI chips. Microsoft's capex includes leasing Nvidia GPUs and building cloud regions.
+
+**Real use case for investors**: Wall Street scrutinizes hyperscaler capex numbers during earnings. If a company announces higher capex but lower AI revenue growth, it could be a warning sign of overinvestment. The ratio of capex to revenue is a common metric. For example, if Amazon's capex is $200B but its cloud revenue is only $100B, the capex/revenue ratio is 2x, which is high.
+
+**Rough numbers/benchmarks**: In 2025, the four largest hyperscalers (Amazon, Microsoft, Google, Meta) spent a combined ~$250 billion on capex. For 2026, that number is expected to exceed $350 billion. A healthy capex/revenue ratio for a mature tech company is around 10-15%, but AI hyperscalers are running at 30-50% because of the buildout.
+
+**Caution/common misconception**: Many investors confuse capex with spending on R&D. R&D is often expensed as opex, not capitalized. Also, high capex does not guarantee future revenue — it's a bet on demand. The circular financing debate (see Section 6) highlights how some AI capex may be funded by debt that may not be repaid.
+
+### Other Terms
+
+- **Basis point (bps)**: One basis point equals 0.01%. Used to describe changes in interest rates or bond yields. Example: The Fed is expected to cut rates by 25 bps (0.25%). A 100 bps move is 1 percentage point.
+- **Free Cash Flow (FCF)**: Operating cash flow minus capex. It's the cash a company has left after paying for its growth. Negative FCF means the company is spending more than it earns, which may require borrowing or selling equity. Amazon's $200B capex likely means negative FCF this year.
+- **Hyperscaler**: A large cloud computing company that operates massive data centers — Amazon (AWS), Microsoft (Azure), Google (GCP), Meta, and sometimes Alibaba and Tencent. They are the primary buyers of AI hardware and set the pace of AI infrastructure buildout.
+- **Open-Weight Model**: A model whose trained parameters (weights) are publicly released, allowing anyone to run it on their own hardware. Unlike "open source," the license may restrict use. Kimi K3 is open-weight.
+- **Strait of Hormuz**: A narrow waterway between Iran and Oman, critical for global oil shipments. About 20% of the world's oil passes through it. Any military conflict there directly impacts oil prices.
+- **Token Efficiency**: The number of tokens (pieces of words) a model can process per dollar. As models improve, token costs fall, reducing the price of AI services but also compressing margins for AI providers.
+- **Grid Interconnection**: The process of connecting a new power user (like a data center) to the electrical grid. It's a major bottleneck because of permitting delays and grid capacity constraints. Companies that secure interconnection rights have a competitive edge.
 
 ## 9. Bottom Line
 
-The big picture today is a three-way collision: 1) Iran's ballistic missile attack sent oil surging and risked reigniting a full-scale war, which could push inflation higher and force the Fed to stay hawkish — bad for growth stocks, especially overvalued AI names. 2) The Asian tech sell-off accelerated after SK Hynix's earnings failed to satisfy the market's insatiable expectations, dragging down the entire AI infrastructure complex. 3) The release of Kimi K3, the largest open-weight model ever, is a structural shift that could commoditize AI models and compress margins for proprietary providers, but boost demand for inference hardware.
+Today's brief is dominated by two major themes: the **re-escalation of the Iran war** and the **AI infrastructure financialization debate**. The ballistic missile attack on U.S. forces pushed oil above $100, complicating the Fed's rate decision and raising costs for the AI buildout. Meanwhile, Nvidia's $750 billion in potential deals and Amazon's $25 billion bond sale underscore the staggering scale of AI capex, but also the risk of circular financing. The market is punishing chip stocks (SK Hynix, Nvidia, AMD) as the "buy the rumor" trade unwinds.
 
-**What changed since yesterday:** The most dramatic change is the Iran attack — yesterday the market was pricing a temporary ceasefire; today it's pricing renewed escalation and $100+ oil. The SK Hynix earnings miss was also unexpected (they reported after market close yesterday, and the sell-off materialized today). The Kimi K3 release was known but the market hasn't fully digested its implications for token pricing. The Fed meeting and Big Tech earnings loom as the next major catalysts. This week will define whether the AI bull market can survive a geopolitical shock and a potential earnings disappointment.
+**What changed since the previous brief**:
+- The Iran conflict moved from a pause to active strikes, with oil prices spiking.
+- SK Hynix reported earnings that missed lofty expectations, triggering a memory sector sell-off.
+- Kimi K3, the largest open-weight model, was released, accelerating the trend of token cost compression.
+- AMD announced a major data center deal with Core Scientific, signaling its aggressive push into AI infrastructure.
+- The Fed's meeting begins today, with markets pricing in a rate cut but oil inflation complicating the outlook.
+
+The key question for the rest of the week: Will Big Tech earnings reassure investors that AI capex is generating returns, or will they confirm the bubble fears? The answer will shape the next leg of the market.
 
 ## 10. Sources
 
-**World & Geopolitics**
+### World & Geopolitics
 - [CNBC — Iran launches surprise ballistic missile attack on U.S. forces](https://www.cnbc.com/2026/07/29/us-iran-war-hormuz-centcom.html)
-- [NBC News — Iran War: Latest News](https://www.nbcnews.com/world/iran-war)
 - [CNBC — Oil jumps as U.S.-Iran resume strikes](https://www.cnbc.com/2026/07/29/oil-prices-today-brent-wti-iran-us-hormuz.html)
-- [MarketWatch — Saudi Arabia's workaround to export oil](https://www.marketwatch.com/story/saudi-arabia-has-a-new-and-pricier-workaround-to-export-its-oil-fb5085a5?mod=mw_rss_topstories)
-- [Newsweek — US reveals rare Coast Guard drills with Taiwan](https://www.newsweek.com/us-taiwan-coast-guards-train-together-rare-public-maneuvers-12253946)
-- [Newsweek — China launches military drills in Taiwan Strait](https://www.newsweek.com/china-stages-military-drills-in-key-trade-waters-after-rubio-warning-12227056)
+- [BBC — Saudi Arabia joins US in strikes on Iran-backed militias in Iraq](https://www.bbc.co.uk/news/articles/c70g6y24d76o)
+- [Al Jazeera — Khamenei ties US-Iran peace deal to Israel ending attacks on Lebanon](https://www.aljazeera.com/news/2026/7/26/us-iran-peace-deal-depends-on-israel-leaving-lebanon-says-khamenei)
+- [Reuters — Pakistan, Iran explore path towards new talks with US in China-initiated push](https://www.reuters.com/world/china/pakistan-iran-explore-path-towards-new-talks-with-us-china-initiated-push-2026-07-24/)
+- [NBC News — Iran War: Latest News, Live Coverage and Video](https://www.nbcnews.com/world/iran-war)
+- [MarketWatch — Saudi Arabia has a new, and pricier, workaround to export its oil](https://www.marketwatch.com/story/saudi-arabia-has-a-new-and-pricier-workaround-to-export-its-oil-fb5085a5)
+- [Newsweek — US Reveals Rare Coast Guard Drills with Taiwan](https://www.newsweek.com/us-taiwan-coast-guards-train-together-rare-public-maneuvers-12253946)
 - [Defense News — US Congress approves money for Taiwan defense](https://www.defensenews.com/global/asia-pacific/2026/07/27/us-congress-approves-money-for-taiwan-defense-does-it-mean-trump-is-done-hesitating/)
-- [Streamline — Kremlin dismisses US-Ukraine air ceasefire rumours](https://streamlinefeed.co.ke/news/kremlin-dismisses-us-ukraine-air-ceasefire-rumours-amid-escalation)
+- [Newsweek — China launches military drills in Taiwan Strait after Rubio meeting](https://www.newsweek.com/china-stages-military-drills-in-key-trade-waters-after-rubio-warning-12227056)
 - [NPR — Senior Ukraine negotiator says Russia is running out of options](https://www.npr.org/2026/07/28/g-s1-135640/ukraine-war-peace-negotiator-russia)
+- [Streamline — Kremlin dismisses US-Ukraine air ceasefire rumours](https://streamlinefeed.co.ke/news/kremlin-dismisses-us-ukraine-air-ceasefire-rumours-amid-escalation)
+- [Al Jazeera — Russian industrial sites on fire after Ukrainian drone attacks](https://www.aljazeera.com/news/2026/7/29/russian-industrial-sites-on-fire-after-ukrainian-drone-attacks)
 - [Responsible Statecraft — The West's plan to pressure Putin has a glaring flaw](https://responsiblestatecraft.org/ukraine-strikes-deep-in-russia)
-- [Guardian — Japan earthquake death toll rises](https://www.theguardian.com/world/live/2026/jul/29/sanae-takaichi-rescue-trapped-shopping-centre-mall-japan-earthquake-latest-news-updates)
-- [India's News.Net — India's drone moment has arrived](https://www.indiasnews.net/news/279210780/indias-drone-moment-has-arrived)
-- [France 24 — Khalida Boufedeche elected as Algeria's first woman parliamentary speaker](https://www.france24.com/en/africa/20260729-khalida-boufedeche-elected-as-algeria-first-woman-parliamentary-speaker)
-- [NPR — France evacuates thousands as wildfires displace hundreds of thousands](https://www.npr.org/2026/07/29/g-s1-136057/france-wildfires)
+- [The Guardian — Rescue teams face 'race against time' in Japan earthquake](https://www.theguardian.com/world/live/2026/jul/29/sanae-takaichi-rescue-trapped-shopping-centre-mall-japan-earthquake-latest-news-updates)
+- [India's News Net — India's drone moment has arrived](https://www.indiasnews.net/news/279210780/indias-drone-moment-has-arrived)
+- [Mining.com — India and Myanmar signal closer rare earth mining ties](https://www.mining.com/web/india-and-myanmar-signal-closer-rare-earth-mining-ties/)
+- [ETPharma — India's Pharma Sector Sees Record M&A Activity](https://pharma.economictimes.indiatimes.com/news/pharma-industry/pharma-ma-peaks-in-june-quarter-on-india-incs-global-push-pe-buyouts-slump-40/132617929)
+- [BBC — Israel intensifies strikes on Lebanon](https://www.bbc.com/news/videos/cy5dnr6qqrzo)
+- [Oil & Gas 360 — Asia is rewriting the global energy map](https://www.oilandgas360.com/asia-is-rewriting-the-global-energy-map/)
+- [Newsweek — At the Sharp Edge of the U.S.-China Rivalry, the Philippines Holds the Line](https://www.newsweek.com/at-sharp-edge-of-us-china-rivalry-philippines-holds-line-12223272)
 
-**Markets, Money & Deals**
-- [MarketWatch — Stock market today: Dow holds gains; S&P and Nasdaq see red](https://www.marketwatch.com/livecoverage/stock-market-today-dow-s-p-500-nasdaq-oil-prices-us-paused-strikes-iran-treasury-yields-fed-big-tech)
-- [Investopedia — What to expect in markets this week: Amazon, Apple, Meta, Microsoft earnings, Fed decision](https://www.investopedia.com/what-to-expect-in-markets-this-week-amazon-apple-meta-microsoft-earnings-fed-interest-rate-decision-12025525)
-- [The Motley Fool — The Federal Reserve should raise interest rates today, but it won't](https://news.google.com/rss/articles/CBMilwFBVV95cUxOVXlZRHR6enhyaDhtMEdwTlRSOFVELWxKMkNRblZXbHh4QldLcEdnRFFLT0hIODdqbmtYWDgtVDJMbENxZEh5dkgxTl9LQ3MtRGdhblR0UnlJMzhBQUFLcHVMNWJTcFl5VTFVcWo2VEcyLWJwM2kwV0llOHVMb0VNNzZXVDZKQjVCbUVtQ1piWmFjM0k1azVr?oc=5)
-- [CNBC — Asian technology stocks extend sell-off with SoftBank down 10%](https://www.cnbc.com/2026/07/29/chip-selloff-sk-hynix-samsung-softbank.html)
-- [CNBC — SK Hynix shares tank as exponential earnings growth fails to satisfy expectations](https://www.cnbc.com/2026/07/29/sk-hynix-earnings-profit-revenue-hbm-memory.html)
-- [CNBC — Korean leveraged ETF investors nurse heavy losses amid chip stock rout](https://www.cnbc.com/2026/07/29/korea-leveraged-etf-kodex-sk-hynix.html)
-- [MarketWatch — Seagate's earnings are welcome news for the battered AI trade](https://www.marketwatch.com/story/seagates-earnings-are-welcome-news-for-the-battered-ai-trade-92dfc30f?mod=mw_rss_topstories)
-- [CNBC — BTS' concerts have been so successful, it's now bad for its own agency's shares](https://www.cnbc.com/2026/07/29/bts-concerts-hybe-record-results-shares-crash.html)
-- [Global Crypto — Coinbase Canada pushes toward an everything exchange](https://news.google.com/rss/articles/CBMigwFBVV95cUxNdEJXZVppLTlfOVlRNWlTVEU4UndRdHNXRXQyUzJ5OFdIVmUyazF0N2IyOXV3dWRuQkhNMExPODZWLXBHUFVFMmROSEt3SDQ1OFVTbVZMeWprS1p5MWtvUVc3ZFQzX0hRQlU5LTNFdFF6SXFDQ1JoeHZQOTBpcUVOb1c5dw?oc=5)
-- [The Motley Fool — Amazon CEO Andy Jassy just sold $25 billion in bonds to finance AI data center build-out](https://news.google.com/rss/articles/CBMimAFBVV95cUxPUUlKMDN2VE91RERvdU1ia1NHQ1Zod2pwenRuV0lKcFRpSjZCbnVSZnA4NkxXcF9pRDhFbWtKVi0xWXlQa2ktNVFEZjNIR3VZYXBpZURmNDdyQ2pCelpUQnlES0RPNDNDc3pxenYxSFlLRkZPSUdzZ2xCZ01CNXNxR2Y0eS1RNmdBd3htbXo4ZUVOekp1SnRrbQ?oc=5)
-- [The Australian — Rio boss bets the next supercycle will be built in a data centre](https://news.google.com/rss/articles/CBMi_gFBVV95cUxQX3hIS1ZVQkFlQ0liQTVfWW90SWpaNnpIaER6bDM0X256a1FFbXJBMlFqdWRFWlgtSU9TcDdtLUpSdDRFeUMzcDBkVGNOR1h2SEpIeVJpSUNvRzF6Y0pwaUdCaGJOYWZNN1JDV00xTjdwRjFUcXE1ckd6RE53MzljNGE3RC05eHROWmczOTdhNlhZU2NBZDZPN3NzTFFlOEFzeUJpTm9QSjBvcnlWZUp4Y1JfWGZFYWx6QnhITjRKTmJDLUxYMDhVV0dmN0JOc1UyRE1PTlFmRVJqMjhJR3J3QVpLNmJrWjBaYXRxVWthb1hMTTVPSXlNZ2xKcGtiZ9IBgwJBVV95cUxQRGJtcjlWa0FnbzRfYTVrdmtraU13emNiRC1fVmNlV3ByWUI2OHlYNlFZMHg1b3NTek91RkJTVXlkSmVZUlU5MDFlNmpTcVI2RkpiVE5TSlhkcTBUeHA3c2MwdlV4OVBKWE81SHpRLUlOa3NWWm9Vb2ZuUjkxLS16bG1jRlJwRi1icnRvdHZzeVEwc0pEQlFtd3Fudm5NN2NXeVRnRkZGU3FuekRXTm5sNURUWkxGcWwzdXYxY00yLVc0bFl1OWNTLUk4RXdtV0prMW4xRFcwZmFUcXNYSkZEZlQ0dlBMUGU5eUkyV0pUeEc0WXFqSDFuNjVmNWxGY1lRY3VN?oc=5)
+### Markets, Money & Deals
+- [MarketWatch — Stock Market Today: Dow holds onto gains; S&P 500 and Nasdaq see red](https://www.marketwatch.com/livecoverage/stock-market-today-dow-s-p-500-nasdaq-oil-prices-us-paused-strikes-iran-treasury-yields-fed-big-tech)
+- [Investopedia — What to Expect in Markets This Week: Amazon, Apple, Meta and Microsoft Earnings; Fed Interest Rate Decision](https://www.investopedia.com/what-to-expect-in-markets-this-week-amazon-apple-meta-microsoft-earnings-fed-interest-rate-decision-12025525)
+- [CNBC — Megacap earnings and Fed meeting could test a market on edge next week](https://www.cnbc.com/2026/07/24/stock-market-next-week-outlook-for-july-27-31-2026.html)
+- [Reuters — Wall St Week Ahead US stocks face tests from Fed decision, tech-led earnings deluge](https://www.reuters.com/business/wall-st-week-ahead-us-stocks-face-tests-fed-decision-tech-led-earnings-deluge-2026-07-24/)
+- [CNBC — SK Hynix shares tank as exponential earnings growth fails to satisfy AI-charged expectations](https://www.cnbc.com/2026/07/29/sk-hynix-earnings-profit-revenue-hbm-memory.html)
+- [CNBC — Minister apologizes as Korean leveraged ETF investors nurse heavy losses](https://www.cnbc.com/2026/07/29/korea-leveraged-etf-kodex-sk-hynix.html)
+- [CNBC — Tech stocks extend sell-off with SoftBank losing 7%](https://www.cnbc.com/2026/07/29/chip-selloff-sk-hynix-samsung-softbank.html)
+- [The Motley Fool — Amazon CEO Andy Jassy Just Sold $25 Billion in Bonds to Finance AI Data Center Build-Out](https://news.google.com/rss/articles/CBMimAFBVV95cUxPUUlKMDN2VE91RERvdU1ia1NHQ1Zod2pwenRuV0lKcFRpSjZCbnVSZnA4NkxXcF9pRDhFbWtKVi0xWXlQa2ktNVFEZjNIR3VZYXBpZURmNDdyQ2pCelpUQnlES0RPNDNDc3pxenYxSFlLRkZPSUdzZ2xCZ01CNXNxR2Y0eS1RNmdBd3htbXo4ZUVOekp1SnRrbQ?oc=5)
+- [MarketWatch — Seagate's earnings are welcome news for the battered AI trade](https://www.marketwatch.com/story/seagates-earnings-are-welcome-news-for-the-battered-ai-trade-92dfc30f)
+- [The Economic Times — EU approves Paramount's $81 billion Warner Bros. mega merger deal with conditions](https://m.economictimes.com/news/international/business/eu-approves-paramounts-81-billion-warner-bros-mega-merger-deal-with-conditions/articleshow/132570248.cms)
+- [Storyboard18 — Paramount Skydance ordered to delay Warner Bros takeover amid competition lawsuit](https://www.storyboard18.com/media-and-entertainment/paramount-skydance-ordered-to-delay-warner-bros-takeover-amid-competition-lawsuit-105154.htm)
+- [BioSpace — Argenx deepens immuno expertise with $2.2B Forte Biosciences buy](https://www.biospace.com/deals/argenx-deepens-immuno-expertise-with-2-2b-forte-biosciences-buy)
+- [Food Ingredients First — Ingredion's £2.7B Tate & Lyle deal wins shareholder approval](https://news.google.com/rss/articles/CBMirAFBVV95cUxNSFRZRk9MRkJFMXN6ZUhXZFlEYWpBUG5FY2JNaVlSa1A4SmtfT1RFWlFucEpIcWpxeTdmSE5jUWJKWERLY0gyYXg2QjVqVHZibEFWalJ6SnhuZUx1ejBBWldvbkhwYXgyVENjUkw5Uzk2TXhiRlNXaFJPVk5nWTVTaGl4a0JGMm5CemtzaU1uRk44Qk90Z1pMbnJLSXdhRGRSQm1RRHBHMS1keHRX?oc=5)
+- [CNBC — BTS' concerts have been so successful, it’s now bad for its own agency’s shares](https://www.cnbc.com/2026/07/29/bts-concerts-hybe-record-results-shares-crash.html)
+- [Al Jazeera — IPL’s business value rockets to $20bn as India cricket league soars](https://www.aljazeera.com/sports/2026/7/29/ipls-business-value-rockets-to-20-billion-as-india-cricket-league-soars)
 
-**AI & Infrastructure**
-- [Tech Times — AMD secures AI data center capacity from Core Scientific in $14B power play](https://www.techtimes.com/articles/321817/20260728/amd-secures-ai-data-center-capacity-core-scientific-14b-power-play.htm)
-- [Reuters — Nvidia, SK Group unveil $500 billion-plus AI data centers initiative, memory partnership](https://www.reuters.com/business/media-telecom/nvidia-sk-group-unveil-500-billion-plus-ai-data-centers-initiative-memory-2026-07-24/)
+### AI & Infrastructure
+- [Yahoo Finance — Nvidia’s $750 Billion Deals Revive Fear of AI Circular Financing](https://finance.yahoo.com/technology/ai/articles/nvidia-750-billion-deals-revive-102003935.html)
 - [Reuters — Nvidia in talks with OpenAI to guarantee $250 billion financing for data center](https://www.reuters.com/business/media-telecom/nvidia-talks-with-openai-guarantee-250-billion-financing-data-center-wsj-reports-2026-07-26/)
-- [Yahoo Finance — Nvidia's $750 billion deals revive fear of AI circular financing](https://finance.yahoo.com/technology/ai/articles/nvidia-750-billion-deals-revive-102003935.html)
-- [Light Reading — Korean firms strike huge AI deals with Nvidia, Broadcom](https://www.lightreading.com/ai-machine-learning/korean-firms-strike-huge-ai-deals-with-nvidia-broadcom)
-- [MarketWise — TSMC boosts U.S. chip production by $100 billion as AI fuels growth](https://marketwise.com/investing/tsmc-us-chip-investment-ai-revenue-growth-stock/)
-- [Tech Insider — Cloud market share 2026: Google Cloud hits 82% growth](https://tech-insider.org/google-cloud-82-percent-growth-aws-earnings-2026)
-- [Forbes — As token costs plunge, enterprise AI providers face a new margin squeeze](https://www.forbes.com/sites/petercohan/2026/07/28/as-token-costs-plunge-enterprise-ai-providers-face-a-new-margin-squeeze)
-- [Yahoo Finance — Micron gets a major vote of confidence from Bank of America](https://finance.yahoo.com/markets/stocks/articles/micron-gets-major-vote-confidence-123722085.html)
-
-**Model & Research Watch**
+- [Reuters — Nvidia, SK Group unveil $500 billion-plus AI data centers initiative, memory partnership](https://www.reuters.com/business/media-telecom/nvidia-sk-group-unveil-500-billion-plus-ai-data-centers-initiative-memory-2026-07-24/)
+- [Tech Times — AMD Secures AI Data Center Capacity From Core Scientific in $14B Power Play](https://www.techtimes.com/articles/321817/20260728/amd-secures-ai-data-center-capacity-core-scientific-14b-power-play.htm)
+- [Tech Insider — Cloud Market Share 2026: Google Cloud Hits 82% Growth](https://tech-insider.org/google-cloud-82-percent-growth-aws-earnings-2026)
+- [The Chosun — Chinese Firms Rapidly Narrow DRAM, HBM Gaps](https://www.chosun.com/english/industry-en/2026/07/29/IVI6ANPAANEILO5UW74TPSVTXQ)
 - [VentureBeat — Kimi K3's full weights are here, but they're 'open' with a caveat](https://venturebeat.com/technology/kimi-k3s-full-weights-are-here-but-theyre-open-with-a-caveat-what-enterprises-should-know)
 - [Quartz — Moonshot AI releases Kimi K3 open-weight model for download](https://qz.com/moonshot-ai-kimi-k3-open-weights-download-072726)
-- [Substack — AI week in review: Qwen 3.8 Max Preview](https://patmcguinness.substack.com/p/ai-week-in-review-260724)
-- [arXiv — Do models fake alignment without clear consequences?](https://arxiv.org/abs/2607.24758)
-- [arXiv — Kernel Forge: An agent harness for LLM-based generation of CUDA kernels](https://arxiv.org/abs/2607.24762)
-- [arXiv — FinAbstain: Uncertainty-calibrated multimodal RAG for selective financial forecasting](https://arxiv.org/abs/2607.24875)
-- [arXiv — Inverse RL helps align AI by imitating humans](https://arxiv.org/abs/2607.24900)
-- [eu.36kr — AI for scientific research: Transcending the conceptual stage](https://eu.36kr.com/en/p/3914673007056261)
+- [Forbes — As Token Costs Plunge, Enterprise AI Providers Face A New Margin Squeeze](https://www.forbes.com/sites/petercohan/2026/07/28/as-token-costs-plunge-enterprise-ai-providers-face-a-new-margin-squeeze)
+- [Tech Times — OpenAI and Anthropic Are Writing the Threshold Their Rivals Must Clear](https://www.techtimes.com/articles/321917/20260728/openai-anthropic-are-writing-threshold-their-rivals-must-clear-launch.htm)
+- [VentureBeat — The agent security gap: 54% of enterprises have already had an AI agent incident](https://venturebeat.com/resources/the-agent-security-gap-54-of-enterprises-have-already-had-an-ai-agent-incident-and-most-still-let-agents-share-credentials)
+- [Tom's Hardware — OpenAI, Google, and Anthropic absent from Nvidia-led Open Secure AI Alliance](https://www.tomshardware.com/tech-industry/artificial-intelligence/openai-google-and-anthropic-absent-from-nvidia-led-open-secure-ai-alliance-30-companies-join-security-alliance-after-openai-agent-breach)
+- [Exponential View — Will Kimi K3 change the economics of AI?](https://www.exponentialview.co/p/will-kimi-k3-change-the-economics-of-ai)
+- [Substack — AI Week in Review 26.07.24](https://patmcguinness.substack.com/p/ai-week-in-review-260724)
+
+### Model & Research Watch
+- [arXiv — Do Models Fake Alignment Without Clear Consequences?](https://arxiv.org/abs/2607.24758)
+- [arXiv — LLM Scheming Inversely Scales with Pretraining Language Coverage](https://arxiv.org/abs/2607.24769)
+- [arXiv — Kernel Forge: An Agent Harness for LLM-based Generation and Optimization of CUDA Kernels](https://arxiv.org/abs/2607.24762)
+- [arXiv — FinAbstain: Uncertainty-Calibrated Multimodal RAG for Selective Financial Forecasting](https://arxiv.org/abs/2607.24875)
+- [arXiv — Inverse RL Helps Align AI by Imitating Humans](https://arxiv.org/abs/2607.24900)
+- [arXiv — CaRE: Compute-aware Remasking Evaluation Protocol for Masked Diffusion Language Models](https://arxiv.org/abs/2607.24763)
+- [arXiv — GAUGE: Grading Agent-Built Financial Models Without a Golden Answer](https://arxiv.org/abs/2607.24889)
+- [36Kr — AI for Scientific Research: Transcending the Conceptual Stage](https://eu.36kr.com/en/p/3914673007056261)
+- [LearnVector — Andrew Ng's AI company building one‑to‑one learning experiences](https://learnvector.ai/)
+- [CNBC — Elon Musk's xAI sues Minnesota over law to ban 'nudify' apps](https://www.cnbc.com/2026/07/28/spacexs-xai-sues-minnesota-over-law-to-ban-nudify-apps-.html)
 
 ---
-_Generated 2026-07-29 01:22 PDT · 95 sources · model: deepseek-ai/DeepSeek-V4-Flash via https://api.gmi-serving.com/v1_
+_Generated 2026-07-29 01:40 PDT · 95 sources · model: deepseek-ai/DeepSeek-V4-Flash via https://api.gmi-serving.com/v1_
