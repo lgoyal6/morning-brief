@@ -140,7 +140,7 @@ DISCORD_DRY_RUN=1 python scripts/send_discord.py    # logs instead of sending
 | --- | --- | --- |
 | `LLM_BASE_URL` | GMI Cloud | OpenAI-compatible endpoint. |
 | `LLM_MODEL` | `deepseek-ai/DeepSeek-V4-Flash` | Model ID. |
-| `LLM_MAX_TOKENS` | `12000` | Max output tokens (raised from 7000 so the full newspaper never truncates mid-section). |
+| `LLM_MAX_TOKENS` | `16000` | Max output tokens (raised from 7000 so the full newspaper never truncates mid-section; Bottom Line is ordered before Sources so the synthesis survives even if the tail clips). |
 | `LLM_TEMPERATURE` | `0.4` | Sampling temperature. |
 | `ENABLE_QUOTES` | `1` | Pull watchlist quotes via yfinance (best-effort; feeds the movers chart). |
 | `BRIEF_LOOKBACK_HOURS` | `48` | How far back to keep articles. |
