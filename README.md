@@ -92,7 +92,7 @@ Optional **Variables** (Settings → Variables), to override defaults without to
 
 ## Run it manually
 
-- GitHub UI: **Actions → Morning Brief → Run workflow**. A manual dispatch always regenerates and re-sends (even if today's brief already exists).
+- GitHub UI: **Actions → Morning Brief → Run workflow**. A manual dispatch always **regenerates** today's brief (even if it already exists), but **does not DM it to Discord by default** — that's so iterating on the pipeline doesn't spam your DMs or consume the day's morning-delivery slot. Tick the **`send`** input (or set it true via `gh workflow run morning-brief.yml -f send=true`) when you actually want it delivered.
 
 ## Run locally
 
@@ -129,7 +129,7 @@ DISCORD_DRY_RUN=1 python scripts/send_discord.py    # logs instead of sending
 ## Behavior details
 
 - **Date**: computed in `America/Los_Angeles`.
-- **Duplicate prevention**: on a *scheduled* run, if today's `.md` + `.pdf` already exist, the pipeline skips generation, PDF render, and the Discord send — so the two DST cron times never produce a duplicate brief or double message. Manual dispatch or `FORCE_REGENERATE=1` overrides this.
+- **Duplicate prevention**: the two DST cron times dedup on a *committed* marker (`briefs/.delivery.json`) that records the last date a **scheduled** run claimed the morning-delivery slot — not on "do today's files exist". The first scheduled cron of the day generates, sends, and stamps the marker; the second sees the marker and skips generation, PDF render, and the send. Because only scheduled runs touch the marker, a manual dispatch or a late-night local run can **no longer suppress the real morning send** (the bug where overnight iteration "used up" the day's brief). `FORCE_REGENERATE=1` overrides the skip.
 - **No hallucinated news**: if zero sources are fetched, generation aborts rather than inventing headlines. The model is instructed to use only the supplied sources and to link every story.
 - **Discord failure**: the Discord send runs *last*, so even if it fails, the brief has already been committed and uploaded. The workflow then fails with a clear Discord error.
 - **Provenance**: the raw fetched sources/quotes are saved to `briefs/YYYY-MM-DD-sources.json` (uploaded as an artifact, not committed).

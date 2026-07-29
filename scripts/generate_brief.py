@@ -4,9 +4,11 @@
 Pipeline (stage 1 of 3):
 
 1.  Decide today's date (America/Los_Angeles) and where files go.
-2.  Duplicate prevention: on a *scheduled* run, if today's Markdown + PDF already
-    exist, exit cleanly without regenerating or re-sending. Manual dispatch
-    (``workflow_dispatch``) or ``FORCE_REGENERATE=1`` always regenerates.
+2.  Duplicate prevention: a scheduled run claims the day's morning-delivery slot
+    via a committed marker (``briefs/.delivery.json``). The day's second DST cron
+    sees the marker and exits cleanly; the first cron regenerates and stamps it.
+    The marker is set only by scheduled runs, so a manual dispatch or a local run
+    can never suppress the morning send. ``FORCE_REGENERATE=1`` overrides the skip.
 3.  Fetch current articles: optional live web search (Tavily/Brave, if a
     SEARCH_API_KEY is set) merged with credible RSS feeds + topic-targeted
     Google News searches. Optionally pull a watchlist quote snapshot via yfinance.
@@ -673,14 +675,19 @@ def main() -> int:
     pdf_file = common.dated_pdf_path(today)
 
     event = os.environ.get("GITHUB_EVENT_NAME", "")
+    is_scheduled = event == "schedule"
     force = common.env_flag("FORCE_REGENERATE") or "--force" in sys.argv
     dry_run = common.env_flag("BRIEF_DRY_RUN") or "--dry-run" in sys.argv
 
-    # Duplicate prevention: two DST cron times run daily, so the second one (and
-    # any manual re-trigger of a scheduled run) must not double up.
-    already = md_file.exists() and pdf_file.exists()
-    if already and event == "schedule" and not force:
-        print(f"Brief for {today} already exists and this is a scheduled run — skipping.")
+    # Duplicate prevention across the two daily DST crons. A scheduled run claims
+    # the day's morning-delivery slot via a COMMITTED marker (see
+    # common.mark_scheduled_delivery, set below once generation succeeds), so only
+    # the *second* scheduled cron short-circuits. We deliberately key off that
+    # marker rather than "do today's files already exist": a manual dispatch or a
+    # late-night local run may have committed today's .md/.pdf, and that must NOT
+    # suppress the real morning send.
+    if is_scheduled and common.scheduled_delivered_date() == today and not force:
+        print(f"Scheduled brief for {today} already delivered — skipping.")
         common.save_state(date=today, action="skipped", md=str(md_file), pdf=str(pdf_file))
         return 0
 
@@ -739,6 +746,14 @@ def main() -> int:
 
     md_file.write_text(markdown)
     print(f"Wrote {md_file} ({len(markdown)} chars)")
+
+    # Claim today's morning-delivery slot so the day's second DST cron skips.
+    # Only scheduled runs do this — manual/local runs never consume the slot, so
+    # iterating on the pipeline can't block the next scheduled send. The marker is
+    # committed by the workflow's commit step (it is not gitignored).
+    if is_scheduled:
+        common.mark_scheduled_delivery(today)
+        print(f"Claimed scheduled morning-delivery slot for {today}.")
 
     common.save_state(
         date=today,

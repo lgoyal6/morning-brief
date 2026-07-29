@@ -94,6 +94,19 @@ def main() -> int:
         print("No brief regenerated this run — not sending to Discord.")
         return 0
 
+    # Manual dispatch is for iterating on the pipeline, so it does NOT send by
+    # default — that's what kept overnight test runs from DMing the brief at 1am
+    # (and it never touches the scheduled morning slot either). Re-run the
+    # workflow with the `send` input set to true to actually deliver. Scheduled
+    # and local runs (GITHUB_EVENT_NAME unset) always send.
+    event = os.environ.get("GITHUB_EVENT_NAME", "")
+    if event == "workflow_dispatch" and not common.env_flag("DISCORD_SEND"):
+        print(
+            "Manual dispatch — not sending to Discord "
+            "(re-run with the `send` input set to true to deliver)."
+        )
+        return 0
+
     token = os.environ.get("DISCORD_BOT_TOKEN", "").strip()
     target = os.environ.get("DISCORD_TARGET", "").strip()
 

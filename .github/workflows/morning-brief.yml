@@ -8,6 +8,11 @@ on:
     - cron: "0 15 * * *"   # 08:00 PDT / 07:00 PST
     - cron: "0 16 * * *"   # 09:00 PDT / 08:00 PST
   workflow_dispatch:        # manual "Run workflow" button (always regenerates)
+    inputs:
+      send:
+        description: "Also DM the brief to Discord (manual runs don't send by default)"
+        type: boolean
+        default: false
 
 # Prevent overlapping runs from racing on the same git push.
 concurrency:
@@ -35,9 +40,11 @@ jobs:
       # no key the brief falls back to RSS-only. Provider: tavily (default) or brave.
       SEARCH_PROVIDER: ${{ vars.SEARCH_PROVIDER || 'tavily' }}
       SEARCH_API_KEY: ${{ secrets.SEARCH_API_KEY }}
-      # Discord delivery
+      # Discord delivery. Manual runs only send when the `send` input is true;
+      # scheduled runs always send. (Empty on non-dispatch events.)
       DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
       DISCORD_TARGET: ${{ secrets.DISCORD_TARGET }}
+      DISCORD_SEND: ${{ github.event.inputs.send }}
       # Misc
       ENABLE_QUOTES: "1"
       TZ: America/Los_Angeles
