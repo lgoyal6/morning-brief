@@ -224,6 +224,16 @@ def md_to_html(md_text: str) -> tuple[str, str, str]:
     for a in soup.find_all("a"):
         a["class"] = a.get("class", []) + ["src"]
 
+    # Compact the Sources section — it's a long link list, so shrink its font
+    # and spacing. Tag the Sources <h2> and everything under it up to the next
+    # <h2> (so a later Quick Check section is unaffected).
+    in_sources = False
+    for el in soup.find_all(recursive=False):
+        if el.name == "h2":
+            in_sources = "source" in el.get_text().lower()
+        if in_sources and el.name:
+            el["class"] = el.get("class", []) + ["srccompact"]
+
     # WeasyPrint only honours `column-span: all` on a block box, not on a raw
     # <table>. Wrap each table so it spans both columns instead of fragmenting
     # across the column break.
@@ -330,6 +340,15 @@ th, td {{ border: 0.6px solid #cbd5e1; padding: 4px 6px; text-align: left; verti
 thead th {{ background: #eef2f7; font-weight: 700; }}
 tbody tr:nth-child(even) {{ background: #f8fafc; }}
 
+/* Sources section: compact — smaller font, tighter spacing */
+h2.srccompact {{ font-size: 12.5pt; margin: 11px 0 4px; }}
+.srccompact {{ font-size: 7.9pt; line-height: 1.22; }}
+.srccompact ul, .srccompact ol {{ margin: 0 0 3px; padding-left: 12px; }}
+.srccompact li {{ margin: 0 0 1px; }}
+.srccompact p {{ margin: 0 0 3px; }}
+.srccompact h3 {{ font-size: 9pt; margin: 5px 0 1px; }}
+.srccompact a.src {{ border-bottom: 0; }}
+
 .provenance {{ column-span: all; margin-top: 14px; padding-top: 6px;
   border-top: 1px solid #e2e8f0; font-size: 7.8pt; color: #94a3b8; }}
 .provenance a {{ color: #94a3b8; }}
@@ -358,7 +377,9 @@ def render(md_file: Path, pdf_file: Path, date: str) -> None:
     quotes, sources = load_provenance(date)
 
     title, footer_html, body_html = md_to_html(md_text)
-    chart_uri = movers_chart_uri(quotes)
+    # The auto watchlist chart is off by default — big graphs only when they add
+    # real signal. Re-enable with BRIEF_MOVERS_CHART=1 if you want it back.
+    chart_uri = movers_chart_uri(quotes) if common.env_flag("BRIEF_MOVERS_CHART") else None
     photo_limit = int(os.environ.get("BRIEF_PHOTO_LIMIT", "3"))
     photos = fetch_photos(sources, photo_limit)
 
