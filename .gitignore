@@ -14,5 +14,6 @@ venv/
 # Per-run provenance: uploaded as workflow artifacts, but not committed to git.
 briefs/*-sources.json
 briefs/.brief_state.json
+briefs/*.debug.html
 
 # Generated briefs (the dated .md/.pdf and latest PDF) ARE committed on purpose.

@@ -21,8 +21,10 @@ that speaks the OpenAI Chat Completions API.
 
 from __future__ import annotations
 
+import collections
 import json
 import os
+import re
 import socket
 import sys
 from datetime import datetime, timedelta, timezone
@@ -59,7 +61,11 @@ def resolve_api_key() -> str | None:
 
 LLM_BASE_URL = os.environ.get("LLM_BASE_URL", DEFAULT_BASE_URL).rstrip("/")
 LLM_MODEL = os.environ.get("LLM_MODEL", DEFAULT_MODEL)
-LLM_MAX_TOKENS = int(os.environ.get("LLM_MAX_TOKENS", "7000"))
+# Output ceiling. The old 7000 default routinely truncated the brief mid-section
+# (some days ended mid-sentence, ~3 pages). The two-pillar newspaper below needs
+# noticeably more room, so default higher; override with LLM_MAX_TOKENS if your
+# endpoint caps completion length lower.
+LLM_MAX_TOKENS = int(os.environ.get("LLM_MAX_TOKENS", "12000"))
 LLM_TEMPERATURE = float(os.environ.get("LLM_TEMPERATURE", "0.4"))
 
 # ---------------------------------------------------------------------------
@@ -70,38 +76,74 @@ USER_AGENT = (
     "(KHTML, like Gecko) Chrome/124.0 Safari/537.36"
 )
 LOOKBACK_HOURS = int(os.environ.get("BRIEF_LOOKBACK_HOURS", "48"))
-MAX_ITEMS = int(os.environ.get("BRIEF_MAX_ITEMS", "70"))
+MAX_ITEMS = int(os.environ.get("BRIEF_MAX_ITEMS", "95"))
 PER_FEED_CAP = int(os.environ.get("BRIEF_PER_FEED_CAP", "8"))
+
+# Every source is tagged with a category so the final bundle can be interleaved
+# to GUARANTEE each pillar is represented -- otherwise the high-volume tech feeds
+# crowd out world news, which is exactly what happened before (an AI-only brief).
+#   world    -> wars, great-power relations, elections, major deals, milestones
+#   markets  -> rates, earnings, macro, company moves
+#   ai       -> AI labs, hyperscalers, data centers, GPUs, semis supply chain
+#   research -> new model launches, open-weights releases, papers/findings
+CATEGORIES = ("world", "markets", "ai", "research")
 
 # Direct RSS feeds from credible publishers (clean article URLs).
 DIRECT_FEEDS = [
-    ("CNBC Top News", "https://www.cnbc.com/id/100003114/device/rss/rss.html"),
-    ("CNBC Technology", "https://www.cnbc.com/id/19854910/device/rss/rss.html"),
-    ("CNBC Business", "https://www.cnbc.com/id/10001147/device/rss/rss.html"),
-    ("CNBC Investing", "https://www.cnbc.com/id/15839069/device/rss/rss.html"),
-    ("CNBC Earnings", "https://www.cnbc.com/id/15839135/device/rss/rss.html"),
-    ("CNBC Economy", "https://www.cnbc.com/id/20910258/device/rss/rss.html"),
-    ("CNBC Finance", "https://www.cnbc.com/id/10000664/device/rss/rss.html"),
-    ("TechCrunch", "https://techcrunch.com/feed/"),
-    ("TechCrunch AI", "https://techcrunch.com/category/artificial-intelligence/feed/"),
-    ("Ars Technica", "https://feeds.arstechnica.com/arstechnica/index"),
-    ("The Verge", "https://www.theverge.com/rss/index.xml"),
-    ("Tom's Hardware", "https://www.tomshardware.com/feeds/all"),
-    ("MarketWatch Top Stories", "https://feeds.content.dowjones.io/public/rss/mw_topstories"),
-    ("Federal Reserve Press", "https://www.federalreserve.gov/feeds/press_all.xml"),
-    ("Hacker News Front Page", "https://hnrss.org/frontpage?points=100"),
+    # World / international (the pillar that was missing before).
+    ("world", "BBC World", "https://feeds.bbci.co.uk/news/world/rss.xml"),
+    ("world", "Al Jazeera", "https://www.aljazeera.com/xml/rss/all.xml"),
+    ("world", "NPR World", "https://feeds.npr.org/1004/rss.xml"),
+    ("world", "Guardian World", "https://www.theguardian.com/world/rss"),
+    ("world", "France 24", "https://www.france24.com/en/rss"),
+    # Markets / macro.
+    ("markets", "CNBC Top News", "https://www.cnbc.com/id/100003114/device/rss/rss.html"),
+    ("markets", "CNBC Business", "https://www.cnbc.com/id/10001147/device/rss/rss.html"),
+    ("markets", "CNBC Investing", "https://www.cnbc.com/id/15839069/device/rss/rss.html"),
+    ("markets", "CNBC Earnings", "https://www.cnbc.com/id/15839135/device/rss/rss.html"),
+    ("markets", "CNBC Economy", "https://www.cnbc.com/id/20910258/device/rss/rss.html"),
+    ("markets", "MarketWatch Top Stories", "https://feeds.content.dowjones.io/public/rss/mw_topstories"),
+    ("markets", "Federal Reserve Press", "https://www.federalreserve.gov/feeds/press_all.xml"),
+    # AI / tech / semis.
+    ("ai", "CNBC Technology", "https://www.cnbc.com/id/19854910/device/rss/rss.html"),
+    ("ai", "TechCrunch", "https://techcrunch.com/feed/"),
+    ("ai", "TechCrunch AI", "https://techcrunch.com/category/artificial-intelligence/feed/"),
+    ("ai", "Ars Technica", "https://feeds.arstechnica.com/arstechnica/index"),
+    ("ai", "The Verge", "https://www.theverge.com/rss/index.xml"),
+    ("ai", "Tom's Hardware", "https://www.tomshardware.com/feeds/all"),
+    ("ai", "Hacker News Front Page", "https://hnrss.org/frontpage?points=100"),
+    # Research / model launches.
+    ("research", "arXiv cs.AI", "https://rss.arxiv.org/rss/cs.AI"),
+    ("research", "arXiv cs.LG", "https://rss.arxiv.org/rss/cs.LG"),
+    ("research", "Hugging Face Blog", "https://huggingface.co/blog/feed.xml"),
 ]
 
 # Topic-targeted Google News searches. Google News links resolve to the original
-# publisher (Reuters, Bloomberg, FT, WSJ, ...), giving broad credible coverage
+# publisher (Reuters, Bloomberg, FT, WSJ, AP, ...), giving broad credible coverage
 # without any API key. ``when:2d`` limits to the last two days.
 GOOGLE_NEWS_TOPICS = [
-    ("AI Infrastructure", "AI data center OR GPU OR Nvidia OR hyperscaler capex"),
-    ("Semiconductors", "TSMC OR semiconductor OR chip export controls OR HBM OR foundry"),
-    ("Markets & Rates", "stock market OR Federal Reserve interest rates OR earnings guidance"),
-    ("Geopolitics", "sanctions OR trade restrictions OR war OR export controls chips"),
-    ("Cloud & Enterprise AI", "cloud computing OR enterprise AI OR OpenAI OR Anthropic OR Microsoft AI"),
-    ("Data-Center Power", "data center power OR electricity grid OR nuclear energy AI demand"),
+    # World / geopolitics -- the specific relationships and beats Laksh asked for.
+    ("world", "Russia-Ukraine War", "Russia Ukraine war ceasefire negotiations frontline"),
+    ("world", "Middle East / Israel / Iran", "Israel Gaza Iran Middle East ceasefire strike hostage"),
+    ("world", "US-China Relations", "US China relations Taiwan military trade tension"),
+    ("world", "India & South Asia", "India geopolitics Pakistan China border trade relations"),
+    ("world", "World Leaders & Statements", "world leader remarks controversy summit sanctions election"),
+    # Markets / deals / milestones (e.g. \"Apple overtakes Nvidia\").
+    ("markets", "Markets & Rates", "stock market OR Federal Reserve interest rates OR earnings guidance"),
+    ("markets", "Major Deals & M&A", "merger OR acquisition OR takeover OR IPO billion deal"),
+    # AI infrastructure / semiconductors.
+    ("ai", "AI Infrastructure", "AI data center OR GPU OR Nvidia OR hyperscaler capex"),
+    ("ai", "Semiconductors", "TSMC OR semiconductor OR chip export controls OR HBM OR foundry"),
+    ("ai", "Cloud & Enterprise AI", "OpenAI OR Anthropic OR Microsoft AI OR Google DeepMind OR cloud AI"),
+    ("ai", "Data-Center Power", "data center power OR electricity grid OR nuclear energy AI demand"),
+    # New models / research findings.
+    ("research", "New Model Launches", "new AI model release open weights benchmark parameters context window"),
+    ("research", "AI Research Findings", "AI research paper breakthrough results reasoning agents findings"),
+    # Secondary beats (lighter touch; ride inside the pillar they fit best).
+    ("world", "US Politics & Policy", "US Congress Senate election policy regulation White House"),
+    ("world", "Defense & Military Tech", "defense drones Pentagon military technology NATO budget"),
+    ("markets", "Crypto & Fintech", "bitcoin OR ethereum crypto regulation stablecoin fintech ETF"),
+    ("research", "Science & Space", "NASA space astronomy physics science breakthrough discovery"),
 ]
 
 # Full watchlist shown to the model (verbatim from the brief spec).
@@ -155,7 +197,7 @@ def entry_datetime(entry) -> datetime | None:
     return None
 
 
-def parse_feed(label: str, url: str, cutoff: datetime) -> list[dict]:
+def parse_feed(category: str, label: str, url: str, cutoff: datetime) -> list[dict]:
     """Parse one feed into normalized item dicts, filtered by recency."""
     try:
         parsed = feedparser.parse(url, agent=USER_AGENT)
@@ -179,6 +221,7 @@ def parse_feed(label: str, url: str, cutoff: datetime) -> list[dict]:
             publisher = src.get("title", "")
         items.append(
             {
+                "category": category,
                 "feed": label,
                 "publisher": publisher or label,
                 "title": title,
@@ -226,18 +269,38 @@ def fetch_sources() -> list[dict]:
 
     # 2) Fixed RSS + Google News feeds (always on; the reliable baseline).
     feeds = list(DIRECT_FEEDS)
-    feeds += [(f"Google News: {label}", google_news_url(q)) for label, q in GOOGLE_NEWS_TOPICS]
+    feeds += [(cat, f"Google News: {label}", google_news_url(q)) for cat, label, q in GOOGLE_NEWS_TOPICS]
     print(f"Fetching {len(feeds)} feeds (lookback {LOOKBACK_HOURS}h)...")
-    for label, url in feeds:
-        print(f"  - {label}: {add(parse_feed(label, url, cutoff))} new items")
+    for cat, label, url in feeds:
+        print(f"  - [{cat}] {label}: {add(parse_feed(cat, label, url, cutoff))} new items")
 
-    # Newest first within each origin; keep web-search items ahead of RSS so the
-    # cap trims the long RSS tail rather than the targeted search results.
-    web_items = [c for c in collected if c["feed"].startswith("Web Search")]
-    rss_items = [c for c in collected if not c["feed"].startswith("Web Search")]
-    web_items.sort(key=lambda x: x["published"] or "", reverse=True)
-    rss_items.sort(key=lambda x: x["published"] or "", reverse=True)
-    return (web_items + rss_items)[:MAX_ITEMS]
+    # Interleave by category so the bundle stays balanced across pillars and the
+    # MAX_ITEMS cap trims each category's tail evenly -- instead of the high-volume
+    # tech/markets feeds burying world news (the old failure mode). Within each
+    # category, targeted web-search hits sort ahead of RSS, then newest first.
+    buckets: dict[str, list[dict]] = {}
+    for it in collected:
+        buckets.setdefault(it.get("category", "ai"), []).append(it)
+    for cat in buckets:
+        buckets[cat].sort(
+            key=lambda x: (x["feed"].startswith("Web Search"), x["published"] or ""),
+            reverse=True,
+        )
+
+    # Round-robin across a stable category order (known categories first).
+    order = [c for c in CATEGORIES if c in buckets] + [c for c in buckets if c not in CATEGORIES]
+    ordered: list[dict] = []
+    depth = 0
+    while any(depth < len(buckets[c]) for c in order):
+        for c in order:
+            if depth < len(buckets[c]):
+                ordered.append(buckets[c][depth])
+        depth += 1
+
+    kept = ordered[:MAX_ITEMS]
+    by_cat = {c: sum(1 for it in kept if it.get("category", "ai") == c) for c in order}
+    print(f"  kept {len(kept)}/{len(collected)} items by category: {by_cat}")
+    return kept
 
 
 # ---------------------------------------------------------------------------
@@ -293,81 +356,172 @@ def previous_brief_excerpt(today: str) -> str:
     if not briefs:
         return ""
     text = briefs[-1].read_text(errors="ignore")
-    # Prefer the previous "Overall Conclusion" section if present.
+    # Prefer the previous "Bottom Line" / "Overall Conclusion" section if present.
     lower = text.lower()
-    idx = lower.rfind("overall conclusion")
+    idx = max(lower.rfind("bottom line"), lower.rfind("overall conclusion"))
     excerpt = text[idx:] if idx != -1 else text[-1800:]
     return excerpt[:1800].strip()
 
 
 # ---------------------------------------------------------------------------
+# Term memory: spaced-repetition teaching across briefs
+# ---------------------------------------------------------------------------
+# Laksh reads this daily, so a term should be TAUGHT IN FULL (definition +
+# example + use case) the first few times it appears, then only REFERENCED once
+# it's been taught enough. We reconstruct each term's exposure count from the
+# "Terms & Concepts" sections of prior briefs.
+MASTERED_AFTER = int(os.environ.get("BRIEF_TERM_MASTERED_AFTER", "4"))
+_TERM_STOPWORDS = {
+    "example", "caution", "use case", "benchmark", "benchmarks", "why it matters",
+    "the chain", "what happened", "concept spotlight", "deep dive", "bottom line",
+    "note", "the mechanism", "the tension", "deeper term", "rough benchmark",
+    "rough benchmarks", "who benefits", "who is hurt", "uncertainty", "background",
+    "second-order effect", "second-order effects", "takeaway", "the takeaway",
+}
+
+
+def _iter_term_names(text: str):
+    """Yield the bolded term names inside a brief's Terms/Concepts section."""
+    in_terms = False
+    for line in text.splitlines():
+        h = re.match(r"^(#{1,6})\s+(.*?)\s*$", line)
+        if h:
+            level, title = len(h.group(1)), h.group(2)
+            if level <= 2:  # only H1/H2 open or close the section
+                in_terms = "term" in title.lower() or "concept" in title.lower()
+            elif in_terms:  # an H3 inside the section is itself likely a term
+                t = re.sub(r"(?i)\b(deep dive|concept spotlight|spotlight)\b[:\-\s]*", "", title).strip()
+                if t:
+                    yield t
+            continue
+        if in_terms:
+            for m in re.finditer(r"\*\*(.+?)\*\*", line):
+                yield m.group(1)
+
+
+def _term_key(raw: str) -> str:
+    # Normalize "HBM (High-Bandwidth Memory):" -> "hbm" for dedupe/counting.
+    key = re.split(r"[(:—]|--", raw)[0]
+    return key.strip().strip("*").strip().lower().rstrip(" .")
+
+
+def taught_terms() -> tuple[list[str], list[str]]:
+    """Return (reinforce, mastered) display names from prior briefs.
+
+    reinforce -> seen 1..MASTERED_AFTER-1 times: re-teach in full.
+    mastered  -> seen >= MASTERED_AFTER times: reference only, don't re-define.
+    """
+    counts: collections.Counter[str] = collections.Counter()
+    display: dict[str, str] = {}
+    for p in sorted(common.BRIEFS_DIR.glob(f"*-{common.BRIEF_SLUG}.md")):
+        text = p.read_text(errors="ignore")
+        seen_here: set[str] = set()
+        for raw in _iter_term_names(text):
+            key = _term_key(raw)
+            if not (2 <= len(key) <= 50) or key in _TERM_STOPWORDS or key in seen_here:
+                continue
+            seen_here.add(key)
+            counts[key] += 1
+            display.setdefault(key, re.split(r":|—|--", raw.strip().strip("*"))[0].strip())
+    reinforce = sorted(display[k] for k, c in counts.items() if 1 <= c < MASTERED_AFTER)
+    mastered = sorted(display[k] for k, c in counts.items() if c >= MASTERED_AFTER)
+    return reinforce, mastered
+
+
+def build_term_memory_block(reinforce: list[str], mastered: list[str]) -> str:
+    if not reinforce and not mastered:
+        return (
+            "TERM MEMORY: This is an early brief — no terms taught yet. In '## 8. Terms & "
+            "Concepts', fully explain every term you use (definition + concrete example + real "
+            "use case + rough numbers), because Laksh is seeing them for the first time."
+        )
+    reinforce_s = ", ".join(reinforce) if reinforce else "(none yet)"
+    mastered_s = ", ".join(mastered) if mastered else "(none yet)"
+    return (
+        "TERM MEMORY (spaced repetition — Laksh reads daily, so teach cumulatively):\n"
+        f"- STILL LEARNING (explain these IN FULL again whenever they come up — definition + a "
+        f"concrete example + a real use case + rough numbers/benchmarks): {reinforce_s}.\n"
+        f"- MASTERED (Laksh already knows these from ~{MASTERED_AFTER}+ prior briefs — just USE or "
+        f"briefly reference them, do NOT re-define): {mastered_s}.\n"
+        "- Any term NOT listed above is NEW: introduce it in full the first time, and keep "
+        "re-teaching it in full for its next few appearances before it graduates to 'mastered'.\n"
+        "Always prefer teaching properly (examples + use cases) over terse definitions."
+    )
+
+
+# ---------------------------------------------------------------------------
 # Prompt assembly
 # ---------------------------------------------------------------------------
-BRIEF_SPEC = """Produce Laksh's daily morning general-knowledge, AI/tech/cloud infrastructure, markets, and investing brief.
+BRIEF_SPEC = """Produce Laksh's daily morning newspaper: a personal front-page that makes him smarter about the WORLD and about MARKETS/AI to invest well. It is NOT an AI-infra-only newsletter -- world news and geopolitics lead.
 
 Audience:
-Laksh is a student building general knowledge in investing, markets, geopolitics, AI infrastructure, cloud infrastructure, and semiconductor supply chains. Assume low prior knowledge.
+Laksh is a student building durable knowledge in world affairs, geopolitics, markets/investing, AI infrastructure, and the semiconductor supply chain. He reads this EVERY morning, so knowledge compounds day over day. Start from modest prior knowledge but assume he remembers what earlier briefs taught (see the TERM MEMORY block).
 
-Style:
-Make it compact but substantive, roughly a 4-6 minute read. Use plain prose, short paragraphs, clear bullets, and causal explanations. Explain technical, market, and geopolitical terms inline with short parentheticals. Go beyond headlines: explain what happened, why it matters, who benefits, who is hurt, second-order effects, and uncertainty.
+Voice & style:
+Write like a sharp, plain-spoken newspaper -- confident, causal, never sensational or hype-y. Short paragraphs and clean bullets. For every story go beyond the headline: what happened, the background a newcomer needs, why it matters, who wins/loses, second-order effects, and what's still uncertain. This should be a substantive read (roughly 10-15 minutes); be comprehensive, but every sentence must earn its place.
 
-Primary focus:
-1. AI industry and infrastructure: AI labs, hyperscalers, cloud providers, data centers, GPUs/accelerators, networking, memory, power, cooling, enterprise AI adoption.
-2. Tech and semiconductor supply chain: TSMC, SK Hynix, Micron, Nvidia, AMD, Broadcom, Marvell, optical networking, equipment, packaging, foundries, power/utilities.
-3. Investing and markets: rates, earnings, guidance, valuation, sector rotation, company-specific watchlist moves.
-4. Global news/geopolitics: wars, sanctions, elections, policy, trade restrictions, energy shocks, supply-chain disruptions.
+Coverage -- give these FOUR pillars roughly equal weight every day:
+A. World & Geopolitics (LEAD PILLAR): wars and conflicts, great-power relations, diplomacy, elections, major international deals, and notable/outrageous statements by leaders. PRIORITIZE these relationships when there's news: US-China (tech war, Taiwan, trade), the Middle East (Israel, Iran, Gulf, oil), and India & South Asia. Cover Russia-Ukraine/Europe and others when genuinely major. Weave in the secondary beats lightly when there's real news: US politics & policy, and defense & military tech.
+B. Markets, Money & Deals: indices, rates, macro, big earnings, mergers/acquisitions, and market milestones (e.g. one company's market cap overtaking another's). Weave in crypto & fintech lightly.
+C. AI & Infrastructure (investing lens): AI labs, hyperscalers, cloud, data centers, GPUs/accelerators, memory (HBM), networking/optics, power/cooling, semiconductor supply chain (TSMC, SK Hynix, Micron, Nvidia, AMD, Broadcom, Marvell), enterprise AI adoption -- always framed so Laksh learns to invest.
+D. Model & Research Watch: NEW model launches (give parameter counts, context length, benchmark scores, price, open- vs closed-weights when known), notable research findings/papers and why they matter, and a short "Science & Frontier Tech" note for major non-AI science/space breakthroughs.
 
 Watchlist:
 {watchlist}
 
-Required sections:
-1. Top World, AI, Tech, and Market News
-- 8-12 stories max.
-- Each story must include what happened, background, why it matters, and source links.
+Required sections (use these H2 titles, in this order):
 
-2. Infrastructure and Supply-Chain Logic
-- Pick 2-4 stories and explain deeper mechanisms.
-- Example: AI demand -> cloud capex -> GPUs -> HBM -> networking/optics -> power/cooling.
+## 1. World & Geopolitics
+- 6-9 stories. Lead with the single most important thing happening in the world today. Prioritize the relationships above.
 
-3. Watchlist: Earnings, Guidance, and Notable Movers
-- Identify watchlist companies with earnings/calls in last 24 hours.
-- Include key numbers vs expectations, guidance, stock reaction.
-- Flag roughly +/-3% moves or major company-specific news.
-- Explain valuation terms when relevant.
+## 2. Markets, Money & Deals
+- 5-8 stories: the market tape (what moved and why), notable earnings, big deals/M&A, milestones, and a light crypto touch.
 
-4. Beginner Knowledge Lens
-- 4-6 bullets teaching market/general-world patterns.
+## 3. AI & Infrastructure
+- 4-7 stories through an investing lens, with the causal "why it matters for the buildout" spelled out.
 
-5. Terms Used Today
-- 5-10 terms.
-- For 1-3 important terms, include deeper explanation, rough benchmarks, example, and caution.
+## 4. Model & Research Watch
+- New model launches with concrete specs (params, context, benchmarks, price), key papers/findings, and a brief Science & Frontier Tech note.
 
-6. Sources Pulled
-- Group links by topic.
-- Use credible sources only.
+## 5. Watchlist: Earnings, Guidance & Movers
+- Watchlist companies with earnings/news in the last 24h: key numbers vs expectations, guidance, stock reaction. Flag roughly +/-3% moves. Treat the quote snapshot as approximate/delayed. Say plainly when the sources have nothing on a name rather than inventing.
 
-7. Overall Conclusion
-- 1-3 short paragraphs synthesizing the big picture and what changed from the prior run.
+## 6. How It Connects (Infrastructure & Supply-Chain Logic)
+- 2-3 deep causal chains linking the day's stories. Example: AI demand -> cloud capex -> GPUs -> HBM -> networking/optics -> power/cooling.
+
+## 7. Building Your Knowledge
+- 4-6 bullets teaching durable patterns (how markets, geopolitics, or the AI buildout actually work), pitched slightly higher each day as Laksh's knowledge grows.
+
+## 8. Terms & Concepts
+- Follow the TERM MEMORY rules below EXACTLY. Lead with ONE "Concept Spotlight": a single concept explained in depth (what it is, a concrete example, a real use case, rough benchmarks/numbers, and a caution/common misconception). Then 4-8 shorter term entries.
+
+## 9. Sources
+- Every bullet is itself a clickable Markdown link `[Publisher -- headline](https://...)`, grouped by the pillar it informed.
+
+## 10. Bottom Line
+- 1-3 short paragraphs synthesizing the big picture and explicitly noting what CHANGED since the previous brief.
 
 Retention:
 {retention}
 
 Visuals:
-Include 0-3 useful visuals only if they genuinely improve understanding. No decoration. If you include a table, use GitHub-flavored Markdown table syntax."""
+The PDF layout adds its own charts. In the Markdown, include a GitHub-flavored Markdown table only when it genuinely aids understanding (e.g. the watchlist movers, or a model-spec comparison). Do not add decorative filler."""
 
 SYSTEM_ROLE = (
-    "You are an expert analyst covering AI infrastructure, the semiconductor supply "
-    "chain, global markets, and geopolitics. You write a rigorous daily briefing for a "
-    "curious student. You are precise, causal, and never sensational."
+    "You are the editor of a sharp personal daily newspaper. You cover world affairs and "
+    "geopolitics FIRST, then markets/investing, AI infrastructure, the semiconductor supply "
+    "chain, and new AI models/research. You write for a curious student who reads you every "
+    "morning, so you teach cumulatively and never condescend. You are precise, causal, "
+    "plain-spoken, and never sensational."
 )
 
 GUARDRAILS = """CRITICAL SOURCING RULES:
 - Use ONLY the sources in the "SOURCE BUNDLE" below. Do NOT invent facts, numbers, quotes, dates, events, or URLs. You are NOT browsing the web.
 - LINKS ARE MANDATORY AND MUST BE INLINE. Whenever you use a source, hyperlink it inline as a Markdown link with that source's EXACT url. Example of the required style:
       Tesla fell ~18% after a weak quarter ([CNBC](https://www.cnbc.com/example)).
-  Use a short descriptive label (publisher and/or topic). Every story in sections 1-3 must contain at least one such inline [label](url) link.
+  Use a short descriptive label (publisher and/or topic). Every news story in sections 1-5 must contain at least one such inline [label](url) link.
 - ABSOLUTELY NO bare numeric citations. Never write "[3]", "[15][42]", "(source 7)", superscripts, or any references-by-number scheme. The SOURCE numbers below are for your private lookup only — never print them. The only square-bracket syntax allowed in your output is a real Markdown link immediately followed by "(https://...)".
-- Section 6 "Sources Pulled": every bullet MUST itself be a clickable Markdown link formatted as `[Publisher — headline](https://...)`, grouped by topic. No naked numbers, and no titles without their URL.
+- The "Sources" section: every bullet MUST itself be a clickable Markdown link formatted as `[Publisher — headline](https://...)`, grouped by pillar. No naked numbers, and no titles without their URL.
 - If the sources do not cover a watchlist name or topic, say so plainly (e.g. "No notable news in the sources for X") instead of fabricating.
 - Treat the watchlist quote snapshot as approximate and possibly delayed; attribute price moves to it, not to invented figures.
 - Output valid GitHub-flavored Markdown ONLY. Begin directly with a single H1 title line. No preamble, no sign-off, and do NOT wrap the whole document in a code fence."""
@@ -396,24 +550,25 @@ def build_quotes_block(quotes: list[dict]) -> str:
     return "\n".join(rows)
 
 
-def build_messages(sources, quotes, today, prior_excerpt, include_quick_check):
+def build_messages(sources, quotes, today, prior_excerpt, include_quick_check, term_memory):
     retention = (
         "This run is a retention checkpoint: append a final '## Quick Check' section with "
-        "3 short logic questions (numbered) followed by their answers."
+        "3 short logic questions (numbered) drawn from today's brief, followed by their answers."
         if include_quick_check
-        else "Only add a 'Quick Check' section on retention checkpoints (not this run)."
+        else "Do NOT add a 'Quick Check' section this run."
     )
     spec = BRIEF_SPEC.format(watchlist=WATCHLIST_DISPLAY, retention=retention)
     system = f"{SYSTEM_ROLE}\n\n{spec}\n\n{GUARDRAILS}"
 
     prior = (
         f"\n\nFOR CONTEXT — excerpt from the previous brief (use it for the "
-        f"'what changed from the prior run' comparison; do not copy it):\n\"\"\"\n{prior_excerpt}\n\"\"\""
+        f"'what changed since the previous brief' comparison; do not copy it):\n\"\"\"\n{prior_excerpt}\n\"\"\""
         if prior_excerpt
         else ""
     )
     user = (
         f"Today's date is {today} (America/Los_Angeles). Write today's brief now.\n\n"
+        f"{term_memory}\n\n"
         f"WATCHLIST QUOTE SNAPSHOT (approximate, possibly delayed):\n{build_quotes_block(quotes)}\n\n"
         f"SOURCE BUNDLE ({len(sources)} items — cite by their URLs):\n{build_source_bundle(sources)}"
         f"{prior}"
@@ -549,11 +704,18 @@ def main() -> int:
                 file=sys.stderr,
             )
             return 1
-        # Retention: add a Quick Check roughly every 4th brief.
+        # Retention cadence between "balanced" (weekly) and "heavy" (daily):
+        # a Quick Check every 2nd brief. Override with BRIEF_QUIZ_EVERY.
         existing = list(common.BRIEFS_DIR.glob(f"*-{common.BRIEF_SLUG}.md"))
-        include_quick_check = (len(existing) + 1) % 4 == 0
+        quiz_every = max(1, int(os.environ.get("BRIEF_QUIZ_EVERY", "2")))
+        include_quick_check = (len(existing) + 1) % quiz_every == 0
+        reinforce, mastered = taught_terms()
+        term_memory = build_term_memory_block(reinforce, mastered)
+        print(f"Term memory: {len(reinforce)} still-learning, {len(mastered)} mastered.")
         prior_excerpt = previous_brief_excerpt(today)
-        messages = build_messages(sources, quotes, today, prior_excerpt, include_quick_check)
+        messages = build_messages(
+            sources, quotes, today, prior_excerpt, include_quick_check, term_memory
+        )
         markdown = call_llm(messages, api_key)
         if not markdown:
             print("ERROR: LLM returned empty content.", file=sys.stderr)

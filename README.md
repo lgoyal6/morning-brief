@@ -1,16 +1,35 @@
 # Morning Brief 🗞️
 
-A GitHub Actions bot that generates Laksh's **daily AI / tech-infrastructure / markets / geopolitics** morning brief, commits it to this repo, uploads it as a workflow artifact, and DMs the PDF to Discord.
+A GitHub Actions bot that generates Laksh's **daily personal newspaper** — world affairs & geopolitics first, then markets/investing, AI & infrastructure, and new AI models/research — commits it to this repo, uploads it as a workflow artifact, and DMs the PDF to Discord.
 
 Every morning (Pacific time) it:
 
-1. Pulls current articles from credible RSS feeds + topic-targeted Google News searches (no paid API, no hallucinated news).
+1. Pulls current articles from credible RSS feeds + topic-targeted Google News searches, **balanced across four pillars** (world / markets / AI / research) so no single beat crowds the others out (no paid API, no hallucinated news).
 2. Optionally snapshots watchlist quotes via `yfinance`.
-3. Asks an **OpenAI-compatible LLM** to synthesize a structured Markdown brief from **only** those sources.
-4. Renders a phone-readable **PDF** (clickable links, tables, sections).
+3. Asks an **OpenAI-compatible LLM** to synthesize a structured Markdown brief from **only** those sources, teaching terms cumulatively (see [Term memory](#term-memory-spaced-repetition)).
+4. Renders a **two-column magazine PDF** (WeasyPrint): masthead, a watchlist "biggest movers" chart, best-effort story photos, clickable links, and full-width tables.
 5. Commits `briefs/YYYY-MM-DD-*.md` + `.pdf` and updates `briefs/latest-*.pdf`.
 6. Uploads all outputs as workflow artifacts.
 7. Sends the dated PDF to your Discord DM (or a channel).
+
+## Coverage (four equal pillars + light secondary beats)
+
+- **World & Geopolitics** (lead) — wars, great-power relations (prioritizing **US–China, the Middle East, and India/South Asia**), diplomacy, big international deals, notable statements.
+- **Markets, Money & Deals** — rates, macro, earnings, M&A, market milestones; a light crypto/fintech touch.
+- **AI & Infrastructure** — labs, hyperscalers, data centers, GPUs, HBM, networking, power, and the semiconductor supply chain, through an investing lens.
+- **Model & Research Watch** — new model launches (params, context, benchmarks, price), notable papers/findings, plus a short science/space note.
+
+Secondary beats (US politics, defense/military tech, crypto, science/space) ride lightly inside the pillar they fit.
+
+<a name="term-memory-spaced-repetition"></a>
+## Term memory (spaced repetition)
+
+Because the brief is read daily, terms are taught **cumulatively**. Each run reconstructs how many times every term has already been explained (from prior briefs' "Terms & Concepts" sections) and tells the model to:
+
+- fully explain a term (definition + example + use case + rough numbers) for its first few appearances,
+- then, once it's appeared enough times (`BRIEF_TERM_MASTERED_AFTER`, default 4), only **reference** it.
+
+A short "Quick Check" quiz is appended every `BRIEF_QUIZ_EVERY` briefs (default every 2nd).
 
 ---
 
@@ -81,6 +100,9 @@ Optional **Variables** (Settings → Variables), to override defaults without to
 cd morning-brief
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
+# PDF rendering uses WeasyPrint, which needs Pango/Cairo system libs:
+#   macOS:  brew install pango cairo gdk-pixbuf libffi
+#   Ubuntu: sudo apt-get install -y libpango-1.0-0 libpangocairo-1.0-0 libcairo2 libgdk-pixbuf-2.0-0
 
 export GMI_API_KEY=...                # or OPENAI_API_KEY=...
 export DISCORD_BOT_TOKEN=...
@@ -118,11 +140,16 @@ DISCORD_DRY_RUN=1 python scripts/send_discord.py    # logs instead of sending
 | --- | --- | --- |
 | `LLM_BASE_URL` | GMI Cloud | OpenAI-compatible endpoint. |
 | `LLM_MODEL` | `deepseek-ai/DeepSeek-V4-Flash` | Model ID. |
-| `LLM_MAX_TOKENS` | `7000` | Max output tokens. |
+| `LLM_MAX_TOKENS` | `12000` | Max output tokens (raised from 7000 so the full newspaper never truncates mid-section). |
 | `LLM_TEMPERATURE` | `0.4` | Sampling temperature. |
-| `ENABLE_QUOTES` | `1` | Pull watchlist quotes via yfinance (best-effort). |
+| `ENABLE_QUOTES` | `1` | Pull watchlist quotes via yfinance (best-effort; feeds the movers chart). |
 | `BRIEF_LOOKBACK_HOURS` | `48` | How far back to keep articles. |
-| `BRIEF_MAX_ITEMS` | `70` | Max sources sent to the model. |
+| `BRIEF_MAX_ITEMS` | `95` | Max sources sent to the model (interleaved evenly across the four pillars). |
+| `BRIEF_QUIZ_EVERY` | `2` | Append a "Quick Check" quiz every Nth brief. |
+| `BRIEF_TERM_MASTERED_AFTER` | `4` | Explain a term in full until it's appeared this many times, then only reference it. |
+| `BRIEF_PHOTOS` | `1` | Embed best-effort Open Graph photos from top stories. |
+| `BRIEF_PHOTO_LIMIT` | `3` | How many story photos to embed. |
+| `SEARCH_PROVIDER` / `SEARCH_API_KEY` | `tavily` / — | Optional live web search (else RSS only). |
 | `FORCE_REGENERATE` | — | Regenerate even on a scheduled duplicate. |
 | `BRIEF_DRY_RUN` | — | Build a stub brief without calling the LLM. |
 | `DISCORD_DRY_RUN` | — | Log instead of sending to Discord. |
