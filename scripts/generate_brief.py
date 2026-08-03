@@ -92,7 +92,10 @@ USER_AGENT = (
     "(KHTML, like Gecko) Chrome/124.0 Safari/537.36"
 )
 LOOKBACK_HOURS = int(os.environ.get("BRIEF_LOOKBACK_HOURS", "48"))
-MAX_ITEMS = int(os.environ.get("BRIEF_MAX_ITEMS", "95"))
+MAX_ITEMS = int(os.environ.get("BRIEF_MAX_ITEMS", "130"))
+# Minimum slots reserved per feed within a category before the remainder is
+# ranked purely on recency -- keeps narrow beats alive against high-volume wires.
+FEED_FLOOR = int(os.environ.get("BRIEF_FEED_FLOOR", "2"))
 PER_FEED_CAP = int(os.environ.get("BRIEF_PER_FEED_CAP", "8"))
 
 # Every source is tagged with a category so the final bundle can be interleaved
@@ -128,6 +131,12 @@ DIRECT_FEEDS = [
     ("ai", "The Verge", "https://www.theverge.com/rss/index.xml"),
     ("ai", "Tom's Hardware", "https://www.tomshardware.com/feeds/all"),
     ("ai", "Hacker News Front Page", "https://hnrss.org/frontpage?points=100"),
+    # Practitioner chatter: what builders actually run, swap and complain about.
+    # This is the layer the institutional press misses -- it is where "just use
+    # this open-weight model instead" circulates. X and LinkedIn have no usable
+    # feed, but the same conversation lands here within a day.
+    ("ai", "r/LocalLLaMA", "https://www.reddit.com/r/LocalLLaMA/top/.rss?t=day"),
+    ("ai", "Hacker News: AI Show/Ask", "https://hnrss.org/newest?q=LLM+OR+model+OR+inference&points=40"),
     # Research / model launches.
     ("research", "arXiv cs.AI", "https://rss.arxiv.org/rss/cs.AI"),
     ("research", "arXiv cs.LG", "https://rss.arxiv.org/rss/cs.LG"),
@@ -155,12 +164,172 @@ GOOGLE_NEWS_TOPICS = [
     # New models / research findings.
     ("research", "New Model Launches", "new AI model release open weights benchmark parameters context window"),
     ("research", "AI Research Findings", "AI research paper breakthrough results reasoning agents findings"),
+    ("ai", "Practical AI & Model Routing", "open source model alternative OR model routing OR inference cost per token OR run LLM locally OR self-host"),
     # Secondary beats (lighter touch; ride inside the pillar they fit best).
     ("world", "US Politics & Policy", "US Congress Senate election policy regulation White House"),
     ("world", "Defense & Military Tech", "defense drones Pentagon military technology NATO budget"),
     ("markets", "Crypto & Fintech", "bitcoin OR ethereum crypto regulation stablecoin fintech ETF"),
     ("research", "Science & Space", "NASA space astronomy physics science breakthrough discovery"),
 ]
+
+# The standing world beats above are all about how countries deal with EACH
+# OTHER, so what happens INSIDE a country -- protests, courts, parliaments,
+# domestic economy -- never surfaced. (Asked "what's happening with the protests
+# in India", the brief had nothing: its India query was
+# "India geopolitics Pakistan China border trade relations".) Rotate through the
+# majors so each gets real coverage every few days without crowding the front.
+DOMESTIC_ROTATION = [
+    ("India", "India protest OR farmers OR parliament OR Supreme Court OR state election OR economy"),
+    ("United States", "US domestic protest OR Congress OR Supreme Court ruling OR state politics OR economy"),
+    ("China", "China domestic economy OR property crisis OR youth unemployment OR local protest OR policy"),
+    ("European Union", "Europe domestic election OR protest OR strike OR energy prices OR immigration policy"),
+    ("Global South", "Brazil OR Indonesia OR Nigeria OR South Africa domestic politics election economy protest"),
+]
+DOMESTIC_SLOTS = int(os.environ.get("BRIEF_DOMESTIC_SLOTS", "2"))
+
+
+def rotating_domestic_topics(today: str) -> list[tuple[str, str, str]]:
+    """Pick today's domestic beats, walking the rotation by day-of-year.
+
+    Two slots out of five countries means any one of them comes round roughly
+    every two-and-a-half days -- frequent enough to follow a running story.
+    """
+    try:
+        doy = datetime.strptime(today, "%Y-%m-%d").timetuple().tm_yday
+    except ValueError:
+        doy = 0
+    n = len(DOMESTIC_ROTATION)
+    picks = [DOMESTIC_ROTATION[(doy + i) % n] for i in range(min(DOMESTIC_SLOTS, n))]
+    return [("world", f"Domestic: {name}", query) for name, query in picks]
+
+
+# ---------------------------------------------------------------------------
+# Foundations curriculum
+# ---------------------------------------------------------------------------
+# The term-memory system only ever taught vocabulary the day's news happened to
+# raise, which skews to whatever is in the headlines: one recent brief taught
+# Forward Guidance, Free Cash Flow, Sovereign AI, open-weights, agent benchmarks
+# and token efficiency -- and no geopolitics, no market mechanics at all. So
+# "what is shorting a stock" could never come up: no wire story stops to explain
+# it. This is the proactive half -- a fixed syllabus delivered regardless of the
+# news, ordered so each entry builds on the ones above it.
+#
+# Entries are taught in the same markdown shape as news terms, so taught_terms()
+# picks them up automatically and they graduate to "mastered" like anything else.
+FOUNDATIONS_MARKETS = [
+    ("Share (Stock)", "what owning a fraction of a company actually entitles you to"),
+    ("Stock Exchange and Ticker Symbol", "where shares trade and how they're named"),
+    ("Broker and Brokerage Account", "how an ordinary person actually buys a share, and what a broker earns"),
+    ("Bid, Ask and Spread", "the two prices always quoted, and who pockets the difference"),
+    ("Market Order vs Limit Order", "the two basic ways to place a trade and how each can burn you"),
+    ("Market Capitalisation", "price times shares outstanding; why it, not share price, measures size"),
+    ("Stock Index", "S&P 500, Nasdaq, Dow, Nifty 50 -- what an index actually measures"),
+    ("Going Long vs Going Short", "betting a stock rises vs falls; how shorting works mechanically and why losses are unlimited"),
+    ("Short Squeeze", "why crowded short positions can detonate upward"),
+    ("Margin and Leverage", "borrowing to trade, margin calls, and how leverage magnifies both directions"),
+    ("Penny Stocks and Pump-and-Dump", "why cheap shares are usually cheap for a reason, and the classic scam"),
+    ("Dividend", "companies paying shareholders directly; yield and payout ratio"),
+    ("Earnings, EPS and Earnings Season", "the quarterly report card and why the stock moves on it"),
+    ("Beating or Missing Estimates", "why a profitable company's stock can fall on good results"),
+    ("Price-to-Earnings (P/E) Ratio", "the most common valuation shorthand and its limits"),
+    ("Guidance", "why a company's forecast often moves the stock more than the actual results"),
+    ("ETF and Index Fund", "buying the whole market in one instrument; fees compound"),
+    ("Bond, Coupon and Yield", "lending to governments and companies; why price and yield move opposite"),
+    ("Interest Rates and the Central Bank", "the single lever behind most market moves"),
+    ("Inflation and CPI", "what the number measures and why it drives rate decisions"),
+    ("Bull Market, Bear Market, Correction", "the vocabulary for market direction, with the standard thresholds"),
+    ("Volatility and the VIX", "measuring fear; why volatility itself is tradeable"),
+    ("Options: Calls and Puts", "the right but not the obligation; how options differ from shares"),
+    ("IPO and Lock-Up", "how a private company goes public and what happens months later"),
+    ("Liquidity and Market Makers", "why you can always sell a big stock and not a small one"),
+    ("Compounding and Time in the Market", "the arithmetic that makes long horizons decisive"),
+]
+
+FOUNDATIONS_WORLD = [
+    ("Strait of Hormuz", "the Gulf chokepoint: geography, the ~20% of seaborne oil it carries, who can close it and what happens if they try"),
+    ("Chokepoint", "the general concept: why a few narrow waterways govern world trade"),
+    ("Strait of Malacca", "Asia's oil artery and China's 'Malacca dilemma'"),
+    ("Suez Canal and Bab el-Mandeb", "the Europe-Asia shortcut and the Red Sea approach to it"),
+    ("Taiwan Strait", "why a 180km channel is the biggest single risk to the technology industry"),
+    ("OPEC and OPEC+", "the oil cartel, production quotas, and how it sets prices"),
+    ("Brent vs WTI Crude", "the two benchmark oil prices and what the gap between them says"),
+    ("Sanctions", "the main instrument short of war: types, who they hurt, why they leak"),
+    ("UN Security Council and the Veto", "why the UN is paralysed on exactly the biggest conflicts"),
+    ("NATO and Article 5", "what a mutual defence guarantee actually commits members to"),
+    ("Proxy War", "fighting through third parties; why great powers prefer it"),
+    ("Ceasefire, Armistice, Peace Treaty", "three different things routinely conflated in headlines"),
+    ("Sphere of Influence and Buffer States", "the logic behind a lot of great-power behaviour"),
+    ("Tariffs and Trade Wars", "who actually pays a tariff, and the retaliation cycle"),
+    ("Export Controls", "restricting technology rather than goods; the chip-war weapon of choice"),
+    ("Reserve Currency", "why the dollar's role gives the US power others resent"),
+    ("Strategic Petroleum Reserve", "national oil stockpiles as a price and security tool"),
+    ("Freedom of Navigation", "the legal principle behind naval patrols in contested water"),
+    ("BRICS", "the bloc, what it wants, and how much of it is real"),
+    ("Soft Power vs Hard Power", "influence by attraction vs coercion"),
+    ("Sovereignty and Recognition", "why who counts as a country is a live political question"),
+    ("Central Bank Independence", "why governments hand rate-setting to unelected officials"),
+    ("Coalition Government", "how most of the world's democracies actually form governments"),
+    ("Remittances and Diaspora", "migration as an economic force for whole countries"),
+    ("Food and Fertiliser Security", "why wheat and fertiliser flows cause political crises"),
+]
+
+
+def spotlighted_concepts() -> set[str]:
+    """Concepts that have had a FULL Concept Spotlight in some prior brief.
+
+    Deliberately stricter than taught_terms(). The Strait of Hormuz was defined
+    twice as a two-line bullet ("a narrow waterway between Iran and Oman...")
+    and its reader still had to ask what it was -- a passing gloss is enough to
+    parse the sentence and not enough to learn the thing. So the syllabus counts
+    only the in-depth treatment as delivered, and a term entry does not retire a
+    foundational concept.
+    """
+    done: set[str] = set()
+    for p in sorted(common.BRIEFS_DIR.glob(f"*-{common.BRIEF_SLUG}.md")):
+        text = p.read_text(errors="ignore")
+        for m in re.finditer(
+            r"^#{2,4}\s*(?:concept\s+spotlight|deep\s+dive|spotlight)\s*[:\-]\s*(.+?)\s*$",
+            text,
+            flags=re.IGNORECASE | re.MULTILINE,
+        ):
+            done.add(_term_key(m.group(1)))
+    return done
+
+
+def pick_foundations() -> list[tuple[str, str]]:
+    """Next undelivered concept from each track -- one markets, one world affairs.
+
+    Balanced deliberately: the reactive term memory already over-supplies finance
+    and AI vocabulary, so the syllabus guarantees world-affairs literacy gets
+    equal billing rather than competing with it for space.
+    """
+    spotlighted = spotlighted_concepts()
+    picks: list[tuple[str, str]] = []
+    for track in (FOUNDATIONS_MARKETS, FOUNDATIONS_WORLD):
+        for name, cover in track:
+            if _term_key(name) not in spotlighted:
+                picks.append((name, cover))
+                break
+    return picks
+
+
+def build_foundations_block(picks: list[tuple[str, str]]) -> str:
+    if not picks:
+        return (
+            "FOUNDATIONS: the syllabus is exhausted -- every foundational concept has been "
+            "taught. Choose two genuinely useful concepts of your own instead, one from "
+            "markets/investing and one from world affairs."
+        )
+    lines = [
+        "FOUNDATIONS: teach EXACTLY these two concepts in full today, as the two Concept "
+        "Spotlights in the Foundations & Terms section. They are scheduled by a syllabus, "
+        "NOT by today's news -- teach them even if the news does not mention them. Assume "
+        "the reader has never encountered the concept before.",
+        "",
+    ]
+    for name, cover in picks:
+        lines.append(f"  - {name} -- cover: {cover}")
+    return "\n".join(lines)
 
 # Full watchlist shown to the model (verbatim from the brief spec).
 WATCHLIST_DISPLAY = (
@@ -226,6 +395,21 @@ def parse_feed(category: str, label: str, url: str, cutoff: datetime) -> list[di
     except Exception as exc:  # network / parse failure -> skip this feed
         print(f"  ! {label}: {exc}", file=sys.stderr)
         return []
+
+    # Some hosts reject feedparser's own fetcher while serving the byte-identical
+    # request from requests -- Reddit answers feedparser with 429 and requests
+    # with 200. Retry once through requests before giving up on the feed.
+    if not parsed.entries and parsed.get("status") in (401, 403, 429, 503):
+        try:
+            resp = requests.get(
+                url,
+                headers={"User-Agent": USER_AGENT},
+                timeout=int(os.environ.get("BRIEF_FEED_TIMEOUT", "20")),
+            )
+            if resp.ok:
+                parsed = feedparser.parse(resp.content)
+        except Exception as exc:
+            print(f"  ! {label} (requests retry): {exc}", file=sys.stderr)
 
     items: list[dict] = []
     for entry in parsed.entries:
@@ -324,7 +508,8 @@ def fetch_sources() -> list[dict]:
 
     # 2) Fixed RSS + Google News feeds (always on; the reliable baseline).
     feeds = list(DIRECT_FEEDS)
-    feeds += [(cat, f"Google News: {label}", google_news_url(q)) for cat, label, q in GOOGLE_NEWS_TOPICS]
+    topics = list(GOOGLE_NEWS_TOPICS) + rotating_domestic_topics(common.today_str())
+    feeds += [(cat, f"Google News: {label}", google_news_url(q)) for cat, label, q in topics]
     print(f"Fetching {len(feeds)} feeds (lookback {LOOKBACK_HOURS}h)...")
     for cat, label, url in feeds:
         print(f"  - [{cat}] {label}: {add(parse_feed(cat, label, url, cutoff))} new items")
@@ -339,6 +524,22 @@ def fetch_sources() -> list[dict]:
         buckets.setdefault(it.get("category", "ai"), []).append(it)
     for cat in buckets:
         buckets[cat].sort(key=lambda x: x["published"] or "", reverse=True)
+        # Give every feed a floor of FEED_FLOOR items before ranking the rest on
+        # recency alone. Pure recency lets a few high-volume wires fill the
+        # category and silently starve the narrow beats: the rotating domestic
+        # feeds returned 8 India stories and not one survived the cap, which is
+        # precisely the coverage that was asked for.
+        floor: list[dict] = []
+        rest: list[dict] = []
+        per_feed: collections.Counter[str] = collections.Counter()
+        for it in buckets[cat]:
+            feed = it.get("feed", "")
+            if per_feed[feed] < FEED_FLOOR:
+                per_feed[feed] += 1
+                floor.append(it)
+            else:
+                rest.append(it)
+        buckets[cat] = floor + rest
 
     # Round-robin across a stable category order (known categories first).
     order = [c for c in CATEGORIES if c in buckets] + [c for c in buckets if c not in CATEGORIES]
@@ -511,12 +712,19 @@ Audience:
 Laksh is a student building durable knowledge in world affairs, geopolitics, markets/investing, AI infrastructure, and the semiconductor supply chain. He reads this EVERY morning, so knowledge compounds day over day. Start from modest prior knowledge but assume he remembers what earlier briefs taught (see the TERM MEMORY block).
 
 Voice & style:
-Write like a sharp, plain-spoken newspaper -- confident, causal, never sensational or hype-y. Short paragraphs and clean bullets. For every story go beyond the headline: what happened, the background a newcomer needs, why it matters, who wins/loses, second-order effects, and what's still uncertain. This should be a substantive read (roughly 10-15 minutes); be comprehensive, but every sentence must earn its place.
+Write like a sharp, plain-spoken newspaper -- confident, causal, never sensational or hype-y. Short paragraphs and clean bullets. For every story go beyond the headline: what happened, the background a newcomer needs, why it matters, who wins/loses, second-order effects, and what's still uncertain. This should be a substantive read (roughly 20-25 minutes); be comprehensive and generous with explanation, but every sentence must earn its place.
+
+Plain language (IMPORTANT -- Laksh has never read a newspaper regularly and is new to finance and geopolitics):
+- Write for a smart beginner, not for someone who already follows markets. Never assume a term is "obvious".
+- The FIRST time any specialist term appears in a brief, gloss it in plain English in parentheses immediately, then continue. This applies to finance (basis points, yield, short, capex, guidance, go-shop period, market cap), geopolitics (chokepoint, sanctions, proxy, sovereignty), and AI (inference, weights, MoE, context window). A term listed as mastered in TERM MEMORY is the only exception -- use those freely.
+- Prefer the short common word: "buying back its own shares" over "executing a buyback", "cost of borrowing" over "cost of capital". Where the jargon is worth learning, give the plain phrase first and the technical term after it in parentheses -- that way he learns the word without needing it to read the sentence.
+- Keep sentences short. Avoid stacking three unexplained proper nouns in a row.
+- Never use a number without saying what it means. "$44.9B in capex" alone is useless; "$44.9B on data centres and other long-lived assets (capex) -- roughly double last year" teaches something.
 
 Ticker clarity: the FIRST time you name a company by its stock ticker, give the company name too, unless it is a household name (Apple, Tesla, Nvidia, Microsoft, Amazon, Google/Alphabet, Meta, Netflix, Intel, AMD). Write it as "Company (TICKER)" -- e.g. "Credo (CRDO)", "Vistra (VST)", "Constellation Energy (CEG)", "Astera Labs (ALAB)". Never leave a non-obvious ticker unexplained.
 
 Coverage -- give these FOUR pillars roughly equal weight every day:
-A. World & Geopolitics (LEAD PILLAR): wars and conflicts, great-power relations, diplomacy, elections, major international deals, and notable/outrageous statements by leaders. PRIORITIZE these relationships when there's news: US-China (tech war, Taiwan, trade), the Middle East (Israel, Iran, Gulf, oil), and India & South Asia. Cover Russia-Ukraine/Europe and others when genuinely major. Weave in the secondary beats lightly when there's real news: US politics & policy, and defense & military tech.
+A. World & Geopolitics (LEAD PILLAR): wars and conflicts, great-power relations, diplomacy, elections, major international deals, and notable/outrageous statements by leaders. PRIORITIZE these relationships when there's news: US-China (tech war, Taiwan, trade), the Middle East (Israel, Iran, Gulf, oil), and India & South Asia. Cover Russia-Ukraine/Europe and others when genuinely major. Weave in the secondary beats lightly when there's real news: US politics & policy, and defense & military tech. ALSO cover what is happening INSIDE countries, not only between them -- protests, strikes, court rulings, parliaments, elections and the domestic economy. The source bundle carries "Domestic: <country>" feeds that rotate day to day; when they contain real news, give them genuine space rather than a passing line.
 B. Markets, Money & Deals: indices, rates, macro, big earnings, mergers/acquisitions, and market milestones (e.g. one company's market cap overtaking another's). Weave in crypto & fintech lightly.
 C. AI & Infrastructure (investing lens): AI labs, hyperscalers, cloud, data centers, GPUs/accelerators, memory (HBM), networking/optics, power/cooling, semiconductor supply chain (TSMC, SK Hynix, Micron, Nvidia, AMD, Broadcom, Marvell), enterprise AI adoption -- always framed so Laksh learns to invest.
 D. Model & Research Watch: NEW model launches (give parameter counts, context length, benchmark scores, price, open- vs closed-weights when known), notable research findings/papers and why they matter, and a short "Science & Frontier Tech" note for major non-AI science/space breakthroughs.
@@ -538,23 +746,38 @@ Required sections (use these H2 titles, in this order):
 ## 4. Model & Research Watch
 - New model launches with concrete specs (params, context, benchmarks, price), key papers/findings, and a brief Science & Frontier Tech note.
 
-## 5. Watchlist: Earnings, Guidance & Movers
+## 5. What Builders Are Actually Using
+- 3-5 bullets on the PRACTICAL layer the institutional press misses: which open-weight model is a credible swap for which closed one and at what quality cost; model routing (sending easy queries to a small cheap model and hard ones to a big one) and what it saves; real price-per-million-tokens comparisons; tools, libraries or repos that developers are actually adopting; running models locally. Draw on the r/LocalLLaMA, Hacker News and practical-AI sources in the bundle -- this is the "you could just use this instead" layer that circulates among engineers.
+- Be concrete and current: name the model, the rough benchmark gap, and the price difference. If the sources genuinely have nothing new today, say so in one line rather than padding with generic advice.
+
+## 6. Watchlist: Earnings, Guidance & Movers
 - Watchlist companies with earnings/news in the last 24h: key numbers vs expectations, guidance, stock reaction. Flag roughly +/-3% moves. Treat the quote snapshot as approximate/delayed. Say plainly when the sources have nothing on a name rather than inventing. Refer to each company by name with its ticker in parentheses (e.g. "Credo (CRDO)"), especially for non-obvious tickers -- do not use bare tickers.
 
-## 6. How It Connects (Infrastructure & Supply-Chain Logic)
-- 2-3 deep causal chains linking the day's stories. Example: AI demand -> cloud capex -> GPUs -> HBM -> networking/optics -> power/cooling.
+## 7. Analysis: Second-Order Effects
+This is the section where you REASON rather than report, and it is the one Laksh most wants -- the wires tell him a tanker was hit; they will not walk him from that to his portfolio. Give 3-4 chains.
 
-## 7. Building Your Knowledge
+- Each chain starts from a real story above and follows it two, three, four steps out to consequences no single article states. Write the chain explicitly with arrows, then explain each link in prose. Example shape: attack in the Strait of Hormuz -> war-risk insurance premiums on tankers jump -> shipping costs rise -> diesel and petrol prices follow -> headline inflation ticks up -> the Fed has less room to cut rates -> higher borrowing costs press on exactly the debt-funded data-centre buildout in section 3.
+- Cover BOTH kinds: geopolitics/macro chains AND infrastructure/supply-chain chains (AI demand -> cloud capex -> GPUs -> HBM -> optics -> power). Do not make this an AI-only section.
+- CRITICAL -- label your epistemics, because Laksh is learning to tell reported fact from inference. Every chain must carry: the FACTS it starts from (sourced, from the stories above), the INFERENCE (your reasoning, clearly marked as such with hedged language -- "this would likely", "the usual pattern is"), the WEAKEST LINK (the step most likely to break, named explicitly), and WHAT WOULD FALSIFY IT (a concrete observable in the next days or weeks that would show the chain wrong).
+- Never present inference as reported fact. If a step is a guess, say it is a guess. Teaching the method matters more than being right.
+- Where a chain has a historical precedent, name it in one line (e.g. "the 2019 Abqaiq strike moved Brent ~15% in a day, then fully retraced within weeks") -- precedent is how he will learn to calibrate.
+
+## 8. Building Your Knowledge
 - 4-6 bullets teaching durable patterns (how markets, geopolitics, or the AI buildout actually work), pitched slightly higher each day as Laksh's knowledge grows.
 
-## 8. Terms & Concepts
-- Follow the TERM MEMORY rules below EXACTLY. Lead with ONE "Concept Spotlight": a single concept explained in depth (what it is, a concrete example, a real use case, rough benchmarks/numbers, and a caution/common misconception). Then 4-8 shorter term entries.
+## 9. Foundations & Terms
+- Lead with TWO "Concept Spotlights" -- exactly the two concepts named in the FOUNDATIONS block below, one from markets/investing and one from world affairs. These are set by a syllabus, not by the news, so teach them even if nothing today mentions them. This is the section that fixes the gap where the brief only ever defined whatever the headlines happened to raise.
+- Each Spotlight, written for someone encountering the idea for the first time: what it is in plain words; WHY it exists / what problem it solves; a concrete worked example with real numbers; how it shows up in the news (tie to today's stories if you honestly can, otherwise a typical case); rough benchmarks or figures worth remembering; and a caution or common misconception. Use the heading form "### Concept Spotlight: <Name>".
+- Then 4-8 shorter term entries drawn from today's news, following the TERM MEMORY rules below EXACTLY. Use the form "- **Term:** explanation".
 
-## 9. Bottom Line
+## 10. Bottom Line
 - 1-3 short paragraphs synthesizing the big picture and explicitly noting what CHANGED since the previous brief. (Write this BEFORE the Sources list so it is never the thing that gets cut.)
 
-## 10. Sources
+## 11. Sources
 - List ONLY the stories you actually cited above (aim for ~15-25 bullets, not every source provided), grouped by pillar. Keep it compact. Every bullet is itself a clickable Markdown link `[Publisher -- headline](https://...)`.
+
+Foundations:
+{foundations}
 
 Retention:
 {retention}
@@ -605,14 +828,18 @@ def build_quotes_block(quotes: list[dict]) -> str:
     return "\n".join(rows)
 
 
-def build_messages(sources, quotes, today, prior_excerpt, include_quick_check, term_memory):
+def build_messages(
+    sources, quotes, today, prior_excerpt, include_quick_check, term_memory, foundations
+):
     retention = (
         "This run is a retention checkpoint: append a final '## Quick Check' section with "
         "3 short logic questions (numbered) drawn from today's brief, followed by their answers."
         if include_quick_check
         else "Do NOT add a 'Quick Check' section this run."
     )
-    spec = BRIEF_SPEC.format(watchlist=WATCHLIST_DISPLAY, retention=retention)
+    spec = BRIEF_SPEC.format(
+        watchlist=WATCHLIST_DISPLAY, retention=retention, foundations=foundations
+    )
     system = f"{SYSTEM_ROLE}\n\n{spec}\n\n{GUARDRAILS}"
 
     prior = (
@@ -896,9 +1123,15 @@ def main() -> int:
         reinforce, mastered = taught_terms()
         term_memory = build_term_memory_block(reinforce, mastered)
         print(f"Term memory: {len(reinforce)} still-learning, {len(mastered)} mastered.")
+        picks = pick_foundations()
+        foundations = build_foundations_block(picks)
+        print(
+            "Foundations today: "
+            + (", ".join(name for name, _ in picks) if picks else "syllabus exhausted")
+        )
         prior_excerpt = previous_brief_excerpt(today)
         messages = build_messages(
-            sources, quotes, today, prior_excerpt, include_quick_check, term_memory
+            sources, quotes, today, prior_excerpt, include_quick_check, term_memory, foundations
         )
         markdown = call_llm(messages, api_key)
         if not markdown:
