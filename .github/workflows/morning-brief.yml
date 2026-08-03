@@ -2,11 +2,15 @@ name: Morning Brief
 
 on:
   schedule:
-    # GitHub cron is UTC. Both fire daily so the brief lands ~morning Pacific
-    # year-round (DST-safe). The first run generates + sends; the second sees
-    # today's files already committed and skips, so there are no duplicates.
+    # GitHub cron is UTC. All three fire daily so the brief lands ~morning Pacific
+    # year-round (DST-safe). The first run to succeed claims the day's delivery
+    # slot (a committed marker); later ones see it and skip, so no duplicates.
+    # Three, not two, because GitHub silently drops scheduled runs under load —
+    # on 2026-08-03 only one of the two crons fired, and it failed, so nothing
+    # sent. The third is the backstop for that.
     - cron: "0 15 * * *"   # 08:00 PDT / 07:00 PST
     - cron: "0 16 * * *"   # 09:00 PDT / 08:00 PST
+    - cron: "30 17 * * *"  # 10:30 PDT / 09:30 PST
   workflow_dispatch:        # manual "Run workflow" button (always regenerates)
     inputs:
       send:
@@ -36,6 +40,14 @@ jobs:
       # Output ceiling. 16000 gives the full newspaper room to finish; lower it
       # via the LLM_MAX_TOKENS repo Variable if your endpoint caps completions.
       LLM_MAX_TOKENS: ${{ vars.LLM_MAX_TOKENS || '16000' }}
+      # Reasoning models can burn the whole token budget on hidden thinking and
+      # return an empty completion (200 OK, no content). Retries escalate
+      # max_tokens toward the ceiling and step reasoning_effort down.
+      LLM_MAX_RETRIES: ${{ vars.LLM_MAX_RETRIES || '3' }}
+      LLM_MAX_TOKENS_CEILING: ${{ vars.LLM_MAX_TOKENS_CEILING || '32000' }}
+      # Blank = let the endpoint choose on attempt 1. Pin to e.g. 'low' if empty
+      # completions become chronic.
+      LLM_REASONING_EFFORT: ${{ vars.LLM_REASONING_EFFORT }}
       # Live web search (optional). Add a SEARCH_API_KEY secret to enable; with
       # no key the brief falls back to RSS-only. Provider: tavily (default) or brave.
       SEARCH_PROVIDER: ${{ vars.SEARCH_PROVIDER || 'tavily' }}

@@ -29,6 +29,7 @@ import os
 import re
 import socket
 import sys
+import time
 from datetime import datetime, timedelta, timezone
 
 import feedparser
@@ -70,6 +71,18 @@ LLM_MODEL = os.environ.get("LLM_MODEL", DEFAULT_MODEL)
 # ordered before Sources so the synthesis survives even if the tail is clipped.)
 LLM_MAX_TOKENS = int(os.environ.get("LLM_MAX_TOKENS", "16000"))
 LLM_TEMPERATURE = float(os.environ.get("LLM_TEMPERATURE", "0.4"))
+# Reasoning models (DeepSeek V4 Flash/Pro, etc.) spend part of max_tokens on
+# hidden thinking. When the thinking trace eats the whole budget the API returns
+# a 200 with an EMPTY content field — no exception — and the day's brief is lost
+# (this is what killed 2026-08-03). So: retry, and on each retry give the visible
+# answer more room while asking for less thinking.
+LLM_MAX_RETRIES = int(os.environ.get("LLM_MAX_RETRIES", "3"))
+LLM_MAX_TOKENS_CEILING = int(os.environ.get("LLM_MAX_TOKENS_CEILING", "32000"))
+# Sent as reasoning_effort when non-empty. Blank = let the endpoint decide on the
+# first attempt; retries step it down explicitly.
+LLM_REASONING_EFFORT = os.environ.get("LLM_REASONING_EFFORT", "").strip()
+# Ordered high -> low; a retry after an empty completion drops one rung.
+REASONING_EFFORT_LADDER = ("max", "high", "medium", "low")
 
 # ---------------------------------------------------------------------------
 # Source configuration
@@ -603,37 +616,161 @@ def list_models(base_url: str, api_key: str) -> list[str]:
         return []
 
 
+def describe_completion(resp) -> str:
+    """finish_reason + token counts, so an empty completion is diagnosable.
+
+    Without this an empty response is indistinguishable from a content filter,
+    a truncation, or a provider hiccup — you only see "empty" in the log.
+    """
+    choice = resp.choices[0] if getattr(resp, "choices", None) else None
+    bits = [f"finish_reason={getattr(choice, 'finish_reason', None)}"]
+    usage = getattr(resp, "usage", None)
+    if usage is not None:
+        bits.append(f"prompt_tokens={getattr(usage, 'prompt_tokens', None)}")
+        bits.append(f"completion_tokens={getattr(usage, 'completion_tokens', None)}")
+        details = getattr(usage, "completion_tokens_details", None)
+        reasoning = getattr(details, "reasoning_tokens", None) if details else None
+        if reasoning is not None:
+            bits.append(f"reasoning_tokens={reasoning}")
+    return " ".join(str(b) for b in bits)
+
+
+def reasoning_text(choice) -> str:
+    """The hidden thinking trace, if the provider exposed one.
+
+    DeepSeek-style endpoints return it as ``reasoning_content``; OpenAI-compatible
+    gateways often park it in the model's extra fields instead.
+    """
+    msg = getattr(choice, "message", None)
+    if msg is None:
+        return ""
+    text = getattr(msg, "reasoning_content", None)
+    if not text:
+        extra = getattr(msg, "model_extra", None) or {}
+        text = extra.get("reasoning_content") or extra.get("reasoning") or ""
+    return (text or "").strip()
+
+
+def looks_like_brief(text: str) -> bool:
+    """True if ``text`` is the finished brief rather than a thinking trace.
+
+    Used to salvage a run where the whole answer landed in ``reasoning_content``.
+    Deliberately strict: publishing a model's scratchpad as the morning brief is
+    worse than failing, so require real length and most of the section headers.
+    """
+    if len(text) < 4000:
+        return False
+    headers = len(re.findall(r"^##\s+\d+\.", text, flags=re.MULTILINE))
+    return headers >= 6
+
+
+def step_down_effort(current: str) -> str:
+    """Next rung down the reasoning ladder — less thinking, more visible output."""
+    if current in REASONING_EFFORT_LADDER:
+        idx = REASONING_EFFORT_LADDER.index(current)
+        return REASONING_EFFORT_LADDER[min(idx + 1, len(REASONING_EFFORT_LADDER) - 1)]
+    # Unset/unknown: the first retry asks explicitly for the low end.
+    return "low"
+
+
 def call_llm(messages, api_key) -> str:
     from openai import OpenAI
 
     client = OpenAI(api_key=api_key, base_url=LLM_BASE_URL, timeout=180.0)
-    print(f"Calling {LLM_MODEL} at {LLM_BASE_URL} ...")
-    try:
-        resp = client.chat.completions.create(
-            model=LLM_MODEL,
-            messages=messages,
-            temperature=LLM_TEMPERATURE,
-            max_tokens=LLM_MAX_TOKENS,
-        )
-    except Exception as exc:
-        msg = str(exc)
-        print(f"\nLLM call failed: {msg}", file=sys.stderr)
-        if any(w in msg.lower() for w in ("model", "not found", "404", "does not exist")):
-            available = list_models(LLM_BASE_URL, api_key)
-            if available:
-                print(
-                    "\nModels available at this endpoint:\n  "
-                    + "\n  ".join(sorted(m for m in available if m)),
-                    file=sys.stderr,
-                )
-                print(
-                    f"\nSet LLM_MODEL to one of the above (current: {LLM_MODEL}).",
-                    file=sys.stderr,
-                )
-        raise
+    max_tokens = LLM_MAX_TOKENS
+    effort = LLM_REASONING_EFFORT
+    send_effort = bool(effort)
 
-    content = resp.choices[0].message.content or ""
-    return content.strip()
+    for attempt in range(1, LLM_MAX_RETRIES + 1):
+        knobs = f"max_tokens={max_tokens}"
+        if send_effort:
+            knobs += f", reasoning_effort={effort}"
+        print(
+            f"Calling {LLM_MODEL} at {LLM_BASE_URL} "
+            f"(attempt {attempt}/{LLM_MAX_RETRIES}, {knobs}) ...",
+            flush=True,
+        )
+
+        kwargs = {
+            "model": LLM_MODEL,
+            "messages": messages,
+            "temperature": LLM_TEMPERATURE,
+            "max_tokens": max_tokens,
+        }
+        if send_effort:
+            kwargs["extra_body"] = {"reasoning_effort": effort}
+
+        try:
+            resp = client.chat.completions.create(**kwargs)
+        except Exception as exc:
+            msg = str(exc)
+            print(f"\nLLM call failed: {msg}", file=sys.stderr)
+            low = msg.lower()
+            # A bad model name never fixes itself — report and stop.
+            if any(w in low for w in ("model", "not found", "404", "does not exist")):
+                available = list_models(LLM_BASE_URL, api_key)
+                if available:
+                    print(
+                        "\nModels available at this endpoint:\n  "
+                        + "\n  ".join(sorted(m for m in available if m)),
+                        file=sys.stderr,
+                    )
+                    print(
+                        f"\nSet LLM_MODEL to one of the above (current: {LLM_MODEL}).",
+                        file=sys.stderr,
+                    )
+                raise
+            # An endpoint that rejects reasoning_effort should not cost us the run.
+            if send_effort and "reasoning_effort" in low:
+                print(
+                    "  endpoint rejected reasoning_effort — retrying without it.",
+                    file=sys.stderr,
+                )
+                send_effort = False
+                continue
+            if attempt == LLM_MAX_RETRIES:
+                raise
+            backoff = 5 * attempt
+            print(f"  retrying in {backoff}s ...", file=sys.stderr, flush=True)
+            time.sleep(backoff)
+            continue
+
+        choice = resp.choices[0]
+        content = (choice.message.content or "").strip()
+        print(f"  {describe_completion(resp)} content_chars={len(content)}")
+        if content:
+            return content
+
+        # 200 OK, empty content. Say why, loudly, then try to recover.
+        thinking = reasoning_text(choice)
+        print(
+            f"  WARNING: empty content on attempt {attempt} "
+            f"(reasoning_content chars={len(thinking)}).",
+            file=sys.stderr,
+        )
+        if looks_like_brief(thinking):
+            print(
+                "  reasoning_content contains the finished brief — using it.",
+                file=sys.stderr,
+            )
+            return thinking
+
+        if attempt == LLM_MAX_RETRIES:
+            break
+
+        # Most likely the thinking trace consumed the whole budget: raise the
+        # ceiling and ask for less thinking so the answer has somewhere to go.
+        max_tokens = min(int(max_tokens * 1.5), LLM_MAX_TOKENS_CEILING)
+        effort = step_down_effort(effort)
+        send_effort = True
+        print(
+            f"  retrying with max_tokens={max_tokens}, reasoning_effort={effort} ...",
+            file=sys.stderr,
+            flush=True,
+        )
+        time.sleep(5 * attempt)
+
+    return ""
 
 
 # ---------------------------------------------------------------------------
@@ -734,7 +871,13 @@ def main() -> int:
         )
         markdown = call_llm(messages, api_key)
         if not markdown:
-            print("ERROR: LLM returned empty content.", file=sys.stderr)
+            print(
+                f"ERROR: LLM returned empty content on all {LLM_MAX_RETRIES} attempts.\n"
+                "See the finish_reason / token counts above. If reasoning_tokens is at "
+                "the max_tokens ceiling, the thinking trace is eating the whole budget: "
+                "raise LLM_MAX_TOKENS_CEILING or pin LLM_REASONING_EFFORT=low.",
+                file=sys.stderr,
+            )
             return 1
 
     # Footer for provenance.
