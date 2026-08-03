@@ -133,7 +133,11 @@ def _norm(category: str, label: str, title: str, link: str, summary: str, publis
 
 
 def _tavily_raw(query: str, key: str, days: int, max_results: int) -> list[tuple]:
-    # Tavily: key goes in the Authorization header; recency via time_range.
+    # Tavily: key goes in the Authorization header. `time_range` is coarse
+    # (day/week/month), so a 2-day lookback used to round UP to a full week and
+    # two thirds of returned items were 2-7 days old. `days` is exact for
+    # topic=news, so send that too; callers still re-filter against the real
+    # cutoff, since neither field is contractually guaranteed to be honoured.
     time_range = "day" if days <= 1 else "week" if days <= 7 else "month"
     resp = requests.post(
         "https://api.tavily.com/search",
@@ -141,6 +145,7 @@ def _tavily_raw(query: str, key: str, days: int, max_results: int) -> list[tuple
         json={
             "query": query,
             "topic": "news",
+            "days": days,
             "time_range": time_range,
             "max_results": min(max_results, 20),
             "search_depth": "basic",

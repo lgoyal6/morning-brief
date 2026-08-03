@@ -278,12 +278,45 @@ def fetch_sources() -> list[dict]:
             added += 1
         return added
 
-    # 1) Live web search (optional). Runs first so its fresh, on-topic results
-    #    win dedupe ties and are never dropped by the MAX_ITEMS cap below.
+    def within_window(items: list[dict]) -> list[dict]:
+        """Drop anything published before ``cutoff``.
+
+        RSS is already filtered inside parse_feed, but search results arrive
+        unfiltered and providers treat recency as a hint at best -- Tavily's
+        coarse time_range silently widened a 48h ask to a full week, so two
+        thirds of search items were 2-7 days old. Gate them on the same cutoff
+        the feeds use. Undated items are kept: we cannot prove them stale, and
+        they sort last regardless.
+        """
+        fresh = []
+        for it in items:
+            stamp = it.get("published") or ""
+            if not stamp:
+                fresh.append(it)
+                continue
+            try:
+                dt = datetime.fromisoformat(stamp)
+            except ValueError:
+                fresh.append(it)
+                continue
+            if dt.tzinfo is None:
+                dt = dt.replace(tzinfo=timezone.utc)
+            if dt >= cutoff:
+                fresh.append(it)
+        return fresh
+
+    # 1) Live web search (optional). Runs first so its on-topic results win
+    #    dedupe ties and are never dropped by the MAX_ITEMS cap below.
     if web_search.search_enabled():
         try:
-            web_kept = add(web_search.fetch_web_search(LOOKBACK_HOURS))
-            print(f"  web search: {web_kept} new items")
+            found = web_search.fetch_web_search(LOOKBACK_HOURS)
+            recent = within_window(found)
+            stale = len(found) - len(recent)
+            web_kept = add(recent)
+            print(
+                f"  web search: {web_kept} new items "
+                f"({stale} dropped as older than {LOOKBACK_HOURS}h)"
+            )
         except Exception as exc:  # defensive: never let search break the brief
             print(f"Web search failed (non-fatal): {exc}", file=sys.stderr)
     else:
@@ -299,15 +332,13 @@ def fetch_sources() -> list[dict]:
     # Interleave by category so the bundle stays balanced across pillars and the
     # MAX_ITEMS cap trims each category's tail evenly -- instead of the high-volume
     # tech/markets feeds burying world news (the old failure mode). Within each
-    # category, targeted web-search hits sort ahead of RSS, then newest first.
+    # category it is strictly newest-first: ranking web search above RSS used to
+    # put week-old search hits ahead of six-hour-old wire copy.
     buckets: dict[str, list[dict]] = {}
     for it in collected:
         buckets.setdefault(it.get("category", "ai"), []).append(it)
     for cat in buckets:
-        buckets[cat].sort(
-            key=lambda x: (x["feed"].startswith("Web Search"), x["published"] or ""),
-            reverse=True,
-        )
+        buckets[cat].sort(key=lambda x: x["published"] or "", reverse=True)
 
     # Round-robin across a stable category order (known categories first).
     order = [c for c in CATEGORIES if c in buckets] + [c for c in buckets if c not in CATEGORIES]
