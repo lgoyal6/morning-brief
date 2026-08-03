@@ -13,4 +13,4 @@ matplotlib>=3.8        # watchlist "biggest movers" chart
 Pillow>=10.0           # image handling for charts/photos
 
 # Market data (best-effort; failures are non-fatal)
-yfinance>=0.2.40
+yfinance>=1.5.2
