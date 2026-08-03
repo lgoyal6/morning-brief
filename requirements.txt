@@ -4,7 +4,7 @@ requests>=2.31
 feedparser>=6.0        # RSS/Atom parsing
 beautifulsoup4>=4.12   # strip HTML out of RSS summaries; parse og:image tags
 python-dotenv>=1.0     # load .env for local runs
-pytz>=2024.1           # America/Los_Angeles date handling
+pytz>=2026.3.post1           # America/Los_Angeles date handling
 
 # PDF rendering (two-column magazine layout)
 markdown>=3.5          # Markdown -> HTML
