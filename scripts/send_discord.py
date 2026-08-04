@@ -62,6 +62,21 @@ def resolve_channel_id(token: str, target: str) -> str:
     )
 
 
+def send_text(token: str, channel_id: str, content: str) -> None:
+    """Post a plain message. Used by the watchdog, which has no PDF to attach."""
+    resp = requests.post(
+        f"{API_BASE}/channels/{channel_id}/messages",
+        headers={**_headers(token), "Content-Type": "application/json"},
+        json={"content": content},
+        timeout=30,
+    )
+    if not resp.ok:
+        raise SystemExit(
+            f"Discord: alert send failed (HTTP {resp.status_code}): {resp.text[:800]}"
+        )
+    print(f"Discord: alert sent to channel {channel_id}.")
+
+
 def send_pdf(token: str, channel_id: str, pdf_path: Path, content: str) -> None:
     url = f"{API_BASE}/channels/{channel_id}/messages"
     for attempt in range(2):
@@ -132,6 +147,12 @@ def main() -> int:
         f"🗞️ **Morning Brief — {date}**\n"
         "AI · Tech Infrastructure · Markets · Geopolitics"
     )
+    # Say it here, not only in an Actions annotation nobody reads at breakfast.
+    if state.get("truncated"):
+        content += (
+            "\n\n⚠️ _This brief hit the output limit and the tail is incomplete — "
+            "raise `LLM_MAX_TOKENS` or `LLM_MAX_CONTINUATIONS`._"
+        )
 
     channel_id = resolve_channel_id(token, target)
     send_pdf(token, channel_id, pdf_path, content)

@@ -954,6 +954,11 @@ CONTINUE_INSTRUCTION = (
 # now, so a genuine restatement is long; this only guards against a stray short one.
 MIN_OVERLAP = 12
 
+# Set when a completion was still clipped after every continuation. Read when the
+# run state is saved so send_discord.py can say so in the message itself — an
+# Actions annotation is invisible to anyone reading the brief over breakfast.
+TRUNCATED = False
+
 
 def resume_point(text: str) -> tuple[str, int]:
     """Trim back to the last word boundary. Returns (kept, chars_dropped).
@@ -1054,6 +1059,8 @@ def continue_truncated(client, base_messages, partial, max_tokens, effort, send_
             print(f"  brief complete after {i} continuation(s): {len(text)} chars.")
             return text
 
+    global TRUNCATED
+    TRUNCATED = True
     print(
         f"::warning::Brief still truncated after {LLM_MAX_CONTINUATIONS} "
         f"continuation(s) at max_tokens={max_tokens} ({len(text)} chars). "
@@ -1318,6 +1325,7 @@ def main() -> int:
         pdf=str(pdf_file),
         dry_run=dry_run,
         source_count=len(sources),
+        truncated=TRUNCATED,
     )
     return 0
 

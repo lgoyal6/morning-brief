@@ -1,0 +1,47 @@
+name: Brief Watchdog
+
+# Checks the OUTCOME, not any particular run: is today's delivery marker
+# committed? Everything else in this repo can only report a failure of a run that
+# actually happened — and the worst failure mode is GitHub silently dropping the
+# scheduled run, which produces no run and therefore no signal at all.
+#
+# Fires after the last brief cron (16:40 UTC) plus generation time, so a brief
+# that is merely slow is not reported as missing. Off the hour, like the others.
+on:
+  schedule:
+    - cron: "25 17 * * *"  # 10:25 PDT / 09:25 PST
+  workflow_dispatch:        # so you can test the alert path on demand
+
+# The watchdog is itself a GitHub cron and can be dropped too — it narrows the
+# blind spot rather than closing it. Closing it needs a trigger outside GitHub.
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    env:
+      DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+      DISCORD_TARGET: ${{ secrets.DISCORD_TARGET }}
+      RUNS_URL: ${{ github.server_url }}/${{ github.repository }}/actions/workflows/morning-brief.yml
+      TZ: America/Los_Angeles
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # The marker is committed by the brief run; a stale checkout would
+          # report a delivered brief as missing.
+          ref: main
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      # Only needs requests + dotenv + pytz, but the pinned file keeps one source
+      # of truth for versions.
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Check today's brief was delivered
+        run: python scripts/watchdog.py
