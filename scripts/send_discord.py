@@ -114,8 +114,9 @@ def main() -> int:
     # Manual dispatch is for iterating on the pipeline, so it does NOT send by
     # default — that's what kept overnight test runs from DMing the brief at 1am
     # (and it never touches the scheduled morning slot either). Re-run the
-    # workflow with the `send` input set to true to actually deliver. Scheduled
-    # and local runs (GITHUB_EVENT_NAME unset) always send.
+    # workflow with the `send` input set to true to actually deliver. Everything
+    # else sends: schedule, repository_dispatch (the Cloudflare Worker cron in
+    # trigger/), and local runs with GITHUB_EVENT_NAME unset.
     event = os.environ.get("GITHUB_EVENT_NAME", "")
     if event == "workflow_dispatch" and not common.env_flag("DISCORD_SEND"):
         print(

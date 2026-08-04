@@ -1,0 +1,35 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "morning-brief-trigger",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-08-01",
+
+  // No public URL. This Worker only needs its cron triggers, and a workers.dev
+  // route would publish the private repo's path to anyone who found it. The fetch
+  // handler stays for `wrangler dev`, but nothing routes to it in production.
+  "workers_dev": false,
+
+  // Two crons, one dispatch. Cloudflare cron is UTC, so a single UTC time drifts
+  // an hour against Pacific twice a year. Both fire; the Worker checks the local
+  // Pacific hour and only dispatches at TARGET_LOCAL_HOUR:55, so delivery stays
+  // at ~08:00 Pacific year-round.
+  //   summer (PDT, UTC-7): 14:55Z = 07:55 local -> dispatch;  15:55Z = 08:55 -> skip
+  //   winter (PST, UTC-8): 14:55Z = 06:55 local -> skip;      15:55Z = 07:55 -> dispatch
+  "triggers": {
+    "crons": ["55 14 * * *", "55 15 * * *"]
+  },
+
+  "vars": {
+    "GITHUB_REPO": "lgoyal6/morning-brief",
+    "GITHUB_API_BASE": "https://api.github.com",
+    "DISPATCH_EVENT_TYPE": "morning-brief",
+    "TARGET_TZ": "America/Los_Angeles",
+    "TARGET_LOCAL_HOUR": "7"
+  },
+
+  "observability": {
+    "enabled": true
+  }
+
+  // GITHUB_PAT is a secret, set with `wrangler secret put GITHUB_PAT`.
+}

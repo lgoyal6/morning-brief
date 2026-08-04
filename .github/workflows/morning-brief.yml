@@ -12,10 +12,20 @@ on:
     # 45-90min late (16:29 on 07-31, 16:45 on 08-04), and 08-04's 15:00 run was
     # dropped entirely. Off-hour minutes drift far less. Spacing is 30min so a
     # dropped primary is covered within half an hour instead of a full one.
-    - cron: "50 14 * * *"  # 07:50 PDT / 06:50 PST — primary
-    - cron: "20 15 * * *"  # 08:20 PDT / 07:20 PST — covers a dropped primary
+    # These are now BACKSTOPS. The punctual trigger is a Cloudflare Worker cron
+    # (see trigger/) that fires repository_dispatch at 07:55 Pacific — dispatched
+    # runs start in ~15s, where these crons measured 45-90min late. They stay
+    # because the Worker is another thing that can break, and the delivery marker
+    # means whoever arrives second just skips.
+    - cron: "50 14 * * *"  # 07:50 PDT / 06:50 PST
+    - cron: "20 15 * * *"  # 08:20 PDT / 07:20 PST
     - cron: "50 15 * * *"  # 08:50 PDT / 07:50 PST
     - cron: "40 16 * * *"  # 09:40 PDT / 08:40 PST — final backstop
+
+  # Fired by the Cloudflare Worker in trigger/. Treated exactly like a scheduled
+  # run: it claims the day's slot and it sends.
+  repository_dispatch:
+    types: [morning-brief]
   workflow_dispatch:        # manual "Run workflow" button (always regenerates)
     inputs:
       send:

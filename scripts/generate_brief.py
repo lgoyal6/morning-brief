@@ -1227,7 +1227,11 @@ def main() -> int:
     pdf_file = common.dated_pdf_path(today)
 
     event = os.environ.get("GITHUB_EVENT_NAME", "")
-    is_scheduled = event == "schedule"
+    # repository_dispatch is the Cloudflare Worker cron in trigger/ — it is the
+    # punctual morning trigger, so it counts as a delivery run exactly like
+    # `schedule`: it claims the day's slot and it dedups against it. A human's
+    # workflow_dispatch still must not, so that iterating cannot eat the slot.
+    is_scheduled = event in ("schedule", "repository_dispatch")
     force = common.env_flag("FORCE_REGENERATE") or "--force" in sys.argv
     dry_run = common.env_flag("BRIEF_DRY_RUN") or "--dry-run" in sys.argv
 

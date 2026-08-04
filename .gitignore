@@ -17,3 +17,8 @@ briefs/.brief_state.json
 briefs/*.debug.html
 
 # Generated briefs (the dated .md/.pdf and latest PDF) ARE committed on purpose.
+
+# Cloudflare Worker (trigger/) build + local state
+trigger/node_modules/
+trigger/.wrangler/
+trigger/.dev.vars
