@@ -9,7 +9,9 @@ DISCORD_TARGET selects the destination:
 
 On any failure this prints a clear error and exits non-zero, so the workflow is
 marked failed AFTER the brief has already been committed and uploaded as an
-artifact (this step runs last).
+artifact. On success it claims the day's delivery slot (briefs/.delivery.json),
+which the workflow commits in a following step — the slot is deliberately not
+claimed until Discord confirms delivery.
 """
 
 from __future__ import annotations
@@ -133,6 +135,15 @@ def main() -> int:
 
     channel_id = resolve_channel_id(token, target)
     send_pdf(token, channel_id, pdf_path, content)
+
+    # Claim the day's delivery slot only now that Discord has confirmed the send.
+    # Generation used to claim it, so a successful generate + failed send burned
+    # the slot and every later cron skipped — the one failure mode the extra crons
+    # exist to cover. Scheduled runs only: a manual or local send must never be
+    # able to suppress the real morning delivery.
+    if state.get("scheduled"):
+        common.mark_scheduled_delivery(date)
+        print(f"Claimed morning-delivery slot for {date} (send confirmed).")
     return 0
 
 

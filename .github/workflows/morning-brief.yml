@@ -42,9 +42,15 @@ jobs:
       # LLM endpoint + model. Override with repo Variables if desired.
       LLM_BASE_URL: ${{ vars.LLM_BASE_URL || 'https://api.gmi-serving.com/v1' }}
       LLM_MODEL: ${{ vars.LLM_MODEL || 'deepseek-ai/DeepSeek-V4-Flash' }}
-      # Output ceiling. 16000 gives the full newspaper room to finish; lower it
-      # via the LLM_MAX_TOKENS repo Variable if your endpoint caps completions.
-      LLM_MAX_TOKENS: ${{ vars.LLM_MAX_TOKENS || '16000' }}
+      # Output cap, sized from measured runs — NOT a spend. You are billed for
+      # tokens generated, so a bigger cap costs nothing extra; it only decides
+      # when the model gets cut off. Lowering it does not save tokens, it
+      # truncates the brief. Measured 2026-08-04: 17.0k and 25.3k completion
+      # tokens for 66k/83k chars (~3.3 chars/token), so the worst real run sat at
+      # 79% of a 32000 cap while briefs have grown 24k->66k chars in 12 days.
+      # 40000 puts that worst case at 63% and still generates in ~5.5min at the
+      # observed ~120 tok/s, well inside LLM_TIMEOUT.
+      LLM_MAX_TOKENS: ${{ vars.LLM_MAX_TOKENS || '40000' }}
       # Per-request wall clock. Must comfortably exceed one full generation at
       # LLM_MAX_TOKENS (~5.5min at 32000) — when this was 180s every request
       # timed out and the brief showed up two hours late. Raise it with, not
@@ -130,3 +136,25 @@ jobs:
 
       - name: Send Discord PDF
         run: python scripts/send_discord.py
+
+      # send_discord.py writes the delivery marker only after Discord confirms
+      # the send, which is after the commit step above — so it needs its own
+      # commit, or the next cron would never see it and would send again. This
+      # step is skipped when the send fails, which is the point: the slot stays
+      # unclaimed and the next cron gets to try.
+      - name: Commit delivery marker
+        run: |
+          git config user.name "morning-brief-bot"
+          git config user.email "morning-brief-bot@users.noreply.github.com"
+          git add briefs/.delivery.json
+          if git diff --cached --quiet; then
+            echo "No delivery marker change to commit."
+            exit 0
+          fi
+          git commit -m "Record delivery of $(TZ=America/Los_Angeles date +%Y-%m-%d) brief"
+          if ! git pull --rebase --autostash; then
+            git rebase --abort || true
+            echo "::error::Rebase conflict on the delivery marker — not pushing."
+            exit 1
+          fi
+          git push

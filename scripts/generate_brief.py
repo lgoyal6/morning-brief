@@ -1011,6 +1011,18 @@ def call_llm(messages, api_key) -> str:
         content = (choice.message.content or "").strip()
         print(f"  {describe_completion(resp)} content_chars={len(content)}")
         if content:
+            # finish_reason=length means max_tokens cut the tail off mid-sentence.
+            # Nothing downstream notices, so this used to ship a truncated brief
+            # silently. A partial brief still beats no brief -- so ship it, but
+            # loudly. Deliberately NOT a retry: re-sending the whole prompt costs
+            # ~30k input tokens for a likely-identical cut, so the fix is headroom
+            # (raise LLM_MAX_TOKENS), not another attempt.
+            if getattr(choice, "finish_reason", None) == "length":
+                print(
+                    f"::warning::Brief truncated at max_tokens={max_tokens} — the "
+                    "tail is cut off mid-sentence. Raise LLM_MAX_TOKENS.",
+                    flush=True,
+                )
             return content
 
         # 200 OK, empty content. Say why, loudly, then try to recover.
@@ -1088,10 +1100,10 @@ def main() -> int:
     force = common.env_flag("FORCE_REGENERATE") or "--force" in sys.argv
     dry_run = common.env_flag("BRIEF_DRY_RUN") or "--dry-run" in sys.argv
 
-    # Duplicate prevention across the two daily DST crons. A scheduled run claims
-    # the day's morning-delivery slot via a COMMITTED marker (see
-    # common.mark_scheduled_delivery, set below once generation succeeds), so only
-    # the *second* scheduled cron short-circuits. We deliberately key off that
+    # Duplicate prevention across the daily crons. A scheduled run claims the
+    # day's morning-delivery slot via a COMMITTED marker, written by
+    # send_discord.py once Discord confirms the send (NOT here — see the note
+    # further down), so only a *later* cron short-circuits. We key off that
     # marker rather than "do today's files already exist": a manual dispatch or a
     # late-night local run may have committed today's .md/.pdf, and that must NOT
     # suppress the real morning send.
@@ -1168,17 +1180,16 @@ def main() -> int:
     md_file.write_text(markdown)
     print(f"Wrote {md_file} ({len(markdown)} chars)")
 
-    # Claim today's morning-delivery slot so the day's second DST cron skips.
-    # Only scheduled runs do this — manual/local runs never consume the slot, so
-    # iterating on the pipeline can't block the next scheduled send. The marker is
-    # committed by the workflow's commit step (it is not gitignored).
-    if is_scheduled:
-        common.mark_scheduled_delivery(today)
-        print(f"Claimed scheduled morning-delivery slot for {today}.")
-
+    # The delivery slot is deliberately NOT claimed here. It used to be, which
+    # meant a brief that generated fine but failed to send still burned the day's
+    # slot: every later cron saw the marker, skipped, and nothing ever arrived.
+    # send_discord.py claims it only once Discord confirms the send, so a failed
+    # send leaves the slot open for the next cron. `scheduled` is passed along
+    # because only scheduled runs may claim it.
     common.save_state(
         date=today,
         action="generated",
+        scheduled=is_scheduled,
         md=str(md_file),
         pdf=str(pdf_file),
         dry_run=dry_run,
