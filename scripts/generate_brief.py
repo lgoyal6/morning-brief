@@ -69,8 +69,13 @@ LLM_MODEL = os.environ.get("LLM_MODEL", DEFAULT_MODEL)
 # long, so default high; 16000 lets the full brief + Sources finish. Lower via
 # LLM_MAX_TOKENS if your endpoint caps completion length. (The Bottom Line is
 # ordered before Sources so the synthesis survives even if the tail is clipped.)
-LLM_MAX_TOKENS = int(os.environ.get("LLM_MAX_TOKENS", "16000"))
+LLM_MAX_TOKENS = int(os.environ.get("LLM_MAX_TOKENS", "40000"))
 LLM_TEMPERATURE = float(os.environ.get("LLM_TEMPERATURE", "0.4"))
+# If a completion still hits the cap, resume it instead of losing the tail: the
+# model gets its own partial back and is told to pick up exactly where it stopped.
+# Far cheaper than regenerating — a fresh attempt re-pays the ~30k-token prompt
+# only to cut in roughly the same place.
+LLM_MAX_CONTINUATIONS = int(os.environ.get("LLM_MAX_CONTINUATIONS", "3"))
 # Reasoning models (DeepSeek V4 Flash/Pro, etc.) spend part of max_tokens on
 # hidden thinking. When the thinking trace eats the whole budget the API returns
 # a 200 with an EMPTY content field — no exception — and the day's brief is lost
@@ -935,6 +940,129 @@ def step_down_effort(current: str) -> str:
     return "low"
 
 
+CONTINUE_INSTRUCTION = (
+    "Your previous message was cut off because it hit the output token limit, and "
+    "its trailing partial word has been removed. Continue from exactly where it "
+    "now ends, starting with the next whole word. Do not repeat text you already "
+    "wrote, do not restate the last sentence, do not summarise what came before, "
+    "and do not add any preamble or apology. Emit only the remaining text, "
+    "including the sections that never got written, and finish the brief."
+)
+
+
+# Shortest repeated tail worth cutting at a continuation seam. Lines are the unit
+# now, so a genuine restatement is long; this only guards against a stray short one.
+MIN_OVERLAP = 12
+
+
+def resume_point(text: str) -> tuple[str, int]:
+    """Trim back to the last word boundary. Returns (kept, chars_dropped).
+
+    Resuming mid-word is not decidable: nothing in the text says whether the model
+    re-emitted the partial word, so the seam is a coin flip. Measured on
+    2026-08-04, three of four real seams came back broken — "or Llama" + "Llama
+    3.1" glued to "LlamaLlama", "that" + "would" to "thatwould", and a truncated
+    base64 URL spliced into unrelated prose.
+
+    Trimming to a *line* boundary fixed that but overshot badly: markdown
+    paragraphs are single long lines, so one measured run dropped 560 of 625 chars.
+    A word boundary is the smallest cut that still removes the ambiguity — it
+    discards at most one partial word, and the join is always a single space.
+    """
+    i = max(text.rfind(" "), text.rfind("\n"), text.rfind("\t"))
+    if i <= 0:
+        return text, 0
+    return text[:i], len(text) - i
+
+
+def splice_continuation(text: str, more: str) -> str:
+    """Return the text to append to ``text``, joined at the word boundary.
+
+    ``text`` always ends at a complete word (see :func:`resume_point`), so the
+    repairs needed are dropping any tail the model restated and picking a
+    separator: none if it brought its own, a break before a heading, else a space.
+    """
+    for n in range(min(len(text), 600), MIN_OVERLAP - 1, -1):
+        if more.startswith(text[-n:]):
+            more = more[n:]
+            break
+    if not more:
+        return ""
+    if more[0].isspace():
+        return more                      # brought its own separator
+    if more.startswith(("#", "-", "*", "|", ">")):
+        return "\n\n" + more             # resumed at a heading/list/table row
+    return " " + more
+
+
+def continue_truncated(client, base_messages, partial, max_tokens, effort, send_effort) -> str:
+    """Resume a completion that hit ``max_tokens`` until it finishes or we give up."""
+    # Continuing must never cost us text. Every early exit returns `text` — the
+    # last state we actually hold — and the trimmed stem is only committed to it
+    # once a continuation has come back with something to splice on. A measured run
+    # that returned the 65-char stem instead of the 625-char partial is why.
+    text = partial
+    for i in range(1, LLM_MAX_CONTINUATIONS + 1):
+        # Hand the model a stem ending at a complete word, so "continue from where
+        # you stopped" is an instruction it can actually follow unambiguously.
+        stem, dropped = resume_point(text)
+        print(
+            f"  truncated at {len(text)} chars — trimming {dropped} char(s) of partial "
+            f"word, requesting continuation {i}/{LLM_MAX_CONTINUATIONS} ...",
+            flush=True,
+        )
+        kwargs = {
+            "model": LLM_MODEL,
+            "messages": base_messages
+            + [
+                {"role": "assistant", "content": stem},
+                {"role": "user", "content": CONTINUE_INSTRUCTION},
+            ],
+            "temperature": LLM_TEMPERATURE,
+            "max_tokens": max_tokens,
+        }
+        if send_effort:
+            kwargs["extra_body"] = {"reasoning_effort": effort}
+
+        try:
+            resp = client.chat.completions.create(**kwargs)
+        except Exception as exc:
+            print(
+                f"  continuation {i} failed ({exc}) — keeping the {len(text)} chars "
+                "we already have.",
+                file=sys.stderr,
+                flush=True,
+            )
+            return text
+
+        choice = resp.choices[0]
+        more = (choice.message.content or "").strip()
+        print(f"  continuation {i}: {describe_completion(resp)} content_chars={len(more)}")
+        added = splice_continuation(stem, more) if more else ""
+        if not added.strip():
+            # Empty, or pure repetition of what we already have. Another round
+            # would re-pay the whole prompt for the same nothing.
+            print(
+                f"  continuation {i} added nothing new — keeping the {len(text)} chars "
+                "we already have.",
+                file=sys.stderr,
+                flush=True,
+            )
+            return text
+        text = stem + added
+        if getattr(choice, "finish_reason", None) != "length":
+            print(f"  brief complete after {i} continuation(s): {len(text)} chars.")
+            return text
+
+    print(
+        f"::warning::Brief still truncated after {LLM_MAX_CONTINUATIONS} "
+        f"continuation(s) at max_tokens={max_tokens} ({len(text)} chars). "
+        "Raise LLM_MAX_TOKENS or LLM_MAX_CONTINUATIONS.",
+        flush=True,
+    )
+    return text
+
+
 def call_llm(messages, api_key) -> str:
     from openai import OpenAI
 
@@ -1013,15 +1141,11 @@ def call_llm(messages, api_key) -> str:
         if content:
             # finish_reason=length means max_tokens cut the tail off mid-sentence.
             # Nothing downstream notices, so this used to ship a truncated brief
-            # silently. A partial brief still beats no brief -- so ship it, but
-            # loudly. Deliberately NOT a retry: re-sending the whole prompt costs
-            # ~30k input tokens for a likely-identical cut, so the fix is headroom
-            # (raise LLM_MAX_TOKENS), not another attempt.
+            # silently. Resume it rather than restarting: a fresh attempt throws
+            # away good text and re-pays the whole prompt to cut in the same spot.
             if getattr(choice, "finish_reason", None) == "length":
-                print(
-                    f"::warning::Brief truncated at max_tokens={max_tokens} — the "
-                    "tail is cut off mid-sentence. Raise LLM_MAX_TOKENS.",
-                    flush=True,
+                content = continue_truncated(
+                    client, messages, content, max_tokens, effort, send_effort
                 )
             return content
 

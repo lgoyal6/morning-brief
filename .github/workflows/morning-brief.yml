@@ -51,6 +51,13 @@ jobs:
       # 40000 puts that worst case at 63% and still generates in ~5.5min at the
       # observed ~120 tok/s, well inside LLM_TIMEOUT.
       LLM_MAX_TOKENS: ${{ vars.LLM_MAX_TOKENS || '40000' }}
+      # If a completion still hits the cap, resume it from where it stopped rather
+      # than shipping a clipped brief or regenerating from scratch.
+      LLM_MAX_CONTINUATIONS: ${{ vars.LLM_MAX_CONTINUATIONS || '3' }}
+      # How many ranked news items reach the prompt. 130 costs ~29k input tokens
+      # per call — the dominant input cost, and it is re-paid by every retry and
+      # every continuation. Lower this to cut spend.
+      BRIEF_MAX_ITEMS: ${{ vars.BRIEF_MAX_ITEMS || '130' }}
       # Per-request wall clock. Must comfortably exceed one full generation at
       # LLM_MAX_TOKENS (~5.5min at 32000) — when this was 180s every request
       # timed out and the brief showed up two hours late. Raise it with, not
