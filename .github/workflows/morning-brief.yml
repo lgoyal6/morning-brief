@@ -2,15 +2,20 @@ name: Morning Brief
 
 on:
   schedule:
-    # GitHub cron is UTC. All three fire daily so the brief lands ~morning Pacific
+    # GitHub cron is UTC. All four fire daily so the brief lands ~morning Pacific
     # year-round (DST-safe). The first run to succeed claims the day's delivery
-    # slot (a committed marker); later ones see it and skip, so no duplicates.
-    # Three, not two, because GitHub silently drops scheduled runs under load —
-    # on 2026-08-03 only one of the two crons fired, and it failed, so nothing
-    # sent. The third is the backstop for that.
-    - cron: "0 15 * * *"   # 08:00 PDT / 07:00 PST
-    - cron: "0 16 * * *"   # 09:00 PDT / 08:00 PST
-    - cron: "30 17 * * *"  # 10:30 PDT / 09:30 PST
+    # slot (a committed marker); later ones see it and skip in ~1min, so extra
+    # crons are cheap and never double-send.
+    #
+    # NOTHING is scheduled on the hour: top-of-hour is GitHub's most congested
+    # slot, and the old "0 15"/"0 16" crons paid for it every day — they started
+    # 45-90min late (16:29 on 07-31, 16:45 on 08-04), and 08-04's 15:00 run was
+    # dropped entirely. Off-hour minutes drift far less. Spacing is 30min so a
+    # dropped primary is covered within half an hour instead of a full one.
+    - cron: "50 14 * * *"  # 07:50 PDT / 06:50 PST — primary
+    - cron: "20 15 * * *"  # 08:20 PDT / 07:20 PST — covers a dropped primary
+    - cron: "50 15 * * *"  # 08:50 PDT / 07:50 PST
+    - cron: "40 16 * * *"  # 09:40 PDT / 08:40 PST — final backstop
   workflow_dispatch:        # manual "Run workflow" button (always regenerates)
     inputs:
       send:
@@ -40,6 +45,11 @@ jobs:
       # Output ceiling. 16000 gives the full newspaper room to finish; lower it
       # via the LLM_MAX_TOKENS repo Variable if your endpoint caps completions.
       LLM_MAX_TOKENS: ${{ vars.LLM_MAX_TOKENS || '16000' }}
+      # Per-request wall clock. Must comfortably exceed one full generation at
+      # LLM_MAX_TOKENS (~5.5min at 32000) — when this was 180s every request
+      # timed out and the brief showed up two hours late. Raise it with, not
+      # after, LLM_MAX_TOKENS.
+      LLM_TIMEOUT: ${{ vars.LLM_TIMEOUT || '600' }}
       # Reasoning models can burn the whole token budget on hidden thinking and
       # return an empty completion (200 OK, no content). Retries escalate
       # max_tokens toward the ceiling and step reasoning_effort down.

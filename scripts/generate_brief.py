@@ -938,7 +938,17 @@ def step_down_effort(current: str) -> str:
 def call_llm(messages, api_key) -> str:
     from openai import OpenAI
 
-    client = OpenAI(api_key=api_key, base_url=LLM_BASE_URL, timeout=180.0)
+    # 180s used to be enough, but LLM_MAX_TOKENS=32000 pushed a normal generation
+    # to ~5.5min, so most requests timed out. max_retries=0 matters as much as the
+    # timeout: the SDK retries twice on its own by default, so each attempt below
+    # silently cost 3 x timeout (9min) and burned the retry budget on one stuck
+    # request instead of escalating. Our loop is the only retry layer now.
+    client = OpenAI(
+        api_key=api_key,
+        base_url=LLM_BASE_URL,
+        timeout=float(os.environ.get("LLM_TIMEOUT", "600")),
+        max_retries=0,
+    )
     max_tokens = LLM_MAX_TOKENS
     effort = LLM_REASONING_EFFORT
     send_effort = bool(effort)
