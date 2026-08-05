@@ -52,6 +52,19 @@ jobs:
       # LLM endpoint + model. Override with repo Variables if desired.
       LLM_BASE_URL: ${{ vars.LLM_BASE_URL || 'https://api.gmi-serving.com/v1' }}
       LLM_MODEL: ${{ vars.LLM_MODEL || 'deepseek-ai/DeepSeek-V4-Flash' }}
+      # Tried in order when the primary produces nothing. Same endpoint and key —
+      # this endpoint serves 80 models on one credential — so no new secrets.
+      #
+      # Both fallbacks are NON-REASONING on purpose. The one LLM failure that has
+      # actually cost a brief (2026-08-03) was the primary's hidden reasoning trace
+      # eating the whole max_tokens budget and returning empty content, so a
+      # reasoning model is the wrong thing to fail over to. Qwen's Instruct variant
+      # is the non-thinking sibling of its own -Thinking build; Claude Opus 4.8 runs
+      # without thinking unless a request opts in (Fable 5 and Sonnet 5 both think
+      # by default, which is why neither is here).
+      LLM_FALLBACK_MODELS: >-
+        ${{ vars.LLM_FALLBACK_MODELS ||
+        'Qwen/Qwen3-235B-A22B-Instruct-2507-FP8,anthropic/claude-opus-4.8' }}
       # Output cap, sized from measured runs — NOT a spend. You are billed for
       # tokens generated, so a bigger cap costs nothing extra; it only decides
       # when the model gets cut off. Lowering it does not save tokens, it

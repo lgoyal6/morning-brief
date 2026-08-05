@@ -76,6 +76,20 @@ LLM_TEMPERATURE = float(os.environ.get("LLM_TEMPERATURE", "0.4"))
 # Far cheaper than regenerating — a fresh attempt re-pays the ~30k-token prompt
 # only to cut in roughly the same place.
 LLM_MAX_CONTINUATIONS = int(os.environ.get("LLM_MAX_CONTINUATIONS", "3"))
+# Models tried, in order, when LLM_MODEL fails outright. Same endpoint and key —
+# GMI serves 80 models on one credential — so this costs nothing new.
+#
+# Pick NON-REASONING models. The only LLM failure that has actually cost a brief
+# (2026-08-03) was DeepSeek-V4-Flash's hidden reasoning trace consuming the whole
+# max_tokens budget and returning 200 OK with empty content; retrying the same
+# reasoning model just re-rolls that dice. Verified again 2026-08-04 at
+# max_tokens=2500: reasoning_tokens=2500 of 2501, content_chars=0.
+LLM_FALLBACK_MODELS = [
+    m.strip() for m in os.environ.get("LLM_FALLBACK_MODELS", "").split(",") if m.strip()
+]
+# Which model actually produced the brief. Recorded so the footer and the Discord
+# message can say when a fallback was used — a silent fallback lets the primary rot.
+MODEL_USED = LLM_MODEL
 # Reasoning models (DeepSeek V4 Flash/Pro, etc.) spend part of max_tokens on
 # hidden thinking. When the thinking trace eats the whole budget the API returns
 # a 200 with an EMPTY content field — no exception — and the day's brief is lost
@@ -1000,7 +1014,7 @@ def splice_continuation(text: str, more: str) -> str:
     return " " + more
 
 
-def continue_truncated(client, base_messages, partial, max_tokens, effort, send_effort) -> str:
+def continue_truncated(client, model, base_messages, partial, max_tokens, effort, send_effort) -> str:
     """Resume a completion that hit ``max_tokens`` until it finishes or we give up."""
     # Continuing must never cost us text. Every early exit returns `text` — the
     # last state we actually hold — and the trimmed stem is only committed to it
@@ -1017,7 +1031,7 @@ def continue_truncated(client, base_messages, partial, max_tokens, effort, send_
             flush=True,
         )
         kwargs = {
-            "model": LLM_MODEL,
+            "model": model,
             "messages": base_messages
             + [
                 {"role": "assistant", "content": stem},
@@ -1071,6 +1085,8 @@ def continue_truncated(client, base_messages, partial, max_tokens, effort, send_
 
 
 def call_llm(messages, api_key) -> str:
+    """Generate the brief, falling back to other models if the primary fails."""
+    global MODEL_USED
     from openai import OpenAI
 
     # 180s used to be enough, but LLM_MAX_TOKENS=32000 pushed a normal generation
@@ -1084,6 +1100,34 @@ def call_llm(messages, api_key) -> str:
         timeout=float(os.environ.get("LLM_TIMEOUT", "600")),
         max_retries=0,
     )
+    candidates = [LLM_MODEL] + [m for m in LLM_FALLBACK_MODELS if m != LLM_MODEL]
+    for i, model in enumerate(candidates):
+        if i:
+            print(
+                f"::warning::Primary model {LLM_MODEL} produced nothing — "
+                f"falling back to {model} ({i}/{len(candidates) - 1}).",
+                flush=True,
+            )
+        # attempt_model raises on hard failures (dead endpoint, bad key, unknown
+        # model). Swallow those so the next candidate gets a turn — but keep the
+        # last one to re-raise, so a run with no working model still fails loudly
+        # with the real error instead of a bare empty completion.
+        try:
+            content = attempt_model(client, model, messages, api_key)
+        except Exception as exc:
+            print(f"  {model} failed hard: {exc}", file=sys.stderr, flush=True)
+            if i == len(candidates) - 1:
+                raise
+            continue
+        if content:
+            MODEL_USED = model
+            return content
+        print(f"  {model} produced no usable content.", file=sys.stderr, flush=True)
+    return ""
+
+
+def attempt_model(client, model, messages, api_key) -> str:
+    """Run one model through the retry ladder. Returns "" if it never produced text."""
     max_tokens = LLM_MAX_TOKENS
     effort = LLM_REASONING_EFFORT
     send_effort = bool(effort)
@@ -1093,13 +1137,13 @@ def call_llm(messages, api_key) -> str:
         if send_effort:
             knobs += f", reasoning_effort={effort}"
         print(
-            f"Calling {LLM_MODEL} at {LLM_BASE_URL} "
+            f"Calling {model} at {LLM_BASE_URL} "
             f"(attempt {attempt}/{LLM_MAX_RETRIES}, {knobs}) ...",
             flush=True,
         )
 
         kwargs = {
-            "model": LLM_MODEL,
+            "model": model,
             "messages": messages,
             "temperature": LLM_TEMPERATURE,
             "max_tokens": max_tokens,
@@ -1123,7 +1167,7 @@ def call_llm(messages, api_key) -> str:
                         file=sys.stderr,
                     )
                     print(
-                        f"\nSet LLM_MODEL to one of the above (current: {LLM_MODEL}).",
+                        f"\nSet LLM_MODEL to one of the above (current: {model}).",
                         file=sys.stderr,
                     )
                 raise
@@ -1152,7 +1196,7 @@ def call_llm(messages, api_key) -> str:
             # away good text and re-pays the whole prompt to cut in the same spot.
             if getattr(choice, "finish_reason", None) == "length":
                 content = continue_truncated(
-                    client, messages, content, max_tokens, effort, send_effort
+                    client, model, messages, content, max_tokens, effort, send_effort
                 )
             return content
 
@@ -1307,7 +1351,7 @@ def main() -> int:
 
     # Footer for provenance.
     stamp = common.la_now().strftime("%Y-%m-%d %H:%M %Z")
-    model_note = "dry-run" if dry_run else f"{LLM_MODEL} via {LLM_BASE_URL}"
+    model_note = "dry-run" if dry_run else f"{MODEL_USED} via {LLM_BASE_URL}"
     markdown = markdown.rstrip() + (
         f"\n\n---\n_Generated {stamp} · {len(sources)} sources · model: {model_note}_\n"
     )
@@ -1330,6 +1374,8 @@ def main() -> int:
         dry_run=dry_run,
         source_count=len(sources),
         truncated=TRUNCATED,
+        model_used=MODEL_USED,
+        fell_back=MODEL_USED != LLM_MODEL,
     )
     return 0
 

@@ -148,6 +148,12 @@ def main() -> int:
         f"🗞️ **Morning Brief — {date}**\n"
         "AI · Tech Infrastructure · Markets · Geopolitics"
     )
+    # A fallback that nobody notices lets the primary model stay broken for weeks.
+    if state.get("fell_back"):
+        content += (
+            f"\n\n⚠️ _Primary model failed — this brief was written by "
+            f"`{state.get('model_used')}`._"
+        )
     # Say it here, not only in an Actions annotation nobody reads at breakfast.
     if state.get("truncated"):
         content += (
