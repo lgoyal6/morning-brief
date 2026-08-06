@@ -4,9 +4,25 @@
   "scripts": {
     "dev": "wrangler dev --test-scheduled",
     "deploy": "wrangler deploy",
-    "tail": "wrangler tail"
+    "tail": "wrangler tail",
+    "test": "node --test 'test/*.test.ts'"
   },
   "devDependencies": {
-    "wrangler": "^4.118.0"
+    "wrangler": "^4.119.0"
+  },
+  "//overrides": [
+    "miniflare pins undici to an exact 7.28.0, which has five open advisories",
+    "(one high: cross-user information disclosure and a parse-time crash via",
+    "degenerate private cache directives). 7.29.0 is the patched release and a",
+    "patch bump within the same minor, so the pin is safe to lift.",
+    "",
+    "Scope note: undici is dev-only. It reaches this repo through wrangler ->",
+    "miniflare, which is the LOCAL dev simulator; the deployed Worker is 8 KiB of",
+    "our own code running on workerd, which uses the platform fetch and never",
+    "loads undici. So this closes a local-toolchain hole, not a production one.",
+    "Drop this override once miniflare ships >= 7.29.0 itself."
+  ],
+  "overrides": {
+    "undici": "7.29.0"
   }
 }
