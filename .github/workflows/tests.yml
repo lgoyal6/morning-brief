@@ -1,0 +1,76 @@
+name: Tests
+
+# Both suites are fast (~4s Python, ~0.2s Worker) and neither touches the
+# network or an LLM, so this is cheap to run on every code push.
+#
+# Brief commits are excluded. The bot pushes to briefs/ every single morning and
+# those commits cannot affect either suite -- running tests on them would just
+# burn private-repo Actions minutes for a guaranteed pass.
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - "briefs/**"
+      - ".keepalive/**"
+      - "**/*.md"
+  pull_request:
+    paths-ignore:
+      - "briefs/**"
+      - ".keepalive/**"
+      - "**/*.md"
+  workflow_dispatch:
+
+# A newer push makes an in-flight run irrelevant.
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      # WeasyPrint and matplotlib are in requirements.txt but no test imports
+      # them, and pip installs both without the Pango/Cairo system libs -- those
+      # are only needed at render time. So this job skips the apt-get step that
+      # morning-brief.yml needs.
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      - name: Python tests
+        run: python -m unittest discover -s tests -v
+
+      # Node >= 23 strips TypeScript natively, which is what lets the Worker
+      # suite run with no test framework and no build step.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: trigger/package-lock.json
+
+      - name: Install Worker dependencies
+        working-directory: trigger
+        run: npm ci
+
+      - name: Worker tests
+        working-directory: trigger
+        run: npm test
+
+      # Catches a config/code drift that no unit test can see: the deployed
+      # bundle must still build from the committed wrangler.jsonc.
+      - name: Worker builds
+        working-directory: trigger
+        run: npx wrangler deploy --dry-run --outdir /tmp/worker-build
+
+      - name: Audit Worker dependencies
+        working-directory: trigger
+        run: npm audit --audit-level=high
