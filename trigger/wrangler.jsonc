@@ -9,14 +9,20 @@
   // handler stays for `wrangler dev`, but nothing routes to it in production.
   "workers_dev": false,
 
-  // Two crons, one dispatch. Cloudflare cron is UTC, so a single UTC time drifts
-  // an hour against Pacific twice a year. Both fire; the Worker checks the local
-  // Pacific hour and only dispatches at TARGET_LOCAL_HOUR:55, so delivery stays
-  // at ~08:00 Pacific year-round.
-  //   summer (PDT, UTC-7): 14:55Z = 07:55 local -> dispatch;  15:55Z = 08:55 -> skip
-  //   winter (PST, UTC-8): 14:55Z = 06:55 local -> skip;      15:55Z = 07:55 -> dispatch
+  // Four crons, two jobs. Cloudflare cron is UTC, so a single UTC time drifts an
+  // hour against Pacific twice a year and each job needs a DST pair. All four
+  // fire; the Worker routes on the local Pacific hour, so both jobs stay put
+  // year-round and the half that is off-season logs a skip.
+  //   dispatch the brief at 07:55 local (TARGET_LOCAL_HOUR)
+  //     summer (PDT, UTC-7): 14:55Z = 07:55 -> dispatch;  15:55Z = 08:55 -> skip
+  //     winter (PST, UTC-8): 14:55Z = 06:55 -> skip;      15:55Z = 07:55 -> dispatch
+  //   check it arrived at 10:25 local (WATCHDOG_LOCAL_HOUR) — after the last
+  //   GitHub backstop cron (16:40Z) plus generation time, so a brief that is
+  //   merely slow is not reported as missing
+  //     summer: 17:25Z = 10:25 -> check;  18:25Z = 11:25 -> skip
+  //     winter: 17:25Z = 09:25 -> skip;   18:25Z = 10:25 -> check
   "triggers": {
-    "crons": ["55 14 * * *", "55 15 * * *"]
+    "crons": ["55 14 * * *", "55 15 * * *", "25 17 * * *", "25 18 * * *"]
   },
 
   "vars": {
@@ -24,12 +30,18 @@
     "GITHUB_API_BASE": "https://api.github.com",
     "DISPATCH_EVENT_TYPE": "morning-brief",
     "TARGET_TZ": "America/Los_Angeles",
-    "TARGET_LOCAL_HOUR": "7"
+    "TARGET_LOCAL_HOUR": "7",
+    "WATCHDOG_LOCAL_HOUR": "10",
+    "DELIVERY_MARKER_PATH": "briefs/.delivery.json"
   },
 
   "observability": {
     "enabled": true
   }
 
-  // GITHUB_PAT is a secret, set with `wrangler secret put GITHUB_PAT`.
+  // Secrets, set with `wrangler secret put <NAME>` (paste at the prompt — never
+  // pass a token on the command line, where it lands in shell history):
+  //   GITHUB_PAT         — dispatch the brief, and read the delivery marker
+  //   DISCORD_BOT_TOKEN  — send the watchdog alert
+  //   DISCORD_TARGET     — `user:<id>` or `channel:<id>`, as in the Python pipeline
 }

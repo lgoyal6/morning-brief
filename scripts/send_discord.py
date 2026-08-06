@@ -62,21 +62,6 @@ def resolve_channel_id(token: str, target: str) -> str:
     )
 
 
-def send_text(token: str, channel_id: str, content: str) -> None:
-    """Post a plain message. Used by the watchdog, which has no PDF to attach."""
-    resp = requests.post(
-        f"{API_BASE}/channels/{channel_id}/messages",
-        headers={**_headers(token), "Content-Type": "application/json"},
-        json={"content": content},
-        timeout=30,
-    )
-    if not resp.ok:
-        raise SystemExit(
-            f"Discord: alert send failed (HTTP {resp.status_code}): {resp.text[:800]}"
-        )
-    print(f"Discord: alert sent to channel {channel_id}.")
-
-
 def send_pdf(token: str, channel_id: str, pdf_path: Path, content: str) -> None:
     url = f"{API_BASE}/channels/{channel_id}/messages"
     for attempt in range(2):
