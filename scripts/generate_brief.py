@@ -104,6 +104,33 @@ LLM_REASONING_EFFORT = os.environ.get("LLM_REASONING_EFFORT", "").strip()
 REASONING_EFFORT_LADDER = ("max", "high", "medium", "low")
 
 # ---------------------------------------------------------------------------
+# Concept Spotlights: generated on their own model, separately from the brief.
+# ---------------------------------------------------------------------------
+# OFF by default -- set FOUNDATIONS_MODEL to a model name to turn it on.
+#
+# This exists for one scenario: the primary will not write a Spotlight the syllabus
+# keeps asking for. The Spotlights are the only STANDING, news-independent order in
+# the prompt ("teach them even if the news does not mention them"), so a concept the
+# primary refuses would be re-issued daily and never clear.
+#
+# It is off because that scenario has NOT been observed. The 2026-08-09 refusal was
+# real (finish_reason=content_filter, 13 chars of Chinese) but it took down the whole
+# brief, which routing the Spotlights elsewhere would not have prevented, and there is
+# no evidence the Spotlight ask is what tripped it: DeepSeek wrote a full, detailed
+# "The Taiwan Strait" spotlight on 2026-08-07 -- Chinese military exercises, TSMC
+# concentration and all -- while that concept was the pinned one. What actually froze
+# the syllabus was heading wording drift, which _concept_key now handles.
+#
+# So this is a lever, not a default: two extra calls a day buys isolation nothing has
+# yet needed. Turn it on if a Spotlight (not the brief) starts coming back refused.
+FOUNDATIONS_MODEL = os.environ.get("FOUNDATIONS_MODEL", "").strip()
+FOUNDATIONS_MAX_TOKENS = int(os.environ.get("FOUNDATIONS_MAX_TOKENS", "2500"))
+# Briefs the syllabus will spend on one concept before stepping past it. Low
+# enough that a blocked track recovers within days, high enough that a single
+# transient failure does not skip a concept nobody had trouble with.
+FOUNDATIONS_STUCK_AFTER = int(os.environ.get("FOUNDATIONS_STUCK_AFTER", "3"))
+
+# ---------------------------------------------------------------------------
 # Source configuration
 # ---------------------------------------------------------------------------
 USER_AGENT = (
@@ -293,8 +320,35 @@ FOUNDATIONS_WORLD = [
 ]
 
 
-def spotlighted_concepts() -> set[str]:
-    """Concepts that have had a FULL Concept Spotlight in some prior brief.
+SPOTLIGHT_HEADING_RE = (
+    r"^#{2,4}\s*(?:concept\s+spotlight|deep\s+dive|spotlight)\s*[:\-]\s*(.+?)\s*$"
+)
+
+
+def _concept_key(raw: str) -> str:
+    """Match a Spotlight heading to its syllabus entry despite wording drift.
+
+    Looser than _term_key on purpose. The model titles its own sections, and it
+    does not copy the syllabus name character for character -- so an exact-string
+    match silently reads "taught" as "never taught", re-issues the concept every
+    day, and freezes the whole track behind it.
+
+    That is not hypothetical. Both of these were written in full and neither was
+    recognised, because _term_key alone kept the article and the full stop:
+
+        wrote "The Taiwan Strait"          syllabus "Taiwan Strait"
+        wrote "Market Order vs. Limit Order"   syllabus "Market Order vs Limit Order"
+
+    Taiwan Strait was delivered on 2026-08-07 and was still being asked for on
+    08-08 and 08-09, with OPEC, Sanctions and NATO stalled behind it.
+    """
+    key = _term_key(raw)
+    key = re.sub(r"^(?:the|a|an)\s+", "", key)   # "The Taiwan Strait" -> "taiwan strait"
+    return re.sub(r"[^a-z0-9]+", " ", key).strip()  # "vs." -> "vs", "OPEC+" -> "opec"
+
+
+def spotlight_dates() -> dict[str, str]:
+    """Concept -> earliest brief date that gave it a FULL Concept Spotlight.
 
     Deliberately stricter than taught_terms(). The Strait of Hormuz was defined
     twice as a two-line bullet ("a narrow waterway between Iran and Oman...")
@@ -302,37 +356,100 @@ def spotlighted_concepts() -> set[str]:
     parse the sentence and not enough to learn the thing. So the syllabus counts
     only the in-depth treatment as delivered, and a term entry does not retire a
     foundational concept.
+
+    The dates (not just the names) are what let pick_foundations tell "not taught
+    yet" apart from "asked for repeatedly and never delivered".
     """
-    done: set[str] = set()
+    dates: dict[str, str] = {}
     for p in sorted(common.BRIEFS_DIR.glob(f"*-{common.BRIEF_SLUG}.md")):
         text = p.read_text(errors="ignore")
         for m in re.finditer(
-            r"^#{2,4}\s*(?:concept\s+spotlight|deep\s+dive|spotlight)\s*[:\-]\s*(.+?)\s*$",
-            text,
-            flags=re.IGNORECASE | re.MULTILINE,
+            SPOTLIGHT_HEADING_RE, text, flags=re.IGNORECASE | re.MULTILINE
         ):
-            done.add(_term_key(m.group(1)))
-    return done
+            dates.setdefault(_concept_key(m.group(1)), p.name[:10])
+    return dates
+
+
+def spotlighted_concepts() -> set[str]:
+    """Just the names from spotlight_dates(), for callers that don't need dates."""
+    return set(spotlight_dates())
+
+
+def brief_dates() -> list[str]:
+    """Dates of every brief written so far, oldest first."""
+    return sorted(p.name[:10] for p in common.BRIEFS_DIR.glob(f"*-{common.BRIEF_SLUG}.md"))
+
+
+def track_pick(track, delivered: dict[str, str], briefs: list[str]):
+    """The concept to teach from one track, stepping past one that keeps failing.
+
+    The syllabus is a queue: normally this is simply the first concept nobody has
+    spotlighted yet. Anything that stops a concept retiring therefore blocks the
+    whole track behind it, and the failure is silent -- the prompt just keeps
+    asking for the same concept and the brief looks fine.
+
+    _concept_key covers the cause we actually hit (heading wording drift). This is
+    the backstop for the causes we have not hit yet: count the briefs written since
+    this track last advanced, and every FOUNDATIONS_STUCK_AFTER of them step one
+    further down the list. A delivery resets the count, which brings a deferred
+    concept straight back around -- it is postponed, never dropped.
+
+    Worth keeping even though the known bug is fixed: two briefs of the world track
+    were lost to this shape of problem and nobody noticed until the syllabus was
+    replayed by hand. The mechanism costs nothing when the queue is healthy.
+    """
+    untaught = [(n, c) for n, c in track if _concept_key(n) not in delivered]
+    if not untaught:
+        return None
+    track_dates = [delivered[_concept_key(n)] for n, _ in track
+                   if _concept_key(n) in delivered]
+    last_advance = max(track_dates) if track_dates else None
+    stall = sum(1 for d in briefs if last_advance is None or d > last_advance)
+    idx = min(stall // FOUNDATIONS_STUCK_AFTER, len(untaught) - 1)
+    if idx:
+        skipped = ", ".join(n for n, _ in untaught[:idx])
+        print(
+            f"  syllabus: {stall} briefs since this track last advanced; "
+            f"deferring {skipped}",
+            flush=True,
+        )
+    return untaught[idx]
 
 
 def pick_foundations() -> list[tuple[str, str]]:
-    """Next undelivered concept from each track -- one markets, one world affairs.
+    """Next concept to teach from each track -- one markets, one world affairs.
 
     Balanced deliberately: the reactive term memory already over-supplies finance
     and AI vocabulary, so the syllabus guarantees world-affairs literacy gets
     equal billing rather than competing with it for space.
     """
-    spotlighted = spotlighted_concepts()
+    delivered = spotlight_dates()
+    briefs = brief_dates()
     picks: list[tuple[str, str]] = []
     for track in (FOUNDATIONS_MARKETS, FOUNDATIONS_WORLD):
-        for name, cover in track:
-            if _term_key(name) not in spotlighted:
-                picks.append((name, cover))
-                break
+        pick = track_pick(track, delivered, briefs)
+        if pick:
+            picks.append(pick)
     return picks
 
 
-def build_foundations_block(picks: list[tuple[str, str]]) -> str:
+def build_foundations_block(picks: list[tuple[str, str]], external: bool = False) -> str:
+    """The FOUNDATIONS instruction spliced into the brief spec.
+
+    ``external`` means the Spotlights are being written by FOUNDATIONS_MODEL and
+    inserted afterwards, so this run's model must be told to leave them out --
+    otherwise the section is written twice.
+    """
+    if external:
+        # Overrides the "lead with TWO Concept Spotlights" bullet in section 9.
+        # Placed at the end of the spec, after that bullet, so it reads as the
+        # later and more specific instruction.
+        return (
+            "FOUNDATIONS -- OVERRIDE for section 9: do NOT write the two Concept "
+            "Spotlights this run. They are written separately and inserted into that "
+            "section automatically. Write ONLY the shorter term entries in section 9, "
+            "and do not emit any '### Concept Spotlight:' heading of your own."
+        )
     if not picks:
         return (
             "FOUNDATIONS: the syllabus is exhausted -- every foundational concept has been "
@@ -349,6 +466,118 @@ def build_foundations_block(picks: list[tuple[str, str]]) -> str:
     for name, cover in picks:
         lines.append(f"  - {name} -- cover: {cover}")
     return "\n".join(lines)
+
+
+# ---------------------------------------------------------------------------
+# Concept Spotlights on their own model
+# ---------------------------------------------------------------------------
+SPOTLIGHT_SYSTEM = (
+    "You write a single 'Concept Spotlight' for a daily briefing: a from-scratch "
+    "explanation for a reader who has never encountered the concept before. Output "
+    "MARKDOWN BODY TEXT ONLY -- no heading, no title, no preamble, no sign-off. The "
+    "heading is added for you, so start directly with the explanation."
+)
+
+
+def build_spotlight_messages(name: str, cover: str) -> list[dict]:
+    user = (
+        f"Concept: {name}\n"
+        f"Cover specifically: {cover}\n\n"
+        "Write, for someone meeting this idea for the first time:\n"
+        "- what it is, in plain words;\n"
+        "- WHY it exists / what problem it solves;\n"
+        "- a concrete worked example with real numbers;\n"
+        "- how it shows up in the news (a typical case is fine);\n"
+        "- rough benchmarks or figures worth remembering;\n"
+        "- a caution or common misconception.\n\n"
+        "400-700 words of Markdown. Use bold sub-labels or short bullets for structure. "
+        "Do not open with a heading."
+    )
+    return [
+        {"role": "system", "content": SPOTLIGHT_SYSTEM},
+        {"role": "user", "content": user},
+    ]
+
+
+def generate_spotlights(picks: list[tuple[str, str]], api_key: str) -> list[tuple[str, str]]:
+    """Write each pending Spotlight on FOUNDATIONS_MODEL. Returns (name, body) pairs.
+
+    Never raises and never blocks the brief: a Spotlight that fails is simply left
+    out, which also leaves its concept undelivered so the syllabus retries it
+    tomorrow. Losing one Spotlight is a much smaller failure than losing the brief,
+    which is the whole reason these are not generated inline any more.
+    """
+    if not picks or not FOUNDATIONS_MODEL:
+        return []
+    from openai import OpenAI
+
+    client = OpenAI(
+        api_key=api_key,
+        base_url=LLM_BASE_URL,
+        timeout=float(os.environ.get("LLM_TIMEOUT", "600")),
+        max_retries=0,
+    )
+    out: list[tuple[str, str]] = []
+    for name, cover in picks:
+        print(f"Spotlight: {name} on {FOUNDATIONS_MODEL} ...", flush=True)
+        try:
+            resp = client.chat.completions.create(
+                model=FOUNDATIONS_MODEL,
+                messages=build_spotlight_messages(name, cover),
+                temperature=LLM_TEMPERATURE,
+                max_tokens=FOUNDATIONS_MAX_TOKENS,
+            )
+        except Exception as exc:
+            print(f"::warning::Spotlight '{name}' failed ({exc}); omitted.",
+                  file=sys.stderr, flush=True)
+            continue
+        choice = resp.choices[0]
+        body = (choice.message.content or "").strip()
+        print(f"  {describe_completion(resp)} content_chars={len(body)}")
+        # Same lesson as the brief gate: non-empty is not the same as usable.
+        # A refusal here must not be published under a "Concept Spotlight" heading.
+        if len(body) < 400:
+            print(
+                f"::warning::Spotlight '{name}' came back too short to publish "
+                f"({len(body)} chars, finish_reason="
+                f"{getattr(choice, 'finish_reason', None)}): {body[:120]!r}; omitted.",
+                file=sys.stderr,
+                flush=True,
+            )
+            continue
+        # Strip a heading if the model added one anyway; we supply our own so that
+        # spotlight_dates() can always match it and the syllabus can advance.
+        body = re.sub(r"\A#{1,4}[^\n]*\n+", "", body).strip()
+        out.append((name, body))
+    return out
+
+
+def splice_spotlights(markdown: str, spotlights: list[tuple[str, str]]) -> str:
+    """Insert the Spotlights at the top of the Foundations section of the brief.
+
+    The heading text is ours, not the model's, so it always matches
+    SPOTLIGHT_HEADING_RE and the concept actually retires from the syllabus.
+    """
+    if not spotlights:
+        return markdown
+    block = "\n\n".join(f"### Concept Spotlight: {n}\n\n{b}" for n, b in spotlights)
+
+    heading = re.search(
+        r"^##\s*\d*\.?\s*Foundations[^\n]*$", markdown, flags=re.IGNORECASE | re.MULTILINE
+    )
+    if heading:
+        cut = heading.end()
+        return f"{markdown[:cut]}\n\n{block}{markdown[cut:]}"
+
+    # No Foundations heading came back. Put the section in ahead of Sources
+    # rather than dropping work we already paid for.
+    sources = re.search(
+        r"^##\s*\d*\.?\s*Sources[^\n]*$", markdown, flags=re.IGNORECASE | re.MULTILINE
+    )
+    section = f"## Foundations & Terms\n\n{block}\n\n"
+    if sources:
+        return f"{markdown[:sources.start()]}{section}{markdown[sources.start():]}"
+    return f"{markdown.rstrip()}\n\n{section}"
 
 # Full watchlist shown to the model (verbatim from the brief spec).
 WATCHLIST_DISPLAY = (
@@ -933,11 +1162,22 @@ def reasoning_text(choice) -> str:
 
 
 def looks_like_brief(text: str) -> bool:
-    """True if ``text`` is the finished brief rather than a thinking trace.
+    """True if ``text`` is the finished brief rather than something else.
 
-    Used to salvage a run where the whole answer landed in ``reasoning_content``.
-    Deliberately strict: publishing a model's scratchpad as the morning brief is
-    worse than failing, so require real length and most of the section headers.
+    Two callers, both asking "is this publishable?":
+
+      * the ``message.content`` gate in attempt_model, which rejects refusals, filter
+        stubs and apologies, which are non-empty and used to pass a bare
+        truthiness check straight through to the PDF;
+      * the ``reasoning_content`` salvage, for a run where the whole answer
+        landed in the thinking trace.
+
+    Deliberately strict in both directions: publishing a model's scratchpad or
+    its refusal as the morning brief is worse than failing the run, because a
+    failed run leaves the delivery slot open for the next cron. The bar sits far
+    below any real brief and far above any junk -- the prompt mandates sections
+    ``## 1.`` through ``## 11.``, real briefs run 11k-66k chars with 10-11 of
+    those headers, and the 2026-08-09 refusal was 13 chars with none.
     """
     if len(text) < 4000:
         return False
@@ -1104,7 +1344,7 @@ def call_llm(messages, api_key) -> str:
     for i, model in enumerate(candidates):
         if i:
             print(
-                f"::warning::Primary model {LLM_MODEL} produced nothing — "
+                f"::warning::Primary model {LLM_MODEL} produced no usable brief; "
                 f"falling back to {model} ({i}/{len(candidates) - 1}).",
                 flush=True,
             )
@@ -1187,32 +1427,61 @@ def attempt_model(client, model, messages, api_key) -> str:
             continue
 
         choice = resp.choices[0]
+        finish = getattr(choice, "finish_reason", None)
         content = (choice.message.content or "").strip()
         print(f"  {describe_completion(resp)} content_chars={len(content)}")
-        if content:
-            # finish_reason=length means max_tokens cut the tail off mid-sentence.
-            # Nothing downstream notices, so this used to ship a truncated brief
-            # silently. Resume it rather than restarting: a fresh attempt throws
-            # away good text and re-pays the whole prompt to cut in the same spot.
-            if getattr(choice, "finish_reason", None) == "length":
-                content = continue_truncated(
-                    client, model, messages, content, max_tokens, effort, send_effort
-                )
+
+        # finish_reason=length means max_tokens cut the tail off mid-sentence.
+        # Nothing downstream notices, so this used to ship a truncated brief
+        # silently. Resume it rather than restarting: a fresh attempt throws
+        # away good text and re-pays the whole prompt to cut in the same spot.
+        # Runs before the gate below so a resumable brief is judged whole.
+        if content and finish == "length":
+            content = continue_truncated(
+                client, model, messages, content, max_tokens, effort, send_effort
+            )
+
+        if looks_like_brief(content):
             return content
 
-        # 200 OK, empty content. Say why, loudly, then try to recover.
-        thinking = reasoning_text(choice)
-        print(
-            f"  WARNING: empty content on attempt {attempt} "
-            f"(reasoning_content chars={len(thinking)}).",
-            file=sys.stderr,
-        )
-        if looks_like_brief(thinking):
+        if content:
+            # 200 OK with text that is not a brief: a refusal, a filter stub, a
+            # one-line apology. The gate here used to be a bare `if content:`,
+            # so any non-empty string counted as success -- and on 2026-08-09
+            # the primary returned 13 chars of Chinese refusal with
+            # finish_reason=content_filter, which sailed through untouched: no
+            # retry, no fallback, and a one-page empty PDF went out to Discord
+            # and claimed the day's delivery slot. Too-short is now a failed
+            # attempt, exactly like empty.
             print(
-                "  reasoning_content contains the finished brief — using it.",
+                f"  WARNING: discarding non-brief completion on attempt {attempt} "
+                f"({len(content)} chars, finish_reason={finish}): {content[:120]!r}",
                 file=sys.stderr,
             )
-            return thinking
+            if finish == "content_filter":
+                # A filter verdict on this prompt is deterministic -- retrying
+                # the same model with more tokens buys the same refusal. Spend
+                # the remaining budget on the next candidate model instead.
+                print(
+                    "  content filter; handing off to the next model.",
+                    file=sys.stderr,
+                    flush=True,
+                )
+                return ""
+        else:
+            # 200 OK, empty content. Say why, loudly, then try to recover.
+            thinking = reasoning_text(choice)
+            print(
+                f"  WARNING: empty content on attempt {attempt} "
+                f"(reasoning_content chars={len(thinking)}).",
+                file=sys.stderr,
+            )
+            if looks_like_brief(thinking):
+                print(
+                    "  reasoning_content contains the finished brief; using it.",
+                    file=sys.stderr,
+                )
+                return thinking
 
         if attempt == LLM_MAX_RETRIES:
             break
@@ -1329,10 +1598,15 @@ def main() -> int:
         term_memory = build_term_memory_block(reinforce, mastered)
         print(f"Term memory: {len(reinforce)} still-learning, {len(mastered)} mastered.")
         picks = pick_foundations()
-        foundations = build_foundations_block(picks)
+        # Only route the Spotlights out when there is a model to route them to
+        # AND concepts to write; an exhausted syllabus has the brief's own model
+        # choose the concepts, which it cannot do from a separate prompt.
+        external_spotlights = bool(FOUNDATIONS_MODEL and picks)
+        foundations = build_foundations_block(picks, external=external_spotlights)
         print(
             "Foundations today: "
             + (", ".join(name for name, _ in picks) if picks else "syllabus exhausted")
+            + (f" (spotlights on {FOUNDATIONS_MODEL})" if external_spotlights else " (inline)")
         )
         prior_excerpt = previous_brief_excerpt(today)
         messages = build_messages(
@@ -1341,17 +1615,33 @@ def main() -> int:
         markdown = call_llm(messages, api_key)
         if not markdown:
             print(
-                f"ERROR: LLM returned empty content on all {LLM_MAX_RETRIES} attempts.\n"
+                "ERROR: no model produced a usable brief "
+                f"({LLM_MAX_RETRIES} attempts each).\n"
                 "See the finish_reason / token counts above. If reasoning_tokens is at "
                 "the max_tokens ceiling, the thinking trace is eating the whole budget: "
-                "raise LLM_MAX_TOKENS_CEILING or pin LLM_REASONING_EFFORT=low.",
+                "raise LLM_MAX_TOKENS_CEILING or pin LLM_REASONING_EFFORT=low. If the "
+                "completions were short refusals with finish_reason=content_filter, the "
+                "prompt tripped a filter; check the day's headlines in the sources "
+                "list. Failing here is deliberate: it leaves the delivery slot "
+                "unclaimed so the next cron retries.",
                 file=sys.stderr,
             )
             return 1
 
+        if external_spotlights:
+            spotlights = generate_spotlights(picks, api_key)
+            markdown = splice_spotlights(markdown, spotlights)
+            delivered = [n for n, _ in spotlights]
+            print(
+                "Spotlights spliced: "
+                + (", ".join(delivered) if delivered else "none (syllabus will retry)")
+            )
+
     # Footer for provenance.
     stamp = common.la_now().strftime("%Y-%m-%d %H:%M %Z")
     model_note = "dry-run" if dry_run else f"{MODEL_USED} via {LLM_BASE_URL}"
+    if not dry_run and FOUNDATIONS_MODEL:
+        model_note += f" · spotlights: {FOUNDATIONS_MODEL}"
     markdown = markdown.rstrip() + (
         f"\n\n---\n_Generated {stamp} · {len(sources)} sources · model: {model_note}_\n"
     )

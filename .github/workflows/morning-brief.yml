@@ -52,19 +52,36 @@ jobs:
       # LLM endpoint + model. Override with repo Variables if desired.
       LLM_BASE_URL: ${{ vars.LLM_BASE_URL || 'https://api.gmi-serving.com/v1' }}
       LLM_MODEL: ${{ vars.LLM_MODEL || 'deepseek-ai/DeepSeek-V4-Flash' }}
-      # Tried in order when the primary produces nothing. Same endpoint and key —
-      # this endpoint serves 80 models on one credential — so no new secrets.
+      # Tried in order when the primary produces nothing usable. Same endpoint and
+      # key (this endpoint serves 80 models on one credential), so no new secrets.
       #
-      # Both fallbacks are NON-REASONING on purpose. The one LLM failure that has
-      # actually cost a brief (2026-08-03) was the primary's hidden reasoning trace
-      # eating the whole max_tokens budget and returning empty content, so a
-      # reasoning model is the wrong thing to fail over to. Qwen's Instruct variant
-      # is the non-thinking sibling of its own -Thinking build; Claude Opus 4.8 runs
-      # without thinking unless a request opts in (Fable 5 and Sonnet 5 both think
-      # by default, which is why neither is here).
+      # Both fallbacks are NON-REASONING on purpose. The first LLM failure to cost
+      # a brief (2026-08-03) was the primary's hidden reasoning trace eating the
+      # whole max_tokens budget and returning empty content, so a reasoning model is
+      # the wrong thing to fail over to. Qwen's Instruct variant is the non-thinking
+      # sibling of its own -Thinking build; Claude Opus 4.8 runs without thinking
+      # unless a request opts in (Fable 5 and Sonnet 5 both think by default, which
+      # is why neither is here).
+      #
+      # Claude is FIRST as of 2026-08-09. That day the primary (DeepSeek, Chinese)
+      # refused the brief outright with finish_reason=content_filter on a feed heavy
+      # with China/Taiwan headlines. Qwen is Alibaba's, so on that failure mode it is
+      # the fallback most likely to refuse identically: the worst possible thing to
+      # try first. Ordering the model with different constraints first means the
+      # second attempt is the one most likely to actually differ from the first.
       LLM_FALLBACK_MODELS: >-
         ${{ vars.LLM_FALLBACK_MODELS ||
-        'Qwen/Qwen3-235B-A22B-Instruct-2507-FP8,anthropic/claude-opus-4.8' }}
+        'anthropic/claude-opus-4.8,Qwen/Qwen3-235B-A22B-Instruct-2507-FP8' }}
+      # Blank = Concept Spotlights are written inline with the brief (the default).
+      # Set a model name to generate them on their own model instead, for the case
+      # where the primary refuses a Spotlight the syllabus keeps re-issuing. Left off
+      # because that has not happened: DeepSeek wrote the full "Taiwan Strait"
+      # spotlight on 2026-08-07: the syllabus froze on heading wording drift, not on
+      # a refusal. Costs two extra calls a day when enabled.
+      FOUNDATIONS_MODEL: ${{ vars.FOUNDATIONS_MODEL }}
+      # Briefs the syllabus spends on one concept before stepping past it, so a
+      # concept nothing will write cannot stall the rest of its track forever.
+      FOUNDATIONS_STUCK_AFTER: ${{ vars.FOUNDATIONS_STUCK_AFTER || '3' }}
       # Output cap, sized from measured runs — NOT a spend. You are billed for
       # tokens generated, so a bigger cap costs nothing extra; it only decides
       # when the model gets cut off. Lowering it does not save tokens, it
