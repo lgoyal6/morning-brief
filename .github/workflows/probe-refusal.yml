@@ -1,0 +1,36 @@
+name: Probe refusal
+
+# TEMPORARY. Delete with scripts/probe_refusal.py once the answer is recorded.
+# Manual only: it spends real tokens and must never run on a schedule.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    env:
+      GMI_API_KEY: ${{ secrets.GMI_API_KEY }}
+      LLM_BASE_URL: ${{ vars.LLM_BASE_URL || 'https://api.gmi-serving.com/v1' }}
+      LLM_MODEL: ${{ vars.LLM_MODEL || 'deepseek-ai/DeepSeek-V4-Flash' }}
+      BRIEF_MAX_ITEMS: ${{ vars.BRIEF_MAX_ITEMS || '130' }}
+      SEARCH_PROVIDER: ${{ vars.SEARCH_PROVIDER || 'tavily' }}
+      SEARCH_API_KEY: ${{ secrets.SEARCH_API_KEY }}
+      LLM_TIMEOUT: "600"
+      ENABLE_QUOTES: "0"
+      TZ: America/Los_Angeles
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      # No WeasyPrint system libs: the probe never renders a PDF.
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Probe
+        run: python scripts/probe_refusal.py
