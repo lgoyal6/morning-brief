@@ -520,17 +520,26 @@ def generate_spotlights(picks: list[tuple[str, str]], api_key: str) -> list[tupl
     out: list[tuple[str, str]] = []
     for name, cover in picks:
         print(f"Spotlight: {name} on {FOUNDATIONS_MODEL} ...", flush=True)
+        messages = build_spotlight_messages(name, cover)
         try:
             resp = client.chat.completions.create(
-                model=FOUNDATIONS_MODEL,
-                messages=build_spotlight_messages(name, cover),
-                temperature=LLM_TEMPERATURE,
-                max_tokens=FOUNDATIONS_MAX_TOKENS,
+                **completion_kwargs(FOUNDATIONS_MODEL, messages, FOUNDATIONS_MAX_TOKENS)
             )
         except Exception as exc:
-            print(f"::warning::Spotlight '{name}' failed ({exc}); omitted.",
-                  file=sys.stderr, flush=True)
-            continue
+            # One retry, for the same knob-rejection the brief call handles: the
+            # Spotlight model is typically the one that dislikes temperature.
+            if not drop_temperature(FOUNDATIONS_MODEL, str(exc).lower()):
+                print(f"::warning::Spotlight '{name}' failed ({exc}); omitted.",
+                      file=sys.stderr, flush=True)
+                continue
+            try:
+                resp = client.chat.completions.create(
+                    **completion_kwargs(FOUNDATIONS_MODEL, messages, FOUNDATIONS_MAX_TOKENS)
+                )
+            except Exception as exc2:
+                print(f"::warning::Spotlight '{name}' failed ({exc2}); omitted.",
+                      file=sys.stderr, flush=True)
+                continue
         choice = resp.choices[0]
         body = (choice.message.content or "").strip()
         print(f"  {describe_completion(resp)} content_chars={len(body)}")
@@ -1126,6 +1135,37 @@ def list_models(base_url: str, api_key: str) -> list[str]:
         return []
 
 
+TEMPERATURE_UNSUPPORTED: set[str] = set()
+
+
+def completion_kwargs(model, messages, max_tokens, effort=None, send_effort=False) -> dict:
+    """Request body for one completion, minus any knob this model has rejected."""
+    kwargs = {"model": model, "messages": messages, "max_tokens": max_tokens}
+    if model not in TEMPERATURE_UNSUPPORTED:
+        kwargs["temperature"] = LLM_TEMPERATURE
+    if send_effort:
+        kwargs["extra_body"] = {"reasoning_effort": effort}
+    return kwargs
+
+
+def drop_temperature(model: str, lowered_error: str) -> bool:
+    """Note that ``model`` rejects `temperature`, so the retry omits it.
+
+    Measured live on 2026-08-09: every call to anthropic/claude-opus-4.8 through
+    this endpoint died on `400 ... "`temperature` is deprecated for this model"`.
+    We always sent temperature, so Claude had never once produced a brief -- it
+    was in the fallback list looking like insurance while failing instantly every
+    time it was reached. Remembered per-model rather than per-attempt so the
+    retry, any continuation, and the Spotlight calls all stop sending it too.
+    """
+    if model in TEMPERATURE_UNSUPPORTED or "temperature" not in lowered_error:
+        return False
+    TEMPERATURE_UNSUPPORTED.add(model)
+    print(f"  {model} rejects temperature; retrying without it.",
+          file=sys.stderr, flush=True)
+    return True
+
+
 def describe_completion(resp) -> str:
     """finish_reason + token counts, so an empty completion is diagnosable.
 
@@ -1270,18 +1310,17 @@ def continue_truncated(client, model, base_messages, partial, max_tokens, effort
             f"word, requesting continuation {i}/{LLM_MAX_CONTINUATIONS} ...",
             flush=True,
         )
-        kwargs = {
-            "model": model,
-            "messages": base_messages
+        kwargs = completion_kwargs(
+            model,
+            base_messages
             + [
                 {"role": "assistant", "content": stem},
                 {"role": "user", "content": CONTINUE_INSTRUCTION},
             ],
-            "temperature": LLM_TEMPERATURE,
-            "max_tokens": max_tokens,
-        }
-        if send_effort:
-            kwargs["extra_body"] = {"reasoning_effort": effort}
+            max_tokens,
+            effort,
+            send_effort,
+        )
 
         try:
             resp = client.chat.completions.create(**kwargs)
@@ -1382,14 +1421,7 @@ def attempt_model(client, model, messages, api_key) -> str:
             flush=True,
         )
 
-        kwargs = {
-            "model": model,
-            "messages": messages,
-            "temperature": LLM_TEMPERATURE,
-            "max_tokens": max_tokens,
-        }
-        if send_effort:
-            kwargs["extra_body"] = {"reasoning_effort": effort}
+        kwargs = completion_kwargs(model, messages, max_tokens, effort, send_effort)
 
         try:
             resp = client.chat.completions.create(**kwargs)
@@ -1397,6 +1429,11 @@ def attempt_model(client, model, messages, api_key) -> str:
             msg = str(exc)
             print(f"\nLLM call failed: {msg}", file=sys.stderr)
             low = msg.lower()
+            # Checked BEFORE the bad-model branch: the rejection reads
+            # "`temperature` is deprecated for this model", and that branch's
+            # "model" keyword would otherwise swallow it and abandon the model.
+            if drop_temperature(model, low):
+                continue
             # A bad model name never fixes itself — report and stop.
             if any(w in low for w in ("model", "not found", "404", "does not exist")):
                 available = list_models(LLM_BASE_URL, api_key)

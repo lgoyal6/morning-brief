@@ -87,6 +87,8 @@ class FakeClient:
     def _create(self, **kwargs):
         self.calls.append(kwargs)
         step = self._script.pop(0) if self._script else self._script_exhausted()
+        if isinstance(step, Exception):
+            raise step
         return step(kwargs) if callable(step) else step
 
     def _script_exhausted(self):
@@ -215,6 +217,59 @@ class AttemptModelGate(unittest.TestCase):
         self.assertTrue(out.startswith(head[:200]))
         self.assertIn("Bottom Line", out)
         self.assertEqual(len(client.calls), 2)
+
+
+# Verbatim from the 2026-08-09 live run: every call to Claude through this
+# endpoint died on this, so the "insurance" fallback had never once worked.
+TEMPERATURE_400 = (
+    "Error code: 400 - {'error': {'message': 'Backend request failed with status 400', "
+    "'type': 'backend_error', 'code': 400, 'details': '{\"type\":\"error\",\"error\":"
+    "{\"type\":\"invalid_request_error\",\"message\":\"`temperature` is deprecated for "
+    "this model.\"}}'}}"
+)
+
+
+class TemperatureRejection(unittest.TestCase):
+    """A model that rejects `temperature` must be retried without it, not abandoned."""
+
+    def setUp(self):
+        gb.TEMPERATURE_UNSUPPORTED.clear()
+        self.addCleanup(gb.TEMPERATURE_UNSUPPORTED.clear)
+        for name, value in (("LLM_MAX_RETRIES", 3), ("LLM_TEMPERATURE", 0.4)):
+            p = mock.patch.object(gb, name, value)
+            p.start()
+            self.addCleanup(p.stop)
+        s = mock.patch.object(gb.time, "sleep")
+        s.start()
+        self.addCleanup(s.stop)
+
+    def test_retries_without_temperature_and_succeeds(self):
+        brief = make_brief()
+        client = FakeClient([RuntimeError(TEMPERATURE_400), completion(brief)])
+        out = gb.attempt_model(client, "claude-ish", [], "key")
+        self.assertEqual(out, brief)
+        self.assertIn("temperature", client.calls[0])
+        self.assertNotIn("temperature", client.calls[1])
+
+    def test_the_error_is_not_mistaken_for_a_bad_model_name(self):
+        """It says "deprecated for this model", which used to hit the fatal branch."""
+        brief = make_brief()
+        client = FakeClient([RuntimeError(TEMPERATURE_400), completion(brief)])
+        self.assertEqual(gb.attempt_model(client, "claude-ish", [], "key"), brief)
+
+    def test_the_rejection_is_remembered_for_later_calls(self):
+        client = FakeClient([RuntimeError(TEMPERATURE_400), completion(make_brief())])
+        gb.attempt_model(client, "claude-ish", [], "key")
+        later = gb.completion_kwargs("claude-ish", [], 100)
+        self.assertNotIn("temperature", later)
+        # Other models are unaffected.
+        self.assertIn("temperature", gb.completion_kwargs("other-model", [], 100))
+
+    def test_an_unrelated_400_still_falls_through(self):
+        client = FakeClient([RuntimeError("Error code: 400 - bad request")] * 3)
+        with self.assertRaises(Exception):
+            gb.attempt_model(client, "some-model", [], "key")
+        self.assertNotIn("some-model", gb.TEMPERATURE_UNSUPPORTED)
 
 
 class ModelFallback(unittest.TestCase):
