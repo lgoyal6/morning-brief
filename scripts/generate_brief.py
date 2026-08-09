@@ -31,6 +31,7 @@ import socket
 import sys
 import time
 from datetime import datetime, timedelta, timezone
+from types import SimpleNamespace
 
 import feedparser
 import requests
@@ -102,6 +103,9 @@ LLM_MAX_TOKENS_CEILING = int(os.environ.get("LLM_MAX_TOKENS_CEILING", "32000"))
 LLM_REASONING_EFFORT = os.environ.get("LLM_REASONING_EFFORT", "").strip()
 # Ordered high -> low; a retry after an empty completion drops one rung.
 REASONING_EFFORT_LADDER = ("max", "high", "medium", "low")
+# Stream every completion (see create_completion). Set LLM_STREAM=0 to go back
+# to a single blocking request, which this endpoint kills after ~270 seconds.
+LLM_STREAM = common.env_flag("LLM_STREAM", default=True)
 
 # ---------------------------------------------------------------------------
 # Concept Spotlights: generated on their own model, separately from the brief.
@@ -1136,6 +1140,84 @@ def list_models(base_url: str, api_key: str) -> list[str]:
 
 
 TEMPERATURE_UNSUPPORTED: set[str] = set()
+STREAM_OPTIONS_UNSUPPORTED: set[str] = set()
+
+
+def create_completion(client, kwargs: dict):
+    """One completion, streamed unless LLM_STREAM=0, in the non-streaming shape.
+
+    Streaming is not about latency here, it is about staying alive. Something in
+    front of this endpoint drops any connection that goes ~270s without bytes,
+    and a non-streamed completion sends nothing at all until it has finished, so
+    a long brief is killed a few seconds before it would have arrived. It is
+    reported as a bare "Connection error" with no status code, which reads like a
+    network blip rather than a timeout. Measured at 4m30s, 4m30s and 4m32s across
+    two different models on two different days:
+
+        2026-08-08  deepseek-ai/DeepSeek-V4-Flash  14:57:04 -> 15:01:34
+        2026-08-09  anthropic/claude-opus-4.8      20:57:21 -> 21:01:51
+        2026-08-09  anthropic/claude-opus-4.8      21:02:01 -> 21:06:33
+
+    DeepSeek only ever survived it by finishing under the limit (3m37s on its
+    retry). Claude never can at this length, so it looked permanently broken.
+    Streamed, tokens arrive continuously and the connection never idles.
+
+    Returns an object shaped like a normal ChatCompletion so describe_completion,
+    reasoning_text and every caller stay unaware of which mode ran.
+    """
+    if not LLM_STREAM:
+        return client.chat.completions.create(**kwargs)
+
+    model = kwargs.get("model", "")
+    stream_kwargs = dict(kwargs, stream=True)
+    if model not in STREAM_OPTIONS_UNSUPPORTED:
+        # Usage totals are not sent on a stream unless asked for, and those token
+        # counts are the main diagnostic in this log.
+        stream_kwargs["stream_options"] = {"include_usage": True}
+
+    try:
+        stream = client.chat.completions.create(**stream_kwargs)
+        return collect_stream(stream)
+    except Exception as exc:
+        if "stream_options" not in str(exc).lower() or model in STREAM_OPTIONS_UNSUPPORTED:
+            raise
+        STREAM_OPTIONS_UNSUPPORTED.add(model)
+        print(f"  {model} rejects stream_options; streaming without token counts.",
+              file=sys.stderr, flush=True)
+        stream_kwargs.pop("stream_options", None)
+        return collect_stream(client.chat.completions.create(**stream_kwargs))
+
+
+def collect_stream(stream):
+    """Fold a completion stream back into a single ChatCompletion-shaped object."""
+    parts: list[str] = []
+    reasoning: list[str] = []
+    finish = None
+    usage = None
+    for chunk in stream:
+        if getattr(chunk, "usage", None):
+            usage = chunk.usage
+        for ch in getattr(chunk, "choices", None) or []:
+            delta = getattr(ch, "delta", None)
+            if delta is not None:
+                if getattr(delta, "content", None):
+                    parts.append(delta.content)
+                extra = getattr(delta, "model_extra", None) or {}
+                think = getattr(delta, "reasoning_content", None) or extra.get(
+                    "reasoning_content"
+                )
+                if think:
+                    reasoning.append(think)
+            if getattr(ch, "finish_reason", None):
+                finish = ch.finish_reason
+    message = SimpleNamespace(
+        content="".join(parts),
+        reasoning_content="".join(reasoning),
+        model_extra={},
+    )
+    return SimpleNamespace(
+        choices=[SimpleNamespace(finish_reason=finish, message=message)], usage=usage
+    )
 
 
 def completion_kwargs(model, messages, max_tokens, effort=None, send_effort=False) -> dict:
@@ -1323,7 +1405,7 @@ def continue_truncated(client, model, base_messages, partial, max_tokens, effort
         )
 
         try:
-            resp = client.chat.completions.create(**kwargs)
+            resp = create_completion(client, kwargs)
         except Exception as exc:
             print(
                 f"  continuation {i} failed ({exc}) — keeping the {len(text)} chars "
@@ -1424,7 +1506,7 @@ def attempt_model(client, model, messages, api_key) -> str:
         kwargs = completion_kwargs(model, messages, max_tokens, effort, send_effort)
 
         try:
-            resp = client.chat.completions.create(**kwargs)
+            resp = create_completion(client, kwargs)
         except Exception as exc:
             msg = str(exc)
             print(f"\nLLM call failed: {msg}", file=sys.stderr)

@@ -75,6 +75,35 @@ def completion(content: str, finish: str = "stop", reasoning: str = "") -> Simpl
     )
 
 
+def _chunk(content=None, reasoning=None, finish=None) -> SimpleNamespace:
+    delta = SimpleNamespace(content=content, reasoning_content=reasoning, model_extra={})
+    return SimpleNamespace(
+        choices=[SimpleNamespace(delta=delta, finish_reason=finish)], usage=None
+    )
+
+
+def as_stream(resp: SimpleNamespace):
+    """Chop a completion into deltas the way the real endpoint streams it.
+
+    Production streams by default, so the fake has to as well or the tests would
+    all be exercising a path that never runs. Content is split across several
+    deltas, and usage arrives last on a chunk with no choices, which is what an
+    OpenAI-compatible stream actually does.
+    """
+    choice = resp.choices[0]
+    text = choice.message.content or ""
+    think = getattr(choice.message, "reasoning_content", "") or ""
+    chunks = []
+    if think:
+        chunks.append(_chunk(reasoning=think))
+    step = max(1, len(text) // 3)
+    for i in range(0, len(text), step):
+        chunks.append(_chunk(content=text[i:i + step]))
+    chunks.append(_chunk(finish=choice.finish_reason))
+    chunks.append(SimpleNamespace(choices=[], usage=getattr(resp, "usage", None)))
+    return iter(chunks)
+
+
 class FakeClient:
     """Replays a scripted list of responses and records what it was asked."""
 
@@ -89,7 +118,8 @@ class FakeClient:
         step = self._script.pop(0) if self._script else self._script_exhausted()
         if isinstance(step, Exception):
             raise step
-        return step(kwargs) if callable(step) else step
+        resp = step(kwargs) if callable(step) else step
+        return as_stream(resp) if kwargs.get("stream") else resp
 
     def _script_exhausted(self):
         raise AssertionError(
@@ -227,6 +257,61 @@ TEMPERATURE_400 = (
     "{\"type\":\"invalid_request_error\",\"message\":\"`temperature` is deprecated for "
     "this model.\"}}'}}"
 )
+
+
+class StreamingTransport(unittest.TestCase):
+    """Streaming exists to survive the endpoint's ~270s idle cutoff, not for speed.
+
+    A non-streamed brief sends no bytes until it is finished, so anything past
+    ~4m30s is killed and reported as a bare "Connection error". Measured on
+    DeepSeek (08-08) and twice on Claude (08-09).
+    """
+
+    def setUp(self):
+        gb.STREAM_OPTIONS_UNSUPPORTED.clear()
+        self.addCleanup(gb.STREAM_OPTIONS_UNSUPPORTED.clear)
+
+    def test_streams_by_default(self):
+        client = FakeClient([completion(make_brief())])
+        gb.attempt_model(client, "m", [], "key")
+        self.assertTrue(client.calls[0].get("stream"))
+        self.assertEqual(client.calls[0]["stream_options"], {"include_usage": True})
+
+    def test_multi_chunk_content_is_reassembled_in_order(self):
+        brief = make_brief()
+        client = FakeClient([completion(brief)])
+        self.assertEqual(gb.attempt_model(client, "m", [], "key"), brief)
+
+    def test_finish_reason_and_usage_survive_the_stream(self):
+        resp = gb.collect_stream(as_stream(completion("hello there", finish="length")))
+        self.assertEqual(resp.choices[0].finish_reason, "length")
+        self.assertEqual(resp.choices[0].message.content, "hello there")
+        self.assertEqual(resp.usage.prompt_tokens, 26075)
+
+    def test_reasoning_content_survives_the_stream(self):
+        """The empty-content salvage path reads this, so it must not be lost."""
+        resp = gb.collect_stream(as_stream(completion("", reasoning="thinking hard")))
+        self.assertEqual(gb.reasoning_text(resp.choices[0]), "thinking hard")
+
+    def test_a_refusal_still_reads_as_a_refusal_when_streamed(self):
+        client = FakeClient([completion(REFUSAL_0809, finish="content_filter")])
+        self.assertEqual(gb.attempt_model(client, "m", [], "key"), "")
+
+    def test_stream_options_rejection_falls_back_to_a_plain_stream(self):
+        brief = make_brief()
+        client = FakeClient(
+            [RuntimeError("400: stream_options is not supported"), completion(brief)]
+        )
+        resp = gb.create_completion(client, {"model": "m", "messages": [], "max_tokens": 10})
+        self.assertEqual(resp.choices[0].message.content, brief)
+        self.assertNotIn("stream_options", client.calls[1])
+        self.assertTrue(client.calls[1]["stream"])
+
+    def test_llm_stream_off_sends_one_blocking_request(self):
+        with mock.patch.object(gb, "LLM_STREAM", False):
+            client = FakeClient([completion(make_brief())])
+            gb.attempt_model(client, "m", [], "key")
+            self.assertNotIn("stream", client.calls[0])
 
 
 class TemperatureRejection(unittest.TestCase):
