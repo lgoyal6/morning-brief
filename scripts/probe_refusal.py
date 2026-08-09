@@ -164,13 +164,27 @@ def main() -> int:
                 file=sys.stderr,
             )
             return 0
+        # The effect is stochastic, not a hard gate: the first injection run got
+        # "plus arunachal" REFUSED but "plus both" ok. One sample per arm cannot
+        # tell a trigger from a coincidence, so each arm is repeated and reported
+        # as a rate. PROBE_REPEATS=1 for a quick look.
+        repeats = int(os.environ.get("PROBE_REPEATS", "4"))
+        arms = {"control": lambda: sources}
         for key, item in archived.items():
-            results[f"plus {key}"] = run(f"plus {key}", plus(item))
-        if len(archived) > 1:
-            merged = list(archived.values())
-            rest = [s for s in sources
-                    if s.get("link") not in {i.get("link") for i in merged}]
-            results["plus both"] = run("plus both suspects", merged + rest)
+            arms[f"plus {key}"] = (lambda it: (lambda: plus(it)))(item)
+
+        counts: dict[str, list[int]] = {name: [0, 0] for name in arms}
+        for i in range(1, repeats + 1):
+            for name, build in arms.items():
+                verdict = run(f"{name} #{i}", build())
+                counts[name][1] += 1
+                if verdict:
+                    counts[name][0] += 1
+
+        print("\nRefusal rate by arm:")
+        for name, (refusals, total) in counts.items():
+            print(f"  {name:24} {refusals}/{total}")
+        results = {n: (c[0] > 0) for n, c in counts.items()}
 
     print("\nSummary:")
     for k, v in results.items():
