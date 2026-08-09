@@ -6,14 +6,25 @@ recorded. Same pattern as the earlier "temp: probe which models the LLM endpoint
 serves" probe.
 
 Method. Build the real prompt (same fetch, same spec, same 130 items), then ask
-for only a couple of hundred output tokens and look at how the model stops:
+for only a couple of hundred output tokens and read finish_reason:
 
-    finish_reason=content_filter + a short body  ->  REFUSED
-    finish_reason=length                         ->  fine, it was writing the brief
+    finish_reason=content_filter              ->  REFUSED
+    anything else                             ->  not refused
 
-Capping max_tokens is what makes this affordable. The refusal is 11 completion
-tokens and a healthy answer only has to get 200 tokens in to prove it started,
-so each probe costs one prompt (~26k input) and almost no output.
+Do NOT treat "short body" as a refusal. DeepSeek is a reasoning model, so a
+healthy answer spends the whole 200-token cap on its hidden thinking trace and
+comes back with finish_reason=length, reasoning_tokens=200 and ZERO visible
+content. The first version of this probe called that a refusal and reported four
+false positives. A real refusal is the opposite shape: reasoning_tokens=0 and a
+13-character body.
+
+Capping max_tokens is what makes this affordable either way: a refusal is 11
+completion tokens, and a healthy answer only has to reach the cap to prove it
+engaged, so each probe costs one prompt (~28k input) and almost no output.
+
+Because the trigger is a property of one day's feed, the useful direction is
+INJECTION, not removal: take today's bundle (which does not refuse) and add a
+suspect headline back in. If the refusal returns, that item is the cause.
 
 Run: python scripts/probe_refusal.py
 """
@@ -49,12 +60,23 @@ SUSPECTS = {
 }
 
 
+def load_archived_suspects() -> dict:
+    """The 2026-08-09 suspect items, captured before the feed rotated them out."""
+    path = common.REPO_ROOT / "scripts" / "probe_suspects.json"
+    if not path.exists():
+        return {}
+    import json
+
+    return json.loads(path.read_text())
+
+
 def refused(resp) -> tuple[bool, str]:
     choice = resp.choices[0]
     body = (choice.message.content or "").strip()
     finish = getattr(choice, "finish_reason", None)
-    # A model that is writing the brief will run into the cap, not stop early.
-    return (finish == "content_filter" or len(body) < 200), f"{finish} {len(body)}ch {body[:60]!r}"
+    # finish_reason is the ONLY reliable signal here. See the module docstring:
+    # an empty body means the thinking trace used the cap, not that it refused.
+    return finish == "content_filter", f"{finish} {len(body)}ch {body[:60]!r}"
 
 
 def probe(client, label, sources, quotes, today, prior, term_memory, foundations):
@@ -111,40 +133,49 @@ def main() -> int:
         drop = {id(s) for k in keys for s in hits.get(k, [])}
         return [s for s in sources if id(s) not in drop]
 
+    def plus(item):
+        # Front of the world section, where the refused bundles carried it.
+        return [item] + [s for s in sources if s.get("link") != item.get("link")]
+
     print(f"Probing {LLM_MODEL} at {PROBE_MAX_TOKENS} max_tokens.\n")
     run = lambda label, subset: probe(
         client, label, subset, quotes, today, prior, term_memory, foundations
     )
+    results: dict[str, bool | None] = {}
 
-    control = run("control (full bundle)", sources)
-    if control is False:
-        print(
-            "\nCONTROL DID NOT REFUSE. The news has rotated since the refusal, so "
-            "removing items proves nothing today. Stopping.",
-            file=sys.stderr,
-        )
-        return 0
+    control = run("control (today's bundle)", sources)
+    results["control"] = control
 
-    results = {}
-    for key in SUSPECTS:
-        if hits[key]:
-            results[key] = run(f"minus {key}", without(key))
-    if len(SUSPECTS) > 1:
-        results["both"] = run("minus both suspects", without(*SUSPECTS))
-
-    china = [
-        s for s in sources
-        if any(w in (s.get("title", "") or "").lower()
-               for w in ("china", "chinese", "beijing", "taiwan", "xi "))
-    ]
-    if china:
-        drop = {id(s) for s in china}
-        run(f"minus all {len(china)} China items", [s for s in sources if id(s) not in drop])
+    if control:
+        # Today's feed still trips it: subtract to find out what is doing it.
+        for key in SUSPECTS:
+            if hits[key]:
+                results[f"minus {key}"] = run(f"minus {key}", without(key))
+        results["minus both"] = run("minus both suspects", without(*SUSPECTS))
+    else:
+        # Today's feed is clean, so removal proves nothing. Add the 2026-08-09
+        # suspects back to a bundle that currently passes: if the refusal
+        # returns, that headline is the cause.
+        archived = load_archived_suspects()
+        if not archived:
+            print(
+                "\nControl did not refuse and no archived suspects to inject "
+                "(scripts/probe_suspects.json missing). Nothing to test.",
+                file=sys.stderr,
+            )
+            return 0
+        for key, item in archived.items():
+            results[f"plus {key}"] = run(f"plus {key}", plus(item))
+        if len(archived) > 1:
+            merged = list(archived.values())
+            rest = [s for s in sources
+                    if s.get("link") not in {i.get("link") for i in merged}]
+            results["plus both"] = run("plus both suspects", merged + rest)
 
     print("\nSummary:")
-    print(f"  control refused: {control}")
     for k, v in results.items():
-        print(f"  minus {k}: {'still refused' if v else 'NO LONGER REFUSED'}")
+        state = "REFUSED" if v else ("error" if v is None else "ok")
+        print(f"  {k:24} {state}")
     return 0
 
 
