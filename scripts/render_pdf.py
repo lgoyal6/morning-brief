@@ -50,6 +50,16 @@ LOSS = "#b91c1c"
 
 TAGLINE = "World · Markets & Money · AI & Infrastructure · Models & Research"
 
+# Fraction of the brief's visible text that must survive into the PDF. WeasyPrint
+# silently drops content out of the two-column flow on some documents: 2026-08-07
+# shipped without its Bottom Line and Sources sections (0.87 of the text), and
+# 2026-08-12 lost sections 7-11 on CI (0.55): 5 pages where the Markdown was
+# worth 10. Nothing downstream noticed either one. Across the 24 briefs in the
+# archive every healthy render scores 1.03-1.06 (extraction picks up the running
+# header/footer and list bullets on top of the body text), so 0.95 sits far below
+# the good runs and far above both bad ones.
+MIN_RENDERED_TEXT_RATIO = float(os.environ.get("BRIEF_MIN_TEXT_RATIO", "0.95"))
+
 
 # ---------------------------------------------------------------------------
 # Inputs
@@ -263,7 +273,7 @@ def photo_strip_html(photos: list[dict]) -> str:
     return f'<div class="photostrip">{"".join(cells)}</div>'
 
 
-def build_html(title, date, body_html, footer_html, chart_uri, photos) -> str:
+def build_html(title, date, body_html, footer_html, chart_uri, photos, columns=2) -> str:
     date_label = pretty_date(date)
     chart_block = (
         f'<figure class="chart"><img src="{chart_uri}" alt="Watchlist movers chart">'
@@ -312,7 +322,7 @@ figure figcaption {{ font-size: 7.6pt; color: #64748b; margin-top: 3px; font-sty
 .photostrip figcaption {{ font-size: 7pt; line-height: 1.2; }}
 
 /* Two-column article body */
-.article {{ column-count: 2; column-gap: 20px; text-align: left; }}
+.article {{ column-count: {columns}; column-gap: 20px; text-align: left; }}
 .article h2 {{ column-span: all; font-family: Georgia, 'DejaVu Serif', serif;
   font-size: 14.5pt; color: {INK}; margin: 14px 0 7px;
   padding: 4px 0 4px 9px; border-left: 4px solid {ACCENT};
@@ -370,6 +380,21 @@ h2.srccompact {{ font-size: 12.5pt; margin: 11px 0 4px; }}
 # ---------------------------------------------------------------------------
 # Render
 # ---------------------------------------------------------------------------
+def rendered_text_len(pdf_file: Path) -> int:
+    """Characters of extractable text in a rendered PDF, or -1 if unreadable.
+
+    -1 means "could not check", not "empty": a reader that chokes must not be
+    read as content loss and cost us the day's brief.
+    """
+    try:
+        from pypdf import PdfReader
+
+        return sum(len(page.extract_text() or "") for page in PdfReader(str(pdf_file)).pages)
+    except Exception as exc:
+        print(f"  could not read back {pdf_file.name} to verify: {exc}", file=sys.stderr)
+        return -1
+
+
 def render(md_file: Path, pdf_file: Path, date: str) -> None:
     from weasyprint import HTML
 
@@ -383,15 +408,51 @@ def render(md_file: Path, pdf_file: Path, date: str) -> None:
     photo_limit = int(os.environ.get("BRIEF_PHOTO_LIMIT", "3"))
     photos = fetch_photos(sources, photo_limit)
 
-    html = build_html(title, date, body_html, footer_html, chart_uri, photos)
+    expected = len(BeautifulSoup(body_html + footer_html, "html.parser").get_text())
 
-    # Keep the assembled HTML next to the PDF for debugging (gitignored).
-    try:
-        pdf_file.with_suffix(".debug.html").write_text(html)
-    except OSError:
-        pass
+    def attempt(columns: int) -> int:
+        html = build_html(title, date, body_html, footer_html, chart_uri, photos, columns)
+        # Keep the assembled HTML next to the PDF for debugging (gitignored).
+        try:
+            pdf_file.with_suffix(".debug.html").write_text(html)
+        except OSError:
+            pass
+        HTML(string=html, base_url=str(md_file.parent)).write_pdf(str(pdf_file))
+        return rendered_text_len(pdf_file)
 
-    HTML(string=html, base_url=str(md_file.parent)).write_pdf(str(pdf_file))
+    got = attempt(2)
+
+    # WeasyPrint drops content out of the multi-column flow on some documents,
+    # silently: the PDF is short a section or five and nothing errors. One column
+    # is not subject to it; re-rendering 2026-08-07 that way restores the Bottom
+    # Line and Sources it shipped without. Trade the magazine layout for a whole
+    # brief on the days it happens, and say so in the log.
+    if 0 <= got < expected * MIN_RENDERED_TEXT_RATIO:
+        print(
+            f"::warning::Two-column render kept only {got}/{expected} chars "
+            f"({got / expected:.0%}) of the brief; WeasyPrint dropped content. "
+            "Re-rendering in one column.",
+            flush=True,
+        )
+        single = attempt(1)
+        if single < got:
+            # Worse, somehow. Keep the better of the two rather than shipping the
+            # regression: re-render restores the file the earlier attempt wrote.
+            print(
+                f"  one-column render was shorter ({single} chars), keeping the "
+                "two-column PDF.",
+                file=sys.stderr,
+            )
+            attempt(2)
+        elif single < expected * MIN_RENDERED_TEXT_RATIO:
+            print(
+                f"::warning::One column still kept only {single}/{expected} chars "
+                f"({single / expected:.0%}). Shipping it (a short brief beats none), "
+                "but the PDF is incomplete.",
+                flush=True,
+            )
+        else:
+            print(f"  one column recovered the full brief ({single} chars).", flush=True)
 
 
 # ---------------------------------------------------------------------------

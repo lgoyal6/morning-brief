@@ -11,6 +11,7 @@ markdown>=3.5          # Markdown -> HTML
 weasyprint>=61         # HTML + CSS -> PDF (needs pango/cairo system libs on CI)
 matplotlib>=3.8        # watchlist "biggest movers" chart
 Pillow>=10.0           # image handling for charts/photos
+pypdf>=4.0             # read the PDF back to check WeasyPrint kept all the text
 
 # Market data (best-effort; failures are non-fatal)
 yfinance>=0.2.40

@@ -108,9 +108,16 @@ jobs:
       # max_tokens toward the ceiling and step reasoning_effort down.
       LLM_MAX_RETRIES: ${{ vars.LLM_MAX_RETRIES || '3' }}
       LLM_MAX_TOKENS_CEILING: ${{ vars.LLM_MAX_TOKENS_CEILING || '32000' }}
-      # Blank = let the endpoint choose on attempt 1. Pin to e.g. 'low' if empty
-      # completions become chronic.
-      LLM_REASONING_EFFORT: ${{ vars.LLM_REASONING_EFFORT }}
+      # Pinned to 'low' as of 2026-08-16. Left to the endpoint, DeepSeek V4
+      # Flash's hidden trace is wildly variable run to run: 1,359 reasoning
+      # tokens on 08-10 and 4,132 on 08-14, but 39,515 of the 40,000 budget on
+      # 08-16 and the whole 40,000 (zero content) on 08-12. When it blows up the
+      # answer has nowhere to go: 08-16's first pass returned 2,023 chars, and
+      # the continuation that rescued it produced the shortest brief of the month
+      # (47k chars / 8 pages, against a 62-68k / 12-15 page plateau). It also
+      # costs 6min of the morning. An endpoint that rejects the parameter is
+      # already handled: attempt_model retries without it.
+      LLM_REASONING_EFFORT: ${{ vars.LLM_REASONING_EFFORT || 'low' }}
       # Live web search (optional). Add a SEARCH_API_KEY secret to enable; with
       # no key the brief falls back to RSS-only. Provider: tavily (default) or brave.
       SEARCH_PROVIDER: ${{ vars.SEARCH_PROVIDER || 'tavily' }}
@@ -125,7 +132,17 @@ jobs:
       TZ: America/Los_Angeles
 
     steps:
+      # ref: main checks out the CURRENT head, not the SHA GitHub pinned when the
+      # event fired. A backstop cron that fires late queues behind the dispatched
+      # run (same concurrency group) and can start minutes after that run pushed
+      # the day's brief and delivery marker, but the pinned SHA predates both,
+      # so the marker still reads yesterday. On 2026-08-16 the 14:50 cron fired
+      # 11min late at 15:01:40Z, started at 15:05:36Z on a tree from 15:01:40Z,
+      # regenerated the whole brief (9.5min of LLM it did not need) and then died
+      # on an add/add rebase conflict against the run that had already delivered.
       - uses: actions/checkout@v4
+        with:
+          ref: main
 
       - uses: actions/setup-python@v5
         with:

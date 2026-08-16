@@ -133,6 +133,7 @@ DISCORD_DRY_RUN=1 python scripts/send_discord.py    # logs instead of sending
 - **No hallucinated news**: if zero sources are fetched, generation aborts rather than inventing headlines. The model is instructed to use only the supplied sources and to link every story.
 - **Discord failure**: the Discord send runs *last*, so even if it fails, the brief has already been committed and uploaded. The workflow then fails with a clear Discord error.
 - **Provenance**: the raw fetched sources/quotes are saved to `briefs/YYYY-MM-DD-sources.json` (uploaded as an artifact, not committed).
+- **Render check**: WeasyPrint silently drops content out of the two-column flow on some documents (2026-08-07 shipped without its Bottom Line and Sources; 2026-08-12 rendered 5 pages from Markdown worth 10). So the renderer reads the PDF back and compares its text against the Markdown's. Below `BRIEF_MIN_TEXT_RATIO` it re-renders the day in a **single column**, which is not affected, and logs a warning. The magazine layout is kept whenever it renders the brief whole.
 
 ## Configuration knobs (env vars)
 
@@ -142,6 +143,7 @@ DISCORD_DRY_RUN=1 python scripts/send_discord.py    # logs instead of sending
 | `LLM_MODEL` | `deepseek-ai/DeepSeek-V4-Flash` | Model ID. |
 | `LLM_MAX_TOKENS` | `16000` | Max output tokens (raised from 7000 so the full newspaper never truncates mid-section; Bottom Line is ordered before Sources so the synthesis survives even if the tail clips). |
 | `LLM_TEMPERATURE` | `0.4` | Sampling temperature. |
+| `LLM_REASONING_EFFORT` | `low` | Sent as `reasoning_effort`. Pinned low because an unbounded thinking trace eats the whole `LLM_MAX_TOKENS` budget on some runs and leaves the brief with nowhere to go. Dropped automatically if the endpoint rejects it. |
 | `ENABLE_QUOTES` | `1` | Pull watchlist quotes via yfinance (best-effort; feeds the movers chart). |
 | `BRIEF_LOOKBACK_HOURS` | `48` | How far back to keep articles. |
 | `BRIEF_MAX_ITEMS` | `95` | Max sources sent to the model (interleaved evenly across the four pillars). |
@@ -149,6 +151,7 @@ DISCORD_DRY_RUN=1 python scripts/send_discord.py    # logs instead of sending
 | `BRIEF_TERM_MASTERED_AFTER` | `4` | Explain a term in full until it's appeared this many times, then only reference it. |
 | `BRIEF_PHOTOS` | `1` | Embed best-effort Open Graph photos from top stories. |
 | `BRIEF_PHOTO_LIMIT` | `3` | How many story photos to embed. |
+| `BRIEF_MIN_TEXT_RATIO` | `0.95` | Fraction of the brief's text that must survive into the PDF before it's accepted (see **Render check** below). |
 | `SEARCH_PROVIDER` / `SEARCH_API_KEY` | `tavily` / — | Optional live web search (else RSS only). |
 | `FORCE_REGENERATE` | — | Regenerate even on a scheduled duplicate. |
 | `BRIEF_DRY_RUN` | — | Build a stub brief without calling the LLM. |
