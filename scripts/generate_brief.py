@@ -983,6 +983,8 @@ Plain language (IMPORTANT -- Laksh has never read a newspaper regularly and is n
 - Keep sentences short. Avoid stacking three unexplained proper nouns in a row.
 - Never use a number without saying what it means. "$44.9B in capex" alone is useless; "$44.9B on data centres and other long-lived assets (capex) -- roughly double last year" teaches something.
 
+Punctuation: never use an em dash (the long -- character). Use a comma, a semicolon, or a plain hyphen instead. This applies to every line of the brief, headings included.
+
 Ticker clarity: the FIRST time you name a company by its stock ticker, give the company name too, unless it is a household name (Apple, Tesla, Nvidia, Microsoft, Amazon, Google/Alphabet, Meta, Netflix, Intel, AMD). Write it as "Company (TICKER)" -- e.g. "Credo (CRDO)", "Vistra (VST)", "Constellation Energy (CEG)", "Astera Labs (ALAB)". Never leave a non-obvious ticker unexplained.
 
 Coverage -- give these FOUR pillars roughly equal weight every day:

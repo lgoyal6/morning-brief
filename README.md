@@ -1,6 +1,6 @@
 # Morning Brief 🗞️
 
-A GitHub Actions bot that generates Laksh's **daily personal newspaper** — world affairs & geopolitics first, then markets/investing, AI & infrastructure, and new AI models/research — commits it to this repo, uploads it as a workflow artifact, and DMs the PDF to Discord.
+A GitHub Actions bot that generates Laksh's **daily personal newspaper** - world affairs & geopolitics first, then markets/investing, AI & infrastructure, and new AI models/research - commits it to this repo, uploads it as a workflow artifact, and DMs the PDF to Discord.
 
 Every morning (Pacific time) it:
 
@@ -14,10 +14,10 @@ Every morning (Pacific time) it:
 
 ## Coverage (four equal pillars + light secondary beats)
 
-- **World & Geopolitics** (lead) — wars, great-power relations (prioritizing **US–China, the Middle East, and India/South Asia**), diplomacy, big international deals, notable statements.
-- **Markets, Money & Deals** — rates, macro, earnings, M&A, market milestones; a light crypto/fintech touch.
-- **AI & Infrastructure** — labs, hyperscalers, data centers, GPUs, HBM, networking, power, and the semiconductor supply chain, through an investing lens.
-- **Model & Research Watch** — new model launches (params, context, benchmarks, price), notable papers/findings, plus a short science/space note.
+- **World & Geopolitics** (lead) - wars, great-power relations (prioritizing **US–China, the Middle East, and India/South Asia**), diplomacy, big international deals, notable statements.
+- **Markets, Money & Deals** - rates, macro, earnings, M&A, market milestones; a light crypto/fintech touch.
+- **AI & Infrastructure** - labs, hyperscalers, data centers, GPUs, HBM, networking, power, and the semiconductor supply chain, through an investing lens.
+- **Model & Research Watch** - new model launches (params, context, benchmarks, price), notable papers/findings, plus a short science/space note.
 
 Secondary beats (US politics, defense/military tech, crypto, science/space) ride lightly inside the pillar they fit.
 
@@ -35,7 +35,7 @@ A short "Quick Check" quiz is appended every `BRIEF_QUIZ_EVERY` briefs (default 
 
 ## Why GMI Cloud (zero extra billing)
 
-The generator talks to any endpoint that speaks the **OpenAI Chat Completions API**. By default it points at **GMI Cloud** (`https://api.gmi-serving.com/v1`) with an open-weight model (`deepseek-ai/DeepSeek-V4-Flash`). Using your GMI key means an open-source model with essentially free/near-zero cost — no OpenAI or Anthropic billing required.
+The generator talks to any endpoint that speaks the **OpenAI Chat Completions API**. By default it points at **GMI Cloud** (`https://api.gmi-serving.com/v1`) with an open-weight model (`deepseek-ai/DeepSeek-V4-Flash`). Using your GMI key means an open-source model with essentially free/near-zero cost - no OpenAI or Anthropic billing required.
 
 You can repoint it at OpenAI, or any other compatible provider, purely via env/variables (see below).
 
@@ -92,7 +92,7 @@ Optional **Variables** (Settings → Variables), to override defaults without to
 
 ## Run it manually
 
-- GitHub UI: **Actions → Morning Brief → Run workflow**. A manual dispatch always **regenerates** today's brief (even if it already exists), but **does not DM it to Discord by default** — that's so iterating on the pipeline doesn't spam your DMs or consume the day's morning-delivery slot. Tick the **`send`** input (or set it true via `gh workflow run morning-brief.yml -f send=true`) when you actually want it delivered.
+- GitHub UI: **Actions → Morning Brief → Run workflow**. A manual dispatch always **regenerates** today's brief (even if it already exists), but **does not DM it to Discord by default** - that's so iterating on the pipeline doesn't spam your DMs or consume the day's morning-delivery slot. Tick the **`send`** input (or set it true via `gh workflow run morning-brief.yml -f send=true`) when you actually want it delivered.
 
 ## Run locally
 
@@ -129,7 +129,7 @@ DISCORD_DRY_RUN=1 python scripts/send_discord.py    # logs instead of sending
 ## Behavior details
 
 - **Date**: computed in `America/Los_Angeles`.
-- **Duplicate prevention**: the two DST cron times dedup on a *committed* marker (`briefs/.delivery.json`) that records the last date a **scheduled** run claimed the morning-delivery slot — not on "do today's files exist". The first scheduled cron of the day generates, sends, and stamps the marker; the second sees the marker and skips generation, PDF render, and the send. Because only scheduled runs touch the marker, a manual dispatch or a late-night local run can **no longer suppress the real morning send** (the bug where overnight iteration "used up" the day's brief). `FORCE_REGENERATE=1` overrides the skip.
+- **Duplicate prevention**: the two DST cron times dedup on a *committed* marker (`briefs/.delivery.json`) that records the last date a **scheduled** run claimed the morning-delivery slot - not on "do today's files exist". The first scheduled cron of the day generates, sends, and stamps the marker; the second sees the marker and skips generation, PDF render, and the send. Because only scheduled runs touch the marker, a manual dispatch or a late-night local run can **no longer suppress the real morning send** (the bug where overnight iteration "used up" the day's brief). `FORCE_REGENERATE=1` overrides the skip.
 - **No hallucinated news**: if zero sources are fetched, generation aborts rather than inventing headlines. The model is instructed to use only the supplied sources and to link every story.
 - **Discord failure**: the Discord send runs *last*, so even if it fails, the brief has already been committed and uploaded. The workflow then fails with a clear Discord error.
 - **Provenance**: the raw fetched sources/quotes are saved to `briefs/YYYY-MM-DD-sources.json` (uploaded as an artifact, not committed).
@@ -152,14 +152,14 @@ DISCORD_DRY_RUN=1 python scripts/send_discord.py    # logs instead of sending
 | `BRIEF_PHOTOS` | `1` | Embed best-effort Open Graph photos from top stories. |
 | `BRIEF_PHOTO_LIMIT` | `3` | How many story photos to embed. |
 | `BRIEF_MIN_TEXT_RATIO` | `0.95` | Fraction of the brief's text that must survive into the PDF before it's accepted (see **Render check** below). |
-| `SEARCH_PROVIDER` / `SEARCH_API_KEY` | `tavily` / — | Optional live web search (else RSS only). |
-| `FORCE_REGENERATE` | — | Regenerate even on a scheduled duplicate. |
-| `BRIEF_DRY_RUN` | — | Build a stub brief without calling the LLM. |
-| `DISCORD_DRY_RUN` | — | Log instead of sending to Discord. |
+| `SEARCH_PROVIDER` / `SEARCH_API_KEY` | `tavily` / - | Optional live web search (else RSS only). |
+| `FORCE_REGENERATE` | - | Regenerate even on a scheduled duplicate. |
+| `BRIEF_DRY_RUN` | - | Build a stub brief without calling the LLM. |
+| `DISCORD_DRY_RUN` | - | Log instead of sending to Discord. |
 
 ## Outputs
 
-- `briefs/YYYY-MM-DD-ai-tech-market-brief.md` — the brief (committed)
-- `briefs/YYYY-MM-DD-ai-tech-market-brief.pdf` — the PDF (committed)
-- `briefs/latest-ai-tech-market-brief.pdf` — always the newest PDF (committed)
-- Workflow **Artifacts** — the above plus the sources JSON, per run.
+- `briefs/YYYY-MM-DD-ai-tech-market-brief.md` - the brief (committed)
+- `briefs/YYYY-MM-DD-ai-tech-market-brief.pdf` - the PDF (committed)
+- `briefs/latest-ai-tech-market-brief.pdf` - always the newest PDF (committed)
+- Workflow **Artifacts** - the above plus the sources JSON, per run.
