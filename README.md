@@ -12,6 +12,32 @@ Every morning (Pacific time) it:
 6. Uploads all outputs as workflow artifacts.
 7. Sends the dated PDF to your Discord DM (or a channel).
 
+## The run
+
+```mermaid
+flowchart TD
+  CRON["GitHub cron, four daily slots<br/>UTC, so it lands morning Pacific<br/>year-round through DST"] --> CLAIM{"has today's delivery<br/>marker been committed?"}
+  CLAIM -->|"yes"| SKIP["skip in about a minute"]
+  CLAIM -->|"no"| FETCH["RSS feeds + topic-targeted<br/>Google News, balanced across<br/>four pillars"]
+  FETCH --> QUOTES["yfinance watchlist snapshot<br/>optional"]
+  QUOTES --> LLM["OpenAI-compatible LLM<br/>synthesizes from ONLY those sources"]
+  MEM[("term memory<br/>spaced repetition")] --> LLM
+  LLM --> MD["briefs/YYYY-MM-DD-*.md"]
+  MD --> PDF["WeasyPrint<br/>two-column magazine PDF,<br/>movers chart, story photos"]
+  PDF --> COMMIT["commit brief + latest-*.pdf"]
+  COMMIT --> ART["upload workflow artifacts"]
+  ART --> DISCORD["DM the dated PDF to Discord"]
+  DISCORD --> MARK["commit the delivery marker"]
+  MARK -.->|"claims the slot"| CLAIM
+
+  style CLAIM fill:#1f6feb,color:#fff
+```
+
+Four cron slots fire every day rather than one, because GitHub's scheduler is
+best-effort and the brief should still land if a slot is dropped. The committed
+delivery marker is what stops that redundancy from mailing you the same paper
+four times.
+
 ## Coverage (four equal pillars + light secondary beats)
 
 - **World & Geopolitics** (lead) - wars, great-power relations (prioritizing **US–China, the Middle East, and India/South Asia**), diplomacy, big international deals, notable statements.
