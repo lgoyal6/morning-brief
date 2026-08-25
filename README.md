@@ -155,7 +155,7 @@ DISCORD_DRY_RUN=1 python scripts/send_discord.py    # logs instead of sending
 ## Behavior details
 
 - **Date**: computed in `America/Los_Angeles`.
-- **Duplicate prevention**: the two DST cron times dedup on a *committed* marker (`briefs/.delivery.json`) that records the last date a **scheduled** run claimed the morning-delivery slot - not on "do today's files exist". The first scheduled cron of the day generates, sends, and stamps the marker; the second sees the marker and skips generation, PDF render, and the send. Because only scheduled runs touch the marker, a manual dispatch or a late-night local run can **no longer suppress the real morning send** (the bug where overnight iteration "used up" the day's brief). `FORCE_REGENERATE=1` overrides the skip.
+- **Duplicate prevention**: the four daily cron slots dedup on a *committed* marker (`briefs/.delivery.json`) that records the last date a **scheduled** run claimed the morning-delivery slot - not on "do today's files exist". The first scheduled cron of the day generates, sends, and stamps the marker; the later ones see the marker and skip generation, PDF render, and the send. Because only scheduled runs touch the marker, a manual dispatch or a late-night local run can **no longer suppress the real morning send** (the bug where overnight iteration "used up" the day's brief). `FORCE_REGENERATE=1` overrides the skip.
 - **No hallucinated news**: if zero sources are fetched, generation aborts rather than inventing headlines. The model is instructed to use only the supplied sources and to link every story.
 - **Discord failure**: the Discord send runs *last*, so even if it fails, the brief has already been committed and uploaded. The workflow then fails with a clear Discord error.
 - **Provenance**: the raw fetched sources/quotes are saved to `briefs/YYYY-MM-DD-sources.json` (uploaded as an artifact, not committed).
@@ -167,12 +167,12 @@ DISCORD_DRY_RUN=1 python scripts/send_discord.py    # logs instead of sending
 | --- | --- | --- |
 | `LLM_BASE_URL` | GMI Cloud | OpenAI-compatible endpoint. |
 | `LLM_MODEL` | `deepseek-ai/DeepSeek-V4-Flash` | Model ID. |
-| `LLM_MAX_TOKENS` | `16000` | Max output tokens (raised from 7000 so the full newspaper never truncates mid-section; Bottom Line is ordered before Sources so the synthesis survives even if the tail clips). |
+| `LLM_MAX_TOKENS` | `40000` | Max output tokens (raised from 7000 so the full newspaper never truncates mid-section; Bottom Line is ordered before Sources so the synthesis survives even if the tail clips). |
 | `LLM_TEMPERATURE` | `0.4` | Sampling temperature. |
-| `LLM_REASONING_EFFORT` | `low` | Sent as `reasoning_effort`. Pinned low because an unbounded thinking trace eats the whole `LLM_MAX_TOKENS` budget on some runs and leaves the brief with nowhere to go. Dropped automatically if the endpoint rejects it. |
+| `LLM_REASONING_EFFORT` | unset | Sent as `reasoning_effort` when non-empty. Blank lets the endpoint decide on the first attempt; a retry after an empty completion steps it down the `max` -> `high` -> `medium` -> `low` ladder, because an unbounded thinking trace eats the whole `LLM_MAX_TOKENS` budget on some runs and leaves the brief with nowhere to go. Dropped automatically if the endpoint rejects it. |
 | `ENABLE_QUOTES` | `1` | Pull watchlist quotes via yfinance (best-effort; feeds the movers chart). |
 | `BRIEF_LOOKBACK_HOURS` | `48` | How far back to keep articles. |
-| `BRIEF_MAX_ITEMS` | `95` | Max sources sent to the model (interleaved evenly across the four pillars). |
+| `BRIEF_MAX_ITEMS` | `130` | Max sources sent to the model (interleaved evenly across the four pillars). |
 | `BRIEF_QUIZ_EVERY` | `2` | Append a "Quick Check" quiz every Nth brief. |
 | `BRIEF_TERM_MASTERED_AFTER` | `4` | Explain a term in full until it's appeared this many times, then only reference it. |
 | `BRIEF_PHOTOS` | `1` | Embed best-effort Open Graph photos from top stories. |
