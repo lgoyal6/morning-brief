@@ -22,3 +22,6 @@ briefs/*.debug.html
 trigger/node_modules/
 trigger/.wrangler/
 trigger/.dev.vars
+
+# graphify knowledge graph (local index, not source)
+graphify-out/
