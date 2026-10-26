@@ -166,6 +166,45 @@ class TrackPick(unittest.TestCase):
         self.assertEqual(gb.track_pick(TRACK, {}, [])[0], "Alpha")
 
 
+class PickFoundations(unittest.TestCase):
+    """One Spotlight a day, the markets and world tracks taking turns."""
+
+    MARKETS = [("M1", "m"), ("M2", "m"), ("M3", "m")]
+    WORLD = [("W1", "w"), ("W2", "w"), ("W3", "w")]
+
+    def pick(self, delivered, briefs):
+        with mock.patch.object(gb, "FOUNDATIONS_MARKETS", self.MARKETS), \
+             mock.patch.object(gb, "FOUNDATIONS_WORLD", self.WORLD), \
+             mock.patch.object(gb, "FOUNDATIONS_STUCK_AFTER", 3), \
+             mock.patch.object(gb, "spotlight_dates", return_value=delivered), \
+             mock.patch.object(gb, "brief_dates", return_value=briefs):
+            return gb.pick_foundations()
+
+    def test_fresh_syllabus_starts_with_markets(self):
+        self.assertEqual(self.pick({}, []), [("M1", "m")])
+
+    def test_turn_passes_to_the_track_that_waited_longest(self):
+        delivered = {"m1": "2026-10-01"}
+        self.assertEqual(self.pick(delivered, ["2026-10-01"]), [("W1", "w")])
+        delivered["w1"] = "2026-10-02"
+        self.assertEqual(self.pick(delivered, ["2026-10-01", "2026-10-02"]), [("M2", "m")])
+
+    def test_one_miss_on_a_turn_does_not_defer_the_concept(self):
+        # Markets advanced 10-01; world's turn on 10-02; markets missed 10-03.
+        # Two briefs since markets advanced is normal with turns, not a stall.
+        delivered = {"m1": "2026-10-01", "w1": "2026-10-02"}
+        briefs = ["2026-10-01", "2026-10-02", "2026-10-03"]
+        self.assertEqual(self.pick(delivered, briefs), [("M2", "m")])
+
+    def test_exhausted_track_hands_its_turn_over(self):
+        delivered = {"m1": "1", "m2": "2", "m3": "3", "w1": "4"}
+        self.assertEqual(self.pick(delivered, ["5"]), [("W2", "w")])
+
+    def test_both_exhausted_returns_nothing(self):
+        delivered = {f"{t}{i}": str(i) for t in "mw" for i in (1, 2, 3)}
+        self.assertEqual(self.pick(delivered, ["9"]), [])
+
+
 class SpliceRoundTrip(unittest.TestCase):
     """splice_spotlights must produce headings spotlight_dates() can read back."""
 

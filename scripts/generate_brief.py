@@ -384,7 +384,13 @@ def brief_dates() -> list[str]:
     return sorted(p.name[:10] for p in common.BRIEFS_DIR.glob(f"*-{common.BRIEF_SLUG}.md"))
 
 
-def track_pick(track, delivered: dict[str, str], briefs: list[str]):
+def track_last_advance(track, delivered: dict[str, str]):
+    """Date this track last delivered a Spotlight, or None if it never has."""
+    dates = [delivered[_concept_key(n)] for n, _ in track if _concept_key(n) in delivered]
+    return max(dates) if dates else None
+
+
+def track_pick(track, delivered: dict[str, str], briefs: list[str], stride: int = 1):
     """The concept to teach from one track, stepping past one that keeps failing.
 
     The syllabus is a queue: normally this is simply the first concept nobody has
@@ -401,15 +407,17 @@ def track_pick(track, delivered: dict[str, str], briefs: list[str]):
     Worth keeping even though the known bug is fixed: two briefs of the world track
     were lost to this shape of problem and nobody noticed until the syllabus was
     replayed by hand. The mechanism costs nothing when the queue is healthy.
+
+    ``stride`` is how many briefs pass per turn of this track. With tracks taking
+    turns, a healthy track still sees the other tracks' briefs since its last
+    advance, so the threshold scales with it rather than deferring on the first miss.
     """
     untaught = [(n, c) for n, c in track if _concept_key(n) not in delivered]
     if not untaught:
         return None
-    track_dates = [delivered[_concept_key(n)] for n, _ in track
-                   if _concept_key(n) in delivered]
-    last_advance = max(track_dates) if track_dates else None
+    last_advance = track_last_advance(track, delivered)
     stall = sum(1 for d in briefs if last_advance is None or d > last_advance)
-    idx = min(stall // FOUNDATIONS_STUCK_AFTER, len(untaught) - 1)
+    idx = min(stall // (FOUNDATIONS_STUCK_AFTER * stride), len(untaught) - 1)
     if idx:
         skipped = ", ".join(n for n, _ in untaught[:idx])
         print(
@@ -421,20 +429,23 @@ def track_pick(track, delivered: dict[str, str], briefs: list[str]):
 
 
 def pick_foundations() -> list[tuple[str, str]]:
-    """Next concept to teach from each track -- one markets, one world affairs.
+    """The one concept to teach today, the markets and world tracks taking turns.
 
-    Balanced deliberately: the reactive term memory already over-supplies finance
-    and AI vocabulary, so the syllabus guarantees world-affairs literacy gets
-    equal billing rather than competing with it for space.
+    One Spotlight a day keeps the brief to ~4 pages. The turn goes to whichever
+    track has waited longest since it last advanced, so world-affairs literacy
+    still gets equal billing with markets (the reactive term memory already
+    over-supplies finance and AI vocabulary), and an exhausted track hands its
+    turns to the other.
     """
     delivered = spotlight_dates()
     briefs = brief_dates()
-    picks: list[tuple[str, str]] = []
-    for track in (FOUNDATIONS_MARKETS, FOUNDATIONS_WORLD):
-        pick = track_pick(track, delivered, briefs)
+    tracks = (FOUNDATIONS_MARKETS, FOUNDATIONS_WORLD)
+    # Never-advanced sorts first; ties keep markets ahead. sorted() is stable.
+    for track in sorted(tracks, key=lambda t: track_last_advance(t, delivered) or ""):
+        pick = track_pick(track, delivered, briefs, stride=len(tracks))
         if pick:
-            picks.append(pick)
-    return picks
+            return [pick]
+    return []
 
 
 def build_foundations_block(picks: list[tuple[str, str]], external: bool = False) -> str:
@@ -445,25 +456,25 @@ def build_foundations_block(picks: list[tuple[str, str]], external: bool = False
     otherwise the section is written twice.
     """
     if external:
-        # Overrides the "lead with TWO Concept Spotlights" bullet in section 9.
+        # Overrides the "lead with ONE Concept Spotlight" bullet in section 5.
         # Placed at the end of the spec, after that bullet, so it reads as the
         # later and more specific instruction.
         return (
-            "FOUNDATIONS -- OVERRIDE for section 9: do NOT write the two Concept "
-            "Spotlights this run. They are written separately and inserted into that "
-            "section automatically. Write ONLY the shorter term entries in section 9, "
+            "FOUNDATIONS -- OVERRIDE for section 5: do NOT write the Concept "
+            "Spotlight this run. It is written separately and inserted into that "
+            "section automatically. Write ONLY the shorter term entries in section 5, "
             "and do not emit any '### Concept Spotlight:' heading of your own."
         )
     if not picks:
         return (
             "FOUNDATIONS: the syllabus is exhausted -- every foundational concept has been "
-            "taught. Choose two genuinely useful concepts of your own instead, one from "
-            "markets/investing and one from world affairs."
+            "taught. Choose one genuinely useful concept of your own instead, from "
+            "markets/investing or world affairs."
         )
     lines = [
-        "FOUNDATIONS: teach EXACTLY these two concepts in full today, as the two Concept "
-        "Spotlights in the Foundations & Terms section. They are scheduled by a syllabus, "
-        "NOT by today's news -- teach them even if the news does not mention them. Assume "
+        "FOUNDATIONS: teach EXACTLY this concept in full today, as the Concept "
+        "Spotlight in the Foundations & Terms section. It is scheduled by a syllabus, "
+        "NOT by today's news -- teach it even if the news does not mention it. Assume "
         "the reader has never encountered the concept before.",
         "",
     ]
@@ -494,7 +505,7 @@ def build_spotlight_messages(name: str, cover: str) -> list[dict]:
         "- how it shows up in the news (a typical case is fine);\n"
         "- rough benchmarks or figures worth remembering;\n"
         "- a caution or common misconception.\n\n"
-        "400-700 words of Markdown. Use bold sub-labels or short bullets for structure. "
+        "About 400 words of Markdown. Use bold sub-labels or short bullets for structure. "
         "Do not open with a heading."
     )
     return [
@@ -973,7 +984,7 @@ Audience:
 Laksh is a student building durable knowledge in world affairs, geopolitics, markets/investing, AI infrastructure, and the semiconductor supply chain. He reads this EVERY morning, so knowledge compounds day over day. Start from modest prior knowledge but assume he remembers what earlier briefs taught (see the TERM MEMORY block).
 
 Voice & style:
-Write like a sharp, plain-spoken newspaper -- confident, causal, never sensational or hype-y. Short paragraphs and clean bullets. For every story go beyond the headline: what happened, the background a newcomer needs, why it matters, who wins/loses, second-order effects, and what's still uncertain. This should be a substantive read (roughly 20-25 minutes); be comprehensive and generous with explanation, but every sentence must earn its place.
+Write like a sharp, plain-spoken newspaper -- confident, causal, never sensational or hype-y. Short paragraphs and clean bullets. For every story go beyond the headline: what happened, the background a newcomer needs, why it matters, who wins/loses, second-order effects, and what's still uncertain. LENGTH IS A HARD CONSTRAINT: about 2,000 words for everything you write, excluding the Sources list, and never more than 2,500. That is roughly 4 printed pages once the Concept Spotlight is added. Depth over breadth: pick fewer stories and explain each one properly rather than skimming many. When choosing what to cut, cut the least important story, never the explanation of a story you keep.
 
 Plain language (IMPORTANT -- Laksh has never read a newspaper regularly and is new to finance and geopolitics):
 - Write for a smart beginner, not for someone who already follows markets. Never assume a term is "obvious".
@@ -987,11 +998,10 @@ Punctuation: never use an em dash (the long -- character). Use a comma, a semico
 
 Ticker clarity: the FIRST time you name a company by its stock ticker, give the company name too, unless it is a household name (Apple, Tesla, Nvidia, Microsoft, Amazon, Google/Alphabet, Meta, Netflix, Intel, AMD). Write it as "Company (TICKER)" -- e.g. "Credo (CRDO)", "Vistra (VST)", "Constellation Energy (CEG)", "Astera Labs (ALAB)". Never leave a non-obvious ticker unexplained.
 
-Coverage -- give these FOUR pillars roughly equal weight every day:
+Coverage -- give these THREE pillars roughly equal weight every day:
 A. World & Geopolitics (LEAD PILLAR): wars and conflicts, great-power relations, diplomacy, elections, major international deals, and notable/outrageous statements by leaders. PRIORITIZE these relationships when there's news: US-China (tech war, Taiwan, trade), the Middle East (Israel, Iran, Gulf, oil), and India & South Asia. Cover Russia-Ukraine/Europe and others when genuinely major. Weave in the secondary beats lightly when there's real news: US politics & policy, and defense & military tech. ALSO cover what is happening INSIDE countries, not only between them -- protests, strikes, court rulings, parliaments, elections and the domestic economy. The source bundle carries "Domestic: <country>" feeds that rotate day to day; when they contain real news, give them genuine space rather than a passing line.
 B. Markets, Money & Deals: indices, rates, macro, big earnings, mergers/acquisitions, and market milestones (e.g. one company's market cap overtaking another's). Weave in crypto & fintech lightly.
-C. AI & Infrastructure (investing lens): AI labs, hyperscalers, cloud, data centers, GPUs/accelerators, memory (HBM), networking/optics, power/cooling, semiconductor supply chain (TSMC, SK Hynix, Micron, Nvidia, AMD, Broadcom, Marvell), enterprise AI adoption -- always framed so Laksh learns to invest.
-D. Model & Research Watch: NEW model launches (give parameter counts, context length, benchmark scores, price, open- vs closed-weights when known), notable research findings/papers and why they matter, and a short "Science & Frontier Tech" note for major non-AI science/space breakthroughs.
+C. AI, Infrastructure & Models (investing lens): AI labs, hyperscalers, cloud, data centers, GPUs/accelerators, memory (HBM), networking/optics, power/cooling, semiconductor supply chain (TSMC, SK Hynix, Micron, Nvidia, AMD, Broadcom, Marvell), enterprise AI adoption -- always framed so Laksh learns to invest. Include a NEW model launch only when it is genuinely significant, with its concrete specs (params, context length, benchmarks, price, open- vs closed-weights).
 
 Watchlist:
 {watchlist}
@@ -999,49 +1009,34 @@ Watchlist:
 Required sections (use these H2 titles, in this order):
 
 ## 1. World & Geopolitics
-- 6-9 stories. Lead with the single most important thing happening in the world today. Prioritize the relationships above.
+- 4-5 stories. Lead with the single most important thing happening in the world today. Prioritize the relationships above.
 
-## 2. Markets, Money & Deals
-- 5-8 stories: the market tape (what moved and why), notable earnings, big deals/M&A, milestones, and a light crypto touch.
+## 2. Markets & Watchlist
+- 3-4 stories: the market tape (what moved and why), notable earnings, big deals/M&A, milestones. Crypto only if it genuinely moved.
+- Then a short watchlist paragraph or table: only names with real news or a move of roughly +/-3% in the last 24h, with the key number and why. Treat the quote snapshot as approximate/delayed. Refer to each company by name with its ticker in parentheses (e.g. "Credo (CRDO)"). Skip names with nothing to say; do NOT list them as "no news".
 
-## 3. AI & Infrastructure
-- 4-7 stories through an investing lens, with the causal "why it matters for the buildout" spelled out.
+## 3. AI, Infrastructure & Models
+- 3-4 stories through an investing lens, with the causal "why it matters for the buildout" spelled out. A significant model launch or paper belongs here, with its specs.
+- End with ONE "Builder's swap" bullet: a specific open-weight model, the closed model it can stand in for, the rough capability gap, and the price of each per million tokens (or "free, self-hosted" plus the hardware it needs). Draw on the r/LocalLLaMA, Hacker News and practical-AI sources. If today's sources do not support one, carry forward the best current swap you know and say plainly that it is not from today's news.
 
-## 4. Model & Research Watch
-- New model launches with concrete specs (params, context, benchmarks, price), key papers/findings, and a brief Science & Frontier Tech note.
+## 4. Analysis: Second-Order Effects
+This is the section where you REASON rather than report, and it is the one Laksh most wants -- the wires tell him a tanker was hit; they will not walk him from that to his portfolio. Give exactly 2 chains: one geopolitics/macro, one infrastructure/supply-chain.
 
-## 5. What Builders Are Actually Using
-- 3-5 bullets on the PRACTICAL layer the institutional press misses. Draw on the r/LocalLLaMA, Hacker News and practical-AI sources in the bundle -- this is the "you could just use this instead" layer that circulates among engineers.
-- The FIRST bullet is MANDATORY and must be a concrete swap: name a specific open-weight model, name the closed model it can stand in for, give the rough capability gap, and give the price of each per million tokens (or "free, self-hosted" plus the hardware it needs). Not a menu of options -- one named substitution a reader could act on today. If today's sources genuinely do not support one, carry forward the best current swap you know and say plainly that it is not from today's news.
-- Then 2-4 more from: model routing (sending easy queries to a small cheap model and hard ones to a big one) and what it saves in practice; running models locally and on what hardware; tools, libraries or repos developers are actually adopting; a technique that changes how you work.
-- BANNED from this section, because they belong in sections 3 and 4 and crowd out the practical content: funding rounds and valuations, who-uses-which-tool surveys, launch announcements with no usage angle, and generic advice not tied to a named tool or model.
+- Each chain starts from a real story above and follows it two, three, four steps out to consequences no single article states. Write the chain explicitly with arrows, then explain each link briefly in prose. Example shape: attack in the Strait of Hormuz -> war-risk insurance premiums on tankers jump -> shipping costs rise -> diesel and petrol prices follow -> headline inflation ticks up -> the Fed has less room to cut rates -> higher borrowing costs press on exactly the debt-funded data-centre buildout in section 3.
+- CRITICAL -- label your epistemics, because Laksh is learning to tell reported fact from inference. Every chain must carry, in one short line each: the FACTS it starts from (sourced, from the stories above), the INFERENCE (clearly marked with hedged language -- "this would likely", "the usual pattern is"), the WEAKEST LINK, and WHAT WOULD FALSIFY IT (a concrete observable in the next days or weeks).
+- Never present inference as reported fact. If the weakest link is LOAD-BEARING, either open the chain with "SPECULATIVE:" and state what has to be true for it to hold, or use a sturdier chain instead. (A real example to avoid: arguing an oil spike forces the Fed to hold rates, then conceding that the Fed targets core PCE, which excludes energy -- that concession guts the chain.)
+- Where a chain has a historical precedent, name it in one line -- precedent is how he will learn to calibrate.
 
-## 6. Watchlist: Earnings, Guidance & Movers
-- Watchlist companies with earnings/news in the last 24h: key numbers vs expectations, guidance, stock reaction. Flag roughly +/-3% moves. Treat the quote snapshot as approximate/delayed. Say plainly when the sources have nothing on a name rather than inventing. Refer to each company by name with its ticker in parentheses (e.g. "Credo (CRDO)"), especially for non-obvious tickers -- do not use bare tickers.
+## 5. Foundations & Terms
+- Lead with ONE "Concept Spotlight" -- exactly the concept named in the FOUNDATIONS block below. It is set by a syllabus, not by the news, so teach it even if nothing today mentions it.
+- The Spotlight, written for someone encountering the idea for the first time: what it is in plain words; WHY it exists; a concrete worked example with real numbers; how it shows up in the news; a figure worth remembering; and a common misconception. Use the heading form "### Concept Spotlight: <Name>". About 400 words.
+- Then 3-5 shorter term entries drawn from today's news, following the TERM MEMORY rules below EXACTLY. Use the form "- **Term:** explanation".
 
-## 7. Analysis: Second-Order Effects
-This is the section where you REASON rather than report, and it is the one Laksh most wants -- the wires tell him a tanker was hit; they will not walk him from that to his portfolio. Give 3-4 chains.
+## 6. Bottom Line
+- One short paragraph synthesizing the big picture and explicitly noting what CHANGED since the previous brief. (Write this BEFORE the Sources list so it is never the thing that gets cut.)
 
-- Each chain starts from a real story above and follows it two, three, four steps out to consequences no single article states. Write the chain explicitly with arrows, then explain each link in prose. Example shape: attack in the Strait of Hormuz -> war-risk insurance premiums on tankers jump -> shipping costs rise -> diesel and petrol prices follow -> headline inflation ticks up -> the Fed has less room to cut rates -> higher borrowing costs press on exactly the debt-funded data-centre buildout in section 3.
-- Cover BOTH kinds: geopolitics/macro chains AND infrastructure/supply-chain chains (AI demand -> cloud capex -> GPUs -> HBM -> optics -> power). Do not make this an AI-only section.
-- CRITICAL -- label your epistemics, because Laksh is learning to tell reported fact from inference. Every chain must carry: the FACTS it starts from (sourced, from the stories above), the INFERENCE (your reasoning, clearly marked as such with hedged language -- "this would likely", "the usual pattern is"), the WEAKEST LINK (the step most likely to break, named explicitly), and WHAT WOULD FALSIFY IT (a concrete observable in the next days or weeks that would show the chain wrong).
-- Never present inference as reported fact. If a step is a guess, say it is a guess. Teaching the method matters more than being right.
-- If the weakest link is LOAD-BEARING -- if the chain collapses when that link breaks -- do not present the chain as though it stands. Either open it with "SPECULATIVE:" and state up front what has to be true for it to hold, or drop it and use a sturdier chain instead. Never lead the section with a chain you go on to undermine. (A real example to avoid: arguing an oil spike forces the Fed to hold rates, then conceding in the same breath that the Fed targets core PCE, which excludes energy -- that concession guts the chain and it should not have been the lead.)
-- Where a chain has a historical precedent, name it in one line (e.g. "the 2019 Abqaiq strike moved Brent ~15% in a day, then fully retraced within weeks") -- precedent is how he will learn to calibrate.
-
-## 8. Building Your Knowledge
-- 4-6 bullets teaching durable patterns (how markets, geopolitics, or the AI buildout actually work), pitched slightly higher each day as Laksh's knowledge grows.
-
-## 9. Foundations & Terms
-- Lead with TWO "Concept Spotlights" -- exactly the two concepts named in the FOUNDATIONS block below, one from markets/investing and one from world affairs. These are set by a syllabus, not by the news, so teach them even if nothing today mentions them. This is the section that fixes the gap where the brief only ever defined whatever the headlines happened to raise.
-- Each Spotlight, written for someone encountering the idea for the first time: what it is in plain words; WHY it exists / what problem it solves; a concrete worked example with real numbers; how it shows up in the news (tie to today's stories if you honestly can, otherwise a typical case); rough benchmarks or figures worth remembering; and a caution or common misconception. Use the heading form "### Concept Spotlight: <Name>".
-- Then 4-8 shorter term entries drawn from today's news, following the TERM MEMORY rules below EXACTLY. Use the form "- **Term:** explanation".
-
-## 10. Bottom Line
-- 1-3 short paragraphs synthesizing the big picture and explicitly noting what CHANGED since the previous brief. (Write this BEFORE the Sources list so it is never the thing that gets cut.)
-
-## 11. Sources
-- List ONLY the stories you actually cited above (aim for ~15-25 bullets, not every source provided), grouped by pillar. Keep it compact. Every bullet is itself a clickable Markdown link `[Publisher -- headline](https://...)`.
+## 7. Sources
+- Compact: 8-15 bullets, ONLY the most important stories you cited above (every source is already linked inline). No grouping headers. Every bullet is itself a clickable Markdown link `[Publisher -- headline](https://...)`.
 
 Foundations:
 {foundations}
@@ -1064,9 +1059,9 @@ GUARDRAILS = """CRITICAL SOURCING RULES:
 - Use ONLY the sources in the "SOURCE BUNDLE" below. Do NOT invent facts, numbers, quotes, dates, events, or URLs. You are NOT browsing the web.
 - LINKS ARE MANDATORY AND MUST BE INLINE. Whenever you use a source, hyperlink it inline as a Markdown link with that source's EXACT url. Example of the required style:
       Tesla fell ~18% after a weak quarter ([CNBC](https://www.cnbc.com/example)).
-  Use a short descriptive label (publisher and/or topic). Every news story in sections 1-5 must contain at least one such inline [label](url) link.
+  Use a short descriptive label (publisher and/or topic). Every news story in sections 1-3 must contain at least one such inline [label](url) link.
 - ABSOLUTELY NO bare numeric citations. Never write "[3]", "[15][42]", "(source 7)", superscripts, or any references-by-number scheme. The SOURCE numbers below are for your private lookup only — never print them. The only square-bracket syntax allowed in your output is a real Markdown link immediately followed by "(https://...)".
-- The "Sources" section: every bullet MUST itself be a clickable Markdown link formatted as `[Publisher — headline](https://...)`, grouped by pillar. No naked numbers, and no titles without their URL.
+- The "Sources" section: every bullet MUST itself be a clickable Markdown link formatted as `[Publisher — headline](https://...)`. No naked numbers, and no titles without their URL.
 - If the sources do not cover a watchlist name or topic, say so plainly (e.g. "No notable news in the sources for X") instead of fabricating.
 - Treat the watchlist quote snapshot as approximate and possibly delayed; attribute price moves to it, not to invented figures.
 - Output valid GitHub-flavored Markdown ONLY. Begin directly with a single H1 title line. No preamble, no sign-off, and do NOT wrap the whole document in a code fence."""
@@ -1300,13 +1295,13 @@ def looks_like_brief(text: str) -> bool:
     its refusal as the morning brief is worse than failing the run, because a
     failed run leaves the delivery slot open for the next cron. The bar sits far
     below any real brief and far above any junk -- the prompt mandates sections
-    ``## 1.`` through ``## 11.``, real briefs run 11k-66k chars with 10-11 of
-    those headers, and the 2026-08-09 refusal was 13 chars with none.
+    ``## 1.`` through ``## 7.`` (``## 11.`` before the Oct 2026 ~4-page cut, when
+    briefs ran 11k-66k chars), and the 2026-08-09 refusal was 13 chars with none.
     """
     if len(text) < 4000:
         return False
     headers = len(re.findall(r"^##\s+\d+\.", text, flags=re.MULTILINE))
-    return headers >= 6
+    return headers >= 5
 
 
 def step_down_effort(current: str) -> str:
